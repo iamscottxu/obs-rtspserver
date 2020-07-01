@@ -154,15 +154,15 @@ jobs:
         run: |
           cd installer
           makensis /DVERSION=${{ env.GIT_TAG }} installer.nsi
-      - name: 'Publish ${{ env.WIN_FILENAME }}.zip'
-        if: success()
-        uses: actions/upload-artifact@v2-preview
-        with:
-          name: '${{ env.GIT_TAG }}-Windows'
-          path: ${{ github.workspace }}\obs-rtspserver\release\*.zip
-      - name: 'Publish ${{ env.WIN_FILENAME }}-Windows-Installer.exe'
-        if: success()
-        uses: actions/upload-artifact@v2-preview
-        with:
-          name: '${{ env.GIT_TAG }}-Windows-Installer'
-          path: ${{ github.workspace }}\obs-rtspserver\build-package\*.exe
+#      - name: 'Publish ${{ env.WIN_FILENAME }}.zip'
+#        if: success()
+#        uses: actions/upload-artifact@v2-preview
+#        with:
+#          name: '${{ env.GIT_TAG }}-Windows'
+#          path: ${{ github.workspace }}\obs-rtspserver\release\*.zip
+#      - name: 'Publish ${{ env.WIN_FILENAME }}-Windows-Installer.exe'
+#        if: success()
+#        uses: actions/upload-artifact@v2-preview
+#        with:
+#          name: '${{ env.GIT_TAG }}-Windows-Installer'
+#          path: ${{ github.workspace }}\obs-rtspserver\build-package\*.exe*/
