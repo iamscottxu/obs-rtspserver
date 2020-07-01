@@ -1,0 +1,23 @@
+1 VERSIONINFO
+FILEVERSION ${OBS_VIRTUALOUTPUT_VERSION_MAJOR},${OBS_VIRTUALOUTPUT_VERSION_MINOR},${OBS_VIRTUALOUTPUT_VERSION_PATCH},0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904B0"
+    BEGIN
+      VALUE "CompanyName", "OBS"
+      VALUE "FileDescription", "OBS RTSP Server Plugin"
+      VALUE "FileVersion", "${OBS_VIRTUALOUTPUT_VERSION_STRING}"
+      VALUE "InternalName", "obs-rtspserver"
+      VALUE "OriginalFilename", "obs-rtspserver.dll"
+      VALUE "ProductName", "OBS Studio"
+      VALUE "ProductVersion", "${OBS_VIRTUALOUTPUT_VERSION_STRING}"
+      VALUE "Comments", "RTSP server for OBS"
+    END
+  END
+
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x0409, 0x04B0
+  END
+END
