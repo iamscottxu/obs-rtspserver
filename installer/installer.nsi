@@ -12,7 +12,7 @@ Unicode true
 Name "${APPNAMEANDVERSION}"
 InstallDir "$PROGRAMFILES64\obs-studio"
 InstallDirRegKey HKLM "Software\OBS Studio" ""
-OutFile ".\build-package\obs-rtspserver-${SHORTVERSION}-Windows-installer.exe"
+OutFile ".\obs-rtspserver-${SHORTVERSION}-Windows-installer.exe"
 
 ; Use compression
 SetCompressor LZMA
@@ -25,7 +25,7 @@ SetCompressor LZMA
 !include Library.nsh
 
 
-!define MUI_ICON ".\build-package\obs.ico"
+!define MUI_ICON ".\obs.ico"
 ;!define MUI_HEADERIMAGE
 ;!define MUI_HEADERIMAGE_BITMAP ""
 ;!define MUI_HEADERIMAGE_RIGHT
@@ -38,7 +38,7 @@ SetCompressor LZMA
 !define MUI_LICENSEPAGE_BUTTON "&Next >"
 
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE ".\build-package\LICENSE"
+!insertmacro MUI_PAGE_LICENSE ".\LICENSE"
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
@@ -57,18 +57,18 @@ Section "obs-rtspserver" Section1
 	SetOverwrite on
 	; Set Section Files and Shortcuts
 	SetOutPath "$INSTDIR\data\obs-plugins\obs-virtualoutput\"
-	File ".\build-package\bin\32bit\obs-rtspserver.dll"
-	File ".\build-package\bin\32bit\obs-rtspserver.pdb"
-	File ".\build-package\bin\32bit\avutil-56.dll"
-	File ".\build-package\bin\32bit\swscale-5.dll"
+	File ".\bin\32bit\obs-rtspserver.dll"
+	File ".\bin\32bit\obs-rtspserver.pdb"
+	File ".\bin\32bit\avutil-56.dll"
+	File ".\bin\32bit\swscale-5.dll"
 	SetOutPath "$INSTDIR\data\obs-plugins\obs-rtspserver\locale\"
-	File /r ".\build-package\data\obs-plugins\obs-rtspserver\locale\"
+	File /r ".\data\obs-plugins\obs-rtspserver\locale\"
 	SetOutPath "$INSTDIR\obs-plugins\64bit\"
-	File ".\build-package\obs-plugins\64bit\obs-rtspserver.dll"
-	File ".\build-package\obs-plugins\64bit\obs-rtspserver.pdb"
+	File ".\obs-plugins\64bit\obs-rtspserver.dll"
+	File ".\obs-plugins\64bit\obs-rtspserver.pdb"
 	SetOutPath "$INSTDIR\bin\64bit\"
-	File ".\build-package\bin\64bit\obs-rtspserver.dll"
-	File ".\build-package\bin\64bit\obs-rtspserver.pdb"
+	File ".\bin\64bit\obs-rtspserver.dll"
+	File ".\bin\64bit\obs-rtspserver.pdb"
 	
 SectionEnd
 
