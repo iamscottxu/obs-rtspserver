@@ -12,7 +12,7 @@ Unicode true
 Name "${APPNAMEANDVERSION}"
 InstallDir "$PROGRAMFILES64\obs-studio"
 InstallDirRegKey HKLM "Software\OBS Studio" ""
-OutFile ".\obs-rtspserver-${SHORTVERSION}-Windows-installer.exe"
+OutFile "obs-rtspserver-${SHORTVERSION}-Windows-installer.exe"
 
 ; Use compression
 SetCompressor LZMA
@@ -25,7 +25,7 @@ SetCompressor LZMA
 !include Library.nsh
 
 
-!define MUI_ICON ".\obs.ico"
+!define MUI_ICON "obs.ico"
 ;!define MUI_HEADERIMAGE
 ;!define MUI_HEADERIMAGE_BITMAP ""
 ;!define MUI_HEADERIMAGE_RIGHT
@@ -38,7 +38,7 @@ SetCompressor LZMA
 !define MUI_LICENSEPAGE_BUTTON "&Next >"
 
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE ".\LICENSE"
+!insertmacro MUI_PAGE_LICENSE "LICENSE"
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
@@ -57,9 +57,9 @@ Section "obs-rtspserver" Section1
 	SetOverwrite on
 	; Set Section Files and Shortcuts
 	SetOutPath "$INSTDIR\data\"
-	File /r ".\data\*"
+	File /r "data\*"
 	SetOutPath "$INSTDIR\obs-plugins\"
-	File /r ".\obs-plugins\*"
+	File /r "obs-plugins\*"
 	
 SectionEnd
 
