@@ -123,6 +123,8 @@ jobs:
           robocopy .\obs-studio\build64\plugins\obs-rtspserver\RelWithDebInfo .\build-package\obs-plugins\64bit\ obs-rtspserver.dll obs-rtspserver.pdb
           robocopy .\obs-studio\build32\plugins\obs-rtspserver\RelWithDebInfo .\build-package\obs-plugins\32bit\ obs-rtspserver.dll obs-rtspserver.pdb
           robocopy .\obs-studio\plugins\obs-rtspserver\locale\ .\build-package\data\obs-plugins\obs-rtspserver\locale\ *.ini
+          robocopy .\obs-studio\plugins\obs-rtspserver\LICENSE .\build-package\LICENSE
+          robocopy .\obs-studio\plugins\obs-rtspserver\installer\obs.ico .\build-package\obs.ico
           mkdir release
           7z a ".\release\${{ env.WIN_FILENAME }}.zip" ".\build-package\*"
       - name: Install NSIS
@@ -132,8 +134,8 @@ jobs:
           scoop bucket add extras
           scoop install nsis
       - name: Build obs-rtspserver installer
-        working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver/installer
-        run: makensis /DVERSION=${{ env.GIT_TAG }} installer.nsi
+        working-directory: ${{ github.workspace }}
+        run: makensis /DVERSION=${{ env.GIT_TAG }} .\obs-studio\plugins\obs-rtspserver\installer\installer.nsi
       - name: 'Publish ${{ env.WIN_FILENAME }}.zip'
         if: success()
         uses: actions/upload-artifact@v2-preview
