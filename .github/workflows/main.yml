@@ -120,8 +120,8 @@ jobs:
           mkdir build-package\bin\64bit
           mkdir build-package\bin\32bit
           robocopy .\cmbuild\deps\win32\bin\ .\build-package\bin\32bit\ avutil-56.dll swscale-5.dll
-          robocopy .\obs-studio\build64\plugins\obs-rtspserver\RelWithDebInfo\ .\build-package\obs-plugins\64bit\ obs-rtspserver.dll obs-rtspserver.pdb
-          robocopy .\obs-studio\build32\plugins\obs-rtspserver\RelWithDebInfo\ .\build-package\obs-plugins\32bit\ obs-rtspserver.dll obs-rtspserver.pdb
+          robocopy .\obs-studio\build64\plugins\obs-rtspserver\RelWithDebInfo\ .\build-package\bin\64bit\ obs-rtspserver.dll obs-rtspserver.pdb
+          robocopy .\obs-studio\build32\plugins\obs-rtspserver\RelWithDebInfo\ .\build-package\bin\32bit\ obs-rtspserver.dll obs-rtspserver.pdb
           robocopy .\obs-studio\plugins\obs-rtspserver\locale\ .\build-package\data\obs-plugins\obs-rtspserver\locale\ *.ini
           robocopy .\obs-studio\plugins\obs-rtspserver\ .\build-package\ LICENSE
           robocopy .\obs-studio\plugins\obs-rtspserver\installer\ .\build-package\ installer.nsi obs.ico
