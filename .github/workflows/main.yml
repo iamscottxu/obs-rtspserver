@@ -45,7 +45,7 @@ jobs:
           git submodule update
       - name: 'Get obs-rtspserver git info'
         shell: bash
-        working-directory: ${{ github.workspace }}/plugins/obs-rtspserver
+        working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
         run: |
           git fetch --prune --unshallow
           echo ::set-env name=GIT_BRANCH::${{ github.event.pull_request.head.ref }}
