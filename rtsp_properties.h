@@ -1,6 +1,7 @@
 #ifndef RTSP_PROPERTIES_H
 #define RTSP_PROPERTIES_H
 
+#include <memory>
 #include <QDialog>
 #include <obs-module.h>
 #include "my_rtsp_output.h"
