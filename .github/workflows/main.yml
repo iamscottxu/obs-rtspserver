@@ -70,7 +70,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ env.CACHE_NAME }}-
       - name: 'Add obs-rtspserver Subdirectory'
-        run: echo "add_subdirectory(obs-rtspserver)" >> .\plugins\CMakeLists.txt
+        working-directory: ${{ github.workspace }}/obs-studio/plugins
+        run: echo "add_subdirectory(obs-rtspserver)" >> .\CMakeLists.txt
       - name: 'Configure OBS 32-bit'
         if: steps.build-cache-obs-32.outputs.cache-hit != 'true'
         working-directory: ${{ github.workspace }}/obs-studio
