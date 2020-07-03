@@ -56,19 +56,10 @@ Section "obs-rtspserver" Section1
 	; Set Section properties
 	SetOverwrite on
 	; Set Section Files and Shortcuts
-	SetOutPath "$INSTDIR\data\obs-plugins\obs-virtualoutput\"
-	File ".\bin\32bit\obs-rtspserver.dll"
-	File ".\bin\32bit\obs-rtspserver.pdb"
-	File ".\bin\32bit\avutil-56.dll"
-	File ".\bin\32bit\swscale-5.dll"
-	SetOutPath "$INSTDIR\data\obs-plugins\obs-rtspserver\locale\"
-	File /r ".\data\obs-plugins\obs-rtspserver\locale\"
-	SetOutPath "$INSTDIR\obs-plugins\64bit\"
-	File ".\obs-plugins\64bit\obs-rtspserver.dll"
-	File ".\obs-plugins\64bit\obs-rtspserver.pdb"
-	SetOutPath "$INSTDIR\bin\64bit\"
-	File ".\bin\64bit\obs-rtspserver.dll"
-	File ".\bin\64bit\obs-rtspserver.pdb"
+	SetOutPath "$INSTDIR\data\"
+	File /r ".\data\"
+	SetOutPath "$INSTDIR\obs-plugins\"
+	File /r ".\obs-plugins\"
 	
 SectionEnd
 

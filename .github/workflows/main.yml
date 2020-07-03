@@ -18,6 +18,20 @@ jobs:
     steps:
       - name: 'Add msbuild to PATH'
         uses: microsoft/setup-msbuild@v1.0.0
+      - name: 'Install prerequisite: QT'
+        run: |
+          curl -kLO https://cdn-fastly.obsproject.com/downloads/Qt_${{ env.QT_VERSION }}.7z -f --retry 5 -C -
+          7z x Qt_${{ env.QT_VERSION }}.7z -o"${{ github.workspace }}\cmbuild\QT"
+      - name: 'Install prerequisite: Pre-built OBS dependencies'
+        run: |
+          curl -kLO https://cdn-fastly.obsproject.com/downloads/dependencies${{ env.WINDOWS_DEPS_VERSION }}.zip -f --retry 5 -C -
+          7z x dependencies${{ env.WINDOWS_DEPS_VERSION }}.zip -o"${{ github.workspace }}\cmbuild\deps"
+      - name: 'Install prerequisite: NSIS'
+        working-directory: ${{ github.workspace }}
+        run: |
+          Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
+          scoop bucket add extras
+          scoop install nsis
       - name: 'Checkout OBS'
         uses: actions/checkout@v2
         with:
@@ -51,14 +65,6 @@ jobs:
           echo ::set-env name=GIT_BRANCH::${{ github.event.pull_request.head.ref }}
           echo ::set-env name=GIT_HASH::$(git rev-parse --short HEAD)
           echo ::set-env name=GIT_TAG::$(git describe --tags --abbrev=0)
-      - name: 'Install prerequisite: QT'
-        run: |
-          curl -kLO https://cdn-fastly.obsproject.com/downloads/Qt_${{ env.QT_VERSION }}.7z -f --retry 5 -C -
-          7z x Qt_${{ env.QT_VERSION }}.7z -o"${{ github.workspace }}\cmbuild\QT"
-      - name: 'Install prerequisite: Pre-built OBS dependencies'
-        run: |
-          curl -kLO https://cdn-fastly.obsproject.com/downloads/dependencies${{ env.WINDOWS_DEPS_VERSION }}.zip -f --retry 5 -C -
-          7z x dependencies${{ env.WINDOWS_DEPS_VERSION }}.zip -o"${{ github.workspace }}\cmbuild\deps"
       - name: 'Restore OBS 32-bit build v${{ env.OBS_GIT_TAG }} from cache'
         id: build-cache-obs-32
         uses: actions/cache@v1
@@ -117,22 +123,13 @@ jobs:
           mkdir build-package\obs-plugins\64bit
           mkdir build-package\obs-plugins\32bit
           mkdir build-package\data\obs-plugins\obs-rtspserver\locale\
-          mkdir build-package\bin\64bit
-          mkdir build-package\bin\32bit
-          robocopy .\cmbuild\deps\win32\bin\ .\build-package\bin\32bit\ avutil-56.dll swscale-5.dll
-          robocopy .\obs-studio\build64\plugins\obs-rtspserver\RelWithDebInfo\ .\build-package\bin\64bit\ obs-rtspserver.dll obs-rtspserver.pdb
-          robocopy .\obs-studio\build32\plugins\obs-rtspserver\RelWithDebInfo\ .\build-package\bin\32bit\ obs-rtspserver.dll obs-rtspserver.pdb
+          robocopy .\obs-studio\build64\plugins\obs-rtspserver\RelWithDebInfo\ .\build-package\obs-plugins\64bit\ obs-rtspserver.dll obs-rtspserver.pdb
+          robocopy .\obs-studio\build32\plugins\obs-rtspserver\RelWithDebInfo\ .\build-package\obs-plugins\32bit\ obs-rtspserver.dll obs-rtspserver.pdb
           robocopy .\obs-studio\plugins\obs-rtspserver\locale\ .\build-package\data\obs-plugins\obs-rtspserver\locale\ *.ini
           robocopy .\obs-studio\plugins\obs-rtspserver\ .\build-package\ LICENSE
           robocopy .\obs-studio\plugins\obs-rtspserver\installer\ .\build-package\ installer.nsi obs.ico
           mkdir release
           7z a ".\release\${{ env.WIN_FILENAME }}.zip" ".\build-package\*"
-      - name: Install NSIS
-        working-directory: ${{ github.workspace }}
-        run: |
-          Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
-          scoop bucket add extras
-          scoop install nsis
       - name: Build obs-rtspserver installer
         working-directory: ${{ github.workspace }}\build-package
         run: makensis /DVERSION=${{ env.GIT_TAG }} .\installer.nsi
