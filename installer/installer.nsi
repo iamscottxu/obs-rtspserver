@@ -57,9 +57,9 @@ Section "obs-rtspserver" Section1
 	SetOverwrite on
 	; Set Section Files and Shortcuts
 	SetOutPath "$INSTDIR\data\"
-	File /r ".\data\"
+	File /r ".\data\*"
 	SetOutPath "$INSTDIR\obs-plugins\"
-	File /r ".\obs-plugins\"
+	File /r ".\obs-plugins\*"
 	
 SectionEnd
 
@@ -85,8 +85,8 @@ Section Uninstall
 	; Clean up obs-rtspserver
 	Delete "$INSTDIR\obs-plugins\64bit\obs-rtspserver.dll"
 	Delete "$INSTDIR\obs-plugins\64bit\obs-rtspserver.pdb"
-	Delete "$INSTDIR\bin\64bit\obs-rtspserver.dll"
-	Delete "$INSTDIR\bin\64bit\obs-rtspserver.pdb"
+	Delete "$INSTDIR\obs-plugins\32bit\obs-rtspserver.dll"
+	Delete "$INSTDIR\obs-plugins\32bit\obs-rtspserver.pdb"
 
 	; Remove data directory
 	RMDir /r "$INSTDIR\data\obs-plugins\obs-rtspserver\"
