@@ -132,10 +132,8 @@ jobs:
           scoop bucket add extras
           scoop install nsis
       - name: Build obs-rtspserver installer
-        working-directory: ${{ github.workspace }}
-        run: |
-          cd installer
-          makensis /DVERSION=${{ env.GIT_TAG }} installer.nsi
+        working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver/installer
+        run: makensis /DVERSION=${{ env.GIT_TAG }} installer.nsi
       - name: 'Publish ${{ env.WIN_FILENAME }}.zip'
         if: success()
         uses: actions/upload-artifact@v2-preview
