@@ -2,7 +2,8 @@
 name: 'CI Windows On-Push'
 
 on:
-  release
+  release:
+    types: [published]
 
 jobs:
   windows:
