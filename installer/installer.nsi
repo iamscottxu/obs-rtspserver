@@ -12,7 +12,7 @@ Unicode true
 Name "${APPNAMEANDVERSION}"
 InstallDir "$PROGRAMFILES64\obs-studio"
 InstallDirRegKey HKLM "Software\OBS Studio" ""
-OutFile "obs-rtspserver-${SHORTVERSION}-Windows-installer.exe"
+OutFile "..\build-package\obs-rtspserver-${SHORTVERSION}-Windows-installer.exe"
 
 ; Use compression
 SetCompressor LZMA
@@ -56,10 +56,8 @@ Section "obs-rtspserver" Section1
 	; Set Section properties
 	SetOverwrite on
 	; Set Section Files and Shortcuts
-	SetOutPath "$INSTDIR\data\"
-	File /r "data\*"
-	SetOutPath "$INSTDIR\obs-plugins\"
-	File /r "obs-plugins\*"
+	SetOutPath "$INSTDIR\"
+	File /r "..\build-package\"
 	
 SectionEnd
 
