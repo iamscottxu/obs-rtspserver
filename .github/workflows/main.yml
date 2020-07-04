@@ -130,18 +130,18 @@ jobs:
           robocopy .\obs-studio\plugins\obs-rtspserver\installer\ .\build-package\ installer.nsi obs.ico
           mkdir release
           7z a ".\release\${{ env.WIN_FILENAME }}.zip" ".\build-package\*"
-      - name: Build obs-rtspserver installer
-        working-directory: ${{ github.workspace }}\build-package
-        run: makensis /DVERSION=${{ env.GIT_TAG }} .\installer.nsi
+#      - name: Build obs-rtspserver installer
+#        working-directory: ${{ github.workspace }}\build-package
+#        run: makensis /DVERSION=${{ env.GIT_TAG }} .\installer.nsi
       - name: 'Publish ${{ env.WIN_FILENAME }}.zip'
         if: success()
         uses: actions/upload-artifact@v2-preview
         with:
           name: '${{ env.GIT_TAG }}-Windows'
           path: ${{ github.workspace }}\release\*.zip
-      - name: 'Publish ${{ env.WIN_FILENAME }}-Windows-Installer.exe'
-        if: success()
-        uses: actions/upload-artifact@v2-preview
-        with:
-          name: '${{ env.GIT_TAG }}-Windows-Installer'
-          path: ${{ github.workspace }}\build-package\*.exe
+#      - name: 'Publish ${{ env.WIN_FILENAME }}-Windows-Installer.exe'
+#        if: success()
+#        uses: actions/upload-artifact@v2-preview
+#        with:
+#          name: '${{ env.GIT_TAG }}-Windows-Installer'
+#          path: ${{ github.workspace }}\build-package\*.exe
