@@ -125,7 +125,7 @@ jobs:
           mkdir build-package\data\obs-plugins\obs-rtspserver\locale\
           robocopy .\obs-studio\build64\plugins\obs-rtspserver\RelWithDebInfo\ .\build-package\obs-plugins\64bit\ obs-rtspserver.dll obs-rtspserver.pdb
           robocopy .\obs-studio\build32\plugins\obs-rtspserver\RelWithDebInfo\ .\build-package\obs-plugins\32bit\ obs-rtspserver.dll obs-rtspserver.pdb
-          robocopy .\obs-studio\plugins\obs-rtspserver\locale\ .\build-package\data\obs-plugins\obs-rtspserver\locale\ *.ini
+          robocopy /E .\obs-studio\plugins\obs-rtspserver\data\ .\build-package\data\obs-plugins\obs-rtspserver\ *
           robocopy .\obs-studio\plugins\obs-rtspserver\ .\installer\ LICENSE
           robocopy .\obs-studio\plugins\obs-rtspserver\installer\ .\installer\ installer.nsi obs.ico
           mkdir release
