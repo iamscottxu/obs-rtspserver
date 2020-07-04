@@ -130,11 +130,22 @@ jobs:
           mkdir release
           7z a ".\release\${{ env.WIN_FILENAME }}.zip" ".\build-package\*"
       - name: 'Publish ${{ env.WIN_FILENAME }}.zip'
+        id: create_release
         if: success()
         uses: actions/upload-artifact@v2-preview
         with:
           name: '${{ env.GIT_TAG }}-Windows'
           path: ${{ github.workspace }}\release\*.zip
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: './${{ env.GIT_TAG }}-Windows.zip'
+          asset_name: '${{ env.GIT_TAG }}-Windows.zip'
+          asset_content_type: application/zip
       - name: Build obs-rtspserver installer
         working-directory: ${{ github.workspace }}\installer
         run: makensis /DVERSION=${{ env.GIT_TAG }} .\installer.nsi
@@ -144,20 +155,4 @@ jobs:
         with:
           name: '${{ env.GIT_TAG }}-Windows-Installer'
           path: ${{ github.workspace }}\build-package\*.exe
-  upload:
-    name: 'Upload to release'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Upload ${{ env.WIN_FILENAME }}.zip to release
-        uses: JasonEtco/upload-to-release@master
-        with:
-          args: ${{ env.GIT_TAG }}-Windows.zip application/zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload obs-rtspserver installer to release
-        uses: JasonEtco/upload-to-release@master
-        with:
-          args: ${{ env.GIT_TAG }}-Windows-Installer.zip application/zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
