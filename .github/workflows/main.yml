@@ -2,7 +2,7 @@
 name: 'CI Windows On-Push'
 
 on:
-  push:
+  release:
     branches:
       - master
 
@@ -136,6 +136,12 @@ jobs:
         with:
           name: '${{ env.GIT_TAG }}-Windows'
           path: ${{ github.workspace }}\release\*.zip
+      - name: Upload ${{ env.WIN_FILENAME }}.zip to release
+        uses: JasonEtco/upload-to-release@master
+        with:
+          args: ${{ env.GIT_TAG }}-Windows.zip application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build obs-rtspserver installer
         working-directory: ${{ github.workspace }}\installer
         run: makensis /DVERSION=${{ env.GIT_TAG }} .\installer.nsi
@@ -145,3 +151,9 @@ jobs:
         with:
           name: '${{ env.GIT_TAG }}-Windows-Installer'
           path: ${{ github.workspace }}\build-package\*.exe
+      - name: Upload obs-rtspserver installer to release
+        uses: JasonEtco/upload-to-release@master
+        with:
+          args: ${{ env.GIT_TAG }}-Windows-Installer.zip application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
