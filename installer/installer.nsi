@@ -12,7 +12,7 @@ Unicode true
 Name "${APPNAMEANDVERSION}"
 InstallDir "$PROGRAMFILES64\obs-studio"
 InstallDirRegKey HKLM "Software\OBS Studio" ""
-OutFile "..\build-package\obs-rtspserver-${SHORTVERSION}-Windows-installer.exe"
+OutFile "..\build-package\obs-rtspserver-${SHORTVERSION}-windows-installer.exe"
 
 ; Use compression
 SetCompressor LZMA
