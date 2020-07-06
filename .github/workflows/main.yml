@@ -1,5 +1,5 @@
 
-name: 'CI Windows On-Push'
+name: 'CI Windows Release'
 
 on:
   push:
