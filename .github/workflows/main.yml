@@ -117,7 +117,7 @@ jobs:
       - name: 'Set release filename'
         shell: bash
         run: |
-          FILENAME="OBS-Rtspserver-${{ env.GIT_TAG }}-Windows"
+          FILENAME="obs-rtspserver-${{ env.GIT_TAG }}-Windows"
           echo "::set-env name=WIN_FILENAME::$FILENAME"
       - name: 'Package obs-rtspserver'
         working-directory: ${{ github.workspace }}
@@ -137,16 +137,16 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v2-preview
         with:
-          name: '${{ env.GIT_TAG }}-Windows'
+          name: '${{ env.GIT_TAG }}-windows'
           path: ${{ github.workspace }}\release\*.zip
       - name: Build obs-rtspserver installer
         working-directory: ${{ github.workspace }}\installer
         run: makensis /DVERSION=${{ env.GIT_TAG }} .\installer.nsi
-      - name: 'Publish ${{ env.WIN_FILENAME }}-Windows-Installer.exe'
+      - name: 'Publish ${{ env.WIN_FILENAME }}-windows-installer.exe'
         if: success()
         uses: actions/upload-artifact@v2-preview
         with:
-          name: '${{ env.GIT_TAG }}-Windows-Installer'
+          name: '${{ env.GIT_TAG }}-windows-installer'
           path: ${{ github.workspace }}\build-package\*.exe
 
   make-release:
@@ -177,8 +177,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-Windows/obs-rtspserver-${{ env.TAG_VERSION }}-Windows.zip
-          asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-Windows.zip
+          asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-windows/obs-rtspserver-${{ env.TAG_VERSION }}-windows.zip
+          asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-windows.zip
           asset_content_type: application/zip
       - name: 'Upload Windows .exe artifact to release'
         uses: actions/upload-release-asset@v1
@@ -186,7 +186,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-Windows-Installer/obs-rtspserver-${{ env.TAG_VERSION }}-Windows-installer.exe
-          asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-Windows-Installer.exe
+          asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-windows-installer/obs-rtspserver-${{ env.TAG_VERSION }}-windows-installer.exe
+          asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-windows-installer.exe
           asset_content_type: application/zip
       
