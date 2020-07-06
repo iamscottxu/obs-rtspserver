@@ -159,7 +159,7 @@ jobs:
           name: '${{ env.GIT_TAG }}-Windows-Installer'
           path: ${{ github.workspace }}\build-package\*.exe
 
- make-release:
+  make-release:
     name: 'Create and upload release'
     runs-on: [ubuntu-latest]
     needs: [windows]
