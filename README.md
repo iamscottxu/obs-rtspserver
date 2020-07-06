@@ -1,2 +1,2 @@
-# obs-rtspserver
-RTSP server for OBS
+# OBS-RTSPServer
+
