@@ -117,7 +117,7 @@ jobs:
       - name: 'Set release filename'
         shell: bash
         run: |
-          FILENAME="obs-rtspserver-${{ env.GIT_TAG }}-Windows"
+          FILENAME="obs-rtspserver-${{ env.GIT_TAG }}-windows"
           echo "::set-env name=WIN_FILENAME::$FILENAME"
       - name: 'Package obs-rtspserver'
         working-directory: ${{ github.workspace }}
