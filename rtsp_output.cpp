@@ -50,11 +50,9 @@ static void do_output_error_signal(void *data, char *msg)
 static void do_output_signal(void *data, const char *signal)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)data;
-	struct calldata call_data;
 	signal_handler_t *handler =
 		obs_output_get_signal_handler(out_data->output);
-	signal_handler_signal(handler, signal, &call_data);
-	calldata_free(&call_data);
+	signal_handler_signal(handler, signal, nullptr);
 }
 
 static void rtsp_output_destroy(void *data)
