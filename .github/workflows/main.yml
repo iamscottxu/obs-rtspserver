@@ -121,11 +121,59 @@ jobs:
         with:
           name: '${{ env.GIT_TAG }}-windows-installer'
           path: ${{ github.workspace }}\build-package\*.exe
+      - name: 'Add obs-rtspserver Subdirectory'
+        working-directory: ${{ github.workspace }}/obs-studio/plugins
+        run: echo "add_subdirectory(obs-rtspserver)" >> .\CMakeLists.txt
 
+  linux:
+    name: 'Linux 32+64bit'
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: 'Install prerequisite'
+        run: |
+          apt-get install -y libX11-devel mesa-libGL-devel libv4l-devel \
+          pulseaudio-libs-devel x264-devel freetype-devel \
+          fontconfig-devel libXcomposite-devel libXinerama-devel \
+          qt5-qtbase-devel qt5-qtx11extras-devel libcurl-devel \
+          systemd-devel ffmpeg ffmpeg-devel
+      - name: 'Checkout OBS'
+        uses: actions/checkout@v2
+        with:
+          repository: obsproject/obs-studio
+          path: ${{ github.workspace }}/obs-studio
+          submodules: 'recursive'
+      - name: 'Checkout obs-rtspserver'
+        uses: actions/checkout@v2
+        with:
+          path: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
+          submodules: 'recursive'
+      - name: 'Get OBS-Studio git info'
+        shell: bash
+        working-directory: ${{ github.workspace }}/obs-studio
+        run: |
+          git fetch --prune --unshallow
+          echo ::set-env name=OBS_GIT_BRANCH::$(git rev-parse --abbrev-ref HEAD)
+          echo ::set-env name=OBS_GIT_HASH::$(git rev-parse --short HEAD)
+          echo ::set-env name=OBS_GIT_TAG::$(git describe --tags --abbrev=0)
+      - name: 'Checkout last OBS-Studio release (${{ env.OBS_GIT_TAG }})'
+        shell: bash
+        working-directory: ${{ github.workspace }}/obs-studio
+        run: |
+          git checkout ${{ env.OBS_GIT_TAG }}
+          git submodule update
+      - name: 'Get obs-rtspserver git info'
+        shell: bash
+        working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
+        run: |
+          git fetch --prune --unshallow
+          echo ::set-env name=GIT_BRANCH::${{ github.event.pull_request.head.ref }}
+          echo ::set-env name=GIT_HASH::$(git rev-parse --short HEAD)
+          echo ::set-env name=GIT_TAG::$(git describe --tags --abbrev=0)
+      
   make-release:
     name: 'Upload release'
     runs-on: [ubuntu-latest]
-    needs: [windows]
+    needs: [windows, linux]
     steps:
       - name: 'Get the version'
         shell: bash
