@@ -133,7 +133,7 @@ jobs:
     steps:
       - name: 'Install prerequisite'
         run: |
-          apt-get install -y libX11-devel mesa-libGL-devel libv4l-devel \
+          sudo apt-get install -y libX11-devel mesa-libGL-devel libv4l-devel \
           pulseaudio-libs-devel x264-devel freetype-devel \
           fontconfig-devel libXcomposite-devel libXinerama-devel \
           qt5-qtbase-devel qt5-qtx11extras-devel libcurl-devel \
