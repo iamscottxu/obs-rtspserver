@@ -1,9 +1,13 @@
-
-name: 'CI Release'
+name: 'CI Windows Release'
 
 on:
     release:
       types: [published]
+#    push:
+#    paths-ignore:
+#      - 'docs/**'
+#    tags:
+#      - '[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   windows:
@@ -37,6 +41,11 @@ jobs:
           repository: obsproject/obs-studio
           path: ${{ github.workspace }}/obs-studio
           submodules: 'recursive'
+      - name: 'Checkout obs-rtspserver'
+        uses: actions/checkout@v2
+        with:
+          path: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
+          submodules: 'recursive'
       - name: 'Get OBS-Studio git info'
         shell: bash
         working-directory: ${{ github.workspace }}/obs-studio
@@ -51,41 +60,58 @@ jobs:
         run: |
           git checkout ${{ env.OBS_GIT_TAG }}
           git submodule update
-      - name: 'Checkout obs-rtspserver'
-        uses: actions/checkout@v2
-        with:
-          path: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
-          submodules: 'recursive'
-      - name: 'Get obs-rtspserver tag'
-        shell: bash
-        run: |
-          echo ::set-env name=GIT_TAG::${GITHUB_REF/refs\/tags\//}
-      - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
+      - name: 'Get obs-rtspserver git info'
         shell: bash
         working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
         run: |
-          git checkout ${{ env.GIT_TAG }}
-          git submodule update
+          git fetch --prune --unshallow
+          echo ::set-env name=GIT_BRANCH::${{ github.event.pull_request.head.ref }}
+          echo ::set-env name=GIT_HASH::$(git rev-parse --short HEAD)
+          echo ::set-env name=GIT_TAG::$(git describe --tags --abbrev=0)
+#     - name: 'Restore OBS 32-bit build v${{ env.OBS_GIT_TAG }} from cache'
+#       id: build-cache-obs-32
+#       uses: actions/cache@v1
+#       env:
+#         CACHE_NAME: 'build-cache-obs-32'
+#       with:
+#         path: ${{ github.workspace }}/obs-studio/build32
+#         key: ${{ runner.os }}-${{ env.CACHE_NAME }}-${{ env.OBS_GIT_TAG }}
+#         restore-keys: |
+#           ${{ runner.os }}-${{ env.CACHE_NAME }}-
       - name: 'Add obs-rtspserver Subdirectory'
         working-directory: ${{ github.workspace }}/obs-studio/plugins
         run: echo "add_subdirectory(obs-rtspserver)" >> .\CMakeLists.txt
       - name: 'Configure OBS 32-bit'
+#       if: steps.build-cache-obs-32.outputs.cache-hit != 'true'
         working-directory: ${{ github.workspace }}/obs-studio
         run: |
           mkdir .\build32
           cd .\build32
           cmake -G "${{ env.CMAKE_GENERATOR }}" -A Win32 -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DQTDIR="${{ github.workspace }}\cmbuild\QT\${{ env.QT_VERSION }}\msvc2017" -DDepsPath="${{ github.workspace }}\cmbuild\deps\win32" -DBUILD_CAPTIONS=YES -DCOPIED_DEPENDENCIES=NO -DCOPY_DEPENDENCIES=YES ..
       - name: 'Build obs-rtspserver 32-bit'
+#       if: steps.build-cache-obs-32.outputs.cache-hit != 'true'
         working-directory: ${{ github.workspace }}/obs-studio
         run: |
           msbuild /m /p:Configuration=RelWithDebInfo .\build32\plugins\obs-rtspserver\obs-rtspserver.vcxproj
+#     - name: 'Restore OBS 64-bit build v${{ env.OBS_GIT_TAG }} from cache'
+#       id: build-cache-obs-64
+#       uses: actions/cache@v1
+#       env:
+#         CACHE_NAME: 'build-cache-obs-64'
+#       with:
+#         path: ${{ github.workspace }}/obs-studio/build64
+#         key: ${{ runner.os }}-${{ env.CACHE_NAME }}-${{ env.OBS_GIT_TAG }}
+#         restore-keys: |
+#           ${{ runner.os }}-${{ env.CACHE_NAME }}-
       - name: 'Configure OBS 64-bit'
+#       if: steps.build-cache-obs-64.outputs.cache-hit != 'true'
         working-directory: ${{ github.workspace }}/obs-studio
         run: |
           mkdir .\build64
           cd .\build64
           cmake -G "${{ env.CMAKE_GENERATOR }}" -A x64 -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DQTDIR="${{ github.workspace }}\cmbuild\QT\${{ env.QT_VERSION }}\msvc2017_64" -DDepsPath="${{ github.workspace }}\cmbuild\deps\win64" -DBUILD_CAPTIONS=YES -DCOPIED_DEPENDENCIES=NO -DCOPY_DEPENDENCIES=YES ..
       - name: 'Build obs-rtspserver 64-bit'
+#       if: steps.build-cache-obs-64.outputs.cache-hit != 'true'
         working-directory: ${{ github.workspace }}/obs-studio
         run: |
           msbuild /m /p:Configuration=RelWithDebInfo .\build64\plugins\obs-rtspserver\obs-rtspserver.vcxproj
@@ -123,103 +149,27 @@ jobs:
         with:
           name: '${{ env.GIT_TAG }}-windows-installer'
           path: ${{ github.workspace }}\build-package\*.exe
-      - name: 'Add obs-rtspserver Subdirectory'
-        working-directory: ${{ github.workspace }}/obs-studio/plugins
-        run: echo "add_subdirectory(obs-rtspserver)" >> .\CMakeLists.txt
-
-  linux:
-    name: 'Linux 32+64bit'
-    runs-on: [ubuntu-latest]
-    steps:
-      - name: 'Install prerequisite'
-        run: |
-         sudo apt-get update
-         sudo apt-get install \
-           build-essential checkinstall cmake git libmbedtls-dev libasound2-dev libavcodec-dev libavdevice-dev \
-           libavfilter-dev libavformat-dev libavutil-dev libcurl4-openssl-dev libfdk-aac-dev libfontconfig-dev \
-           libfreetype6-dev libgl1-mesa-dev libjack-jackd2-dev libjansson-dev libluajit-5.1-dev libpulse-dev \
-           libqt5x11extras5-dev libspeexdsp-dev libswresample-dev libswscale-dev libudev-dev libv4l-dev \
-           libvlc-dev libx11-dev libx264-dev libxcb-shm0-dev libxcb-xinerama0-dev libxcomposite-dev \
-           libxinerama-dev pkg-config python3-dev qtbase5-dev libqt5svg5-dev swig libxcb-randr0-dev \
-           libxcb-xfixes0-dev libx11-xcb-dev libxcb1-dev
-      - name: 'Install prerequisite: Pre-built OBS dependencies'
-        run: |
-          curl -kLO https://cdn-fastly.obsproject.com/downloads/cef_binary_3770_linux32.tar.bz2 -f --retry 5 -C -
-          curl -kLO https://cdn-fastly.obsproject.com/downloads/cef_binary_3770_linux64.tar.bz2 -f --retry 5 -C -
-          mkdir "${{ github.workspace }}/cmbuild"
-          mkdir "${{ github.workspace }}/cmbuild/deps32"
-          mkdir "${{ github.workspace }}/cmbuild/deps64"
-          tar -xjf ./cef_binary_3770_linux32.tar.bz2 -C "${{ github.workspace }}/cmbuild/deps32"
-          tar -xjf ./cef_binary_3770_linux64.tar.bz2 -C "${{ github.workspace }}/cmbuild/deps64"
-      - name: 'Checkout OBS'
-        uses: actions/checkout@v2
-        with:
-          repository: obsproject/obs-studio
-          path: ${{ github.workspace }}/obs-studio
-          submodules: 'recursive'
-      - name: 'Get OBS-Studio git info'
-        shell: bash
-        working-directory: ${{ github.workspace }}/obs-studio
-        run: |
-          git fetch --prune --unshallow
-          echo ::set-env name=OBS_GIT_BRANCH::$(git rev-parse --abbrev-ref HEAD)
-          echo ::set-env name=OBS_GIT_HASH::$(git rev-parse --short HEAD)
-          echo ::set-env name=OBS_GIT_TAG::$(git describe --tags --abbrev=0)
-      - name: 'Checkout last OBS-Studio release (${{ env.OBS_GIT_TAG }})'
-        shell: bash
-        working-directory: ${{ github.workspace }}/obs-studio
-        run: |
-          git checkout ${{ env.OBS_GIT_TAG }}
-          git submodule update
-      - name: 'Checkout obs-rtspserver'
-        uses: actions/checkout@v2
-        with:
-          path: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
-          submodules: 'recursive'
-      - name: 'Get obs-rtspserver tag'
-        shell: bash
-        run: |
-          echo ::set-env name=GIT_TAG::${GITHUB_REF/refs\/tags\//}
-      - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
-        shell: bash
-        working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
-        run: |
-          git checkout ${{ env.GIT_TAG }}
-          git submodule update
-      - name: 'Add obs-rtspserver Subdirectory'
-        working-directory: ${{ github.workspace }}/obs-studio/plugins
-        run: echo "add_subdirectory(obs-rtspserver)" >> ./CMakeLists.txt
-      - name: 'Configure OBS 32-bit'
-        working-directory: ${{ github.workspace }}/obs-studio
-        run: |
-          mkdir ./build32
-          cd ./build32
-          cmake -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="${{ github.workspace }}\cmbuild\deps32" ..
-#      - name: 'Build obs-rtspserver 32-bit'
-#        working-directory: ${{ github.workspace }}/obs-studio/build32/plugins/obs-rtspserver/
-#        run: |
-#          make -j4
-      - name: 'Configure OBS 64-bit'
-        working-directory: ${{ github.workspace }}/obs-studio
-        run: |
-          mkdir ./build64
-          cd ./build64
-          cmake -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="${{ github.workspace }}\cmbuild\deps64" ..
-      - name: 'Build obs-rtspserver 64-bit'
-        working-directory: ${{ github.workspace }}/obs-studio/build64/plugins/obs-rtspserver/
-        run: |
-          make -j4
 
   make-release:
     name: 'Upload release'
     runs-on: [ubuntu-latest]
-    needs: [windows, linux]
+    needs: [windows]
     steps:
       - name: 'Get the version'
         shell: bash
         id: get_version
         run: |
           echo ::set-env name=TAG_VERSION::${GITHUB_REF/refs\/tags\//}
+#      - name: 'Create Release'
+#        id: create_release
+#         uses: actions/create-release@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          tag_name: ${{ env.TAG_VERSION }}
+#          release_name: obs-rtspserver ${{ env.TAG_VERSION }}
+#          draft: false
+#          prerelease: false
       - name: 'Download release artifacts'
         uses: actions/download-artifact@v2-preview
       - name: 'Upload Windows .zip artifact to release'
@@ -240,4 +190,3 @@ jobs:
           asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-windows-installer/obs-rtspserver-${{ env.TAG_VERSION }}-windows-installer.exe
           asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-windows-installer.exe
           asset_content_type: application/zip
-      
