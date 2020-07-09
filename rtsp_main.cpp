@@ -1,6 +1,6 @@
 #include <obs-module.h>
 #include <obs-frontend-api.h>
-#include <util\config-file.h>
+#include <util/config-file.h>
 #include <QMainWindow>
 #include <QAction>
 #include "helper.h"
