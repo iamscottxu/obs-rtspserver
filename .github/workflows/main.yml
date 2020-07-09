@@ -194,14 +194,22 @@ jobs:
         run: |
           mkdir ./build32
           cd ./build32
-          cmake -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="${{ github.workspace }}\cmbuild\deps32" ..
+          cmake -CMAKE_C_FLAGS=-m32 -CMAKE_CXX_FLAGS=-m32 -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="${{ github.workspace }}\cmbuild\deps32" ..
+      - name: 'Build obs-rtspserver 32-bit'
+        working-directory: ${{ github.workspace }}/obs-studio/build32/plugins/obs-rtspserver/
+        run: |
+          make -j4
       - name: 'Configure OBS 64-bit'
         working-directory: ${{ github.workspace }}/obs-studio
         run: |
           mkdir ./build64
           cd ./build64
-          cmake -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="${{ github.workspace }}\cmbuild\deps64" ..
-      
+          cmake -CMAKE_C_FLAGS=-m64 -CMAKE_CXX_FLAGS=-m64 -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="${{ github.workspace }}\cmbuild\deps64" ..
+      - name: 'Build obs-rtspserver 64-bit'
+        working-directory: ${{ github.workspace }}/obs-studio/build64/plugins/obs-rtspserver/
+        run: |
+          make -j4
+
   make-release:
     name: 'Upload release'
     runs-on: [ubuntu-latest]
