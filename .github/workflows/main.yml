@@ -108,7 +108,6 @@ jobs:
           mkdir release
           7z a ".\release\${{ env.WIN_FILENAME }}.zip" ".\build-package\*"
       - name: 'Publish ${{ env.WIN_FILENAME }}.zip'
-        id: create_release
         if: success()
         uses: actions/upload-artifact@v2-preview
         with:
@@ -123,9 +122,6 @@ jobs:
         with:
           name: '${{ env.GIT_TAG }}-windows-installer'
           path: ${{ github.workspace }}\build-package\*.exe
-      - name: 'Add obs-rtspserver Subdirectory'
-        working-directory: ${{ github.workspace }}/obs-studio/plugins
-        run: echo "add_subdirectory(obs-rtspserver)" >> .\CMakeLists.txt
 
   linux:
     name: 'Linux 32+64bit'
@@ -209,6 +205,19 @@ jobs:
         working-directory: ${{ github.workspace }}/obs-studio/build64/plugins/obs-rtspserver/
         run: |
           make -j4
+      - name: 'Set release filename'
+        shell: bash
+        run: |
+          FILENAME="obs-rtspserver-${{ env.GIT_TAG }}-linux"
+          echo "::set-env name=LINUX_FILENAME::$FILENAME"
+      - name: 'Publish ${{ env.LINUX_FILENAME }}.zip'
+        if: success()
+        uses: actions/upload-artifact@v2-preview
+        with:
+          name: '${{ env.GIT_TAG }}-linux'
+#          path: ${{ github.workspace }}\release\*.zip
+          path: ${{ github.workspace }}
+      
 
   make-release:
     name: 'Upload release'
