@@ -147,6 +147,8 @@ jobs:
           curl -kLO https://cdn-fastly.obsproject.com/downloads/cef_binary_3770_linux32.tar.bz2 -f --retry 5 -C -
           curl -kLO https://cdn-fastly.obsproject.com/downloads/cef_binary_3770_linux64.tar.bz2 -f --retry 5 -C -
           mkdir "${{ github.workspace }}/cmbuild"
+          mkdir "${{ github.workspace }}/cmbuild/deps32"
+          mkdir "${{ github.workspace }}/cmbuild/deps64"
           tar -xjf ./cef_binary_3770_linux32.tar.bz2 -C "${{ github.workspace }}/cmbuild/deps32"
           tar -xjf ./cef_binary_3770_linux64.tar.bz2 -C "${{ github.workspace }}/cmbuild/deps64"
       - name: 'Checkout OBS'
