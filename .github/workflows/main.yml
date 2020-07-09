@@ -1,5 +1,5 @@
 
-name: 'CI Windows Release'
+name: 'CI Release'
 
 on:
     release:
@@ -37,11 +37,6 @@ jobs:
           repository: obsproject/obs-studio
           path: ${{ github.workspace }}/obs-studio
           submodules: 'recursive'
-      - name: 'Checkout obs-rtspserver'
-        uses: actions/checkout@v2
-        with:
-          path: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
-          submodules: 'recursive'
       - name: 'Get OBS-Studio git info'
         shell: bash
         working-directory: ${{ github.workspace }}/obs-studio
@@ -56,14 +51,21 @@ jobs:
         run: |
           git checkout ${{ env.OBS_GIT_TAG }}
           git submodule update
-      - name: 'Get obs-rtspserver git info'
+      - name: 'Checkout obs-rtspserver'
+        uses: actions/checkout@v2
+        with:
+          path: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
+          submodules: 'recursive'
+      - name: 'Get obs-rtspserver tag'
+        shell: bash
+        run: |
+          echo ::set-env name=GIT_TAG::${GITHUB_REF/refs\/tags\//}
+      - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
         shell: bash
         working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
         run: |
-          git fetch --prune --unshallow
-          echo ::set-env name=GIT_BRANCH::${{ github.event.pull_request.head.ref }}
-          echo ::set-env name=GIT_HASH::$(git rev-parse --short HEAD)
-          echo ::set-env name=GIT_TAG::$(git describe --tags --abbrev=0)
+          git checkout ${{ env.GIT_TAG }}
+          git submodule update
       - name: 'Add obs-rtspserver Subdirectory'
         working-directory: ${{ github.workspace }}/obs-studio/plugins
         run: echo "add_subdirectory(obs-rtspserver)" >> .\CMakeLists.txt
@@ -142,11 +144,6 @@ jobs:
           repository: obsproject/obs-studio
           path: ${{ github.workspace }}/obs-studio
           submodules: 'recursive'
-      - name: 'Checkout obs-rtspserver'
-        uses: actions/checkout@v2
-        with:
-          path: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
-          submodules: 'recursive'
       - name: 'Get OBS-Studio git info'
         shell: bash
         working-directory: ${{ github.workspace }}/obs-studio
@@ -161,14 +158,24 @@ jobs:
         run: |
           git checkout ${{ env.OBS_GIT_TAG }}
           git submodule update
-      - name: 'Get obs-rtspserver git info'
+      - name: 'Checkout obs-rtspserver'
+        uses: actions/checkout@v2
+        with:
+          path: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
+          submodules: 'recursive'
+      - name: 'Get obs-rtspserver tag'
+        shell: bash
+        run: |
+          echo ::set-env name=GIT_TAG::${GITHUB_REF/refs\/tags\//}
+      - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
         shell: bash
         working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
         run: |
-          git fetch --prune --unshallow
-          echo ::set-env name=GIT_BRANCH::${{ github.event.pull_request.head.ref }}
-          echo ::set-env name=GIT_HASH::$(git rev-parse --short HEAD)
-          echo ::set-env name=GIT_TAG::$(git describe --tags --abbrev=0)
+          git checkout ${{ env.GIT_TAG }}
+          git submodule update
+      - name: 'Add obs-rtspserver Subdirectory'
+        working-directory: ${{ github.workspace }}/obs-studio/plugins
+        run: echo "add_subdirectory(obs-rtspserver)" >> .\CMakeLists.txt
       
   make-release:
     name: 'Upload release'
