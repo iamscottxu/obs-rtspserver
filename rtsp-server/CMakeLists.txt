@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(rtsp-server)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include_directories("3rdpart")
 
 file(GLOB rtsp-server_net_SOURCES
