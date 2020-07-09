@@ -130,6 +130,11 @@ jobs:
   linux:
     name: 'Linux 32+64bit'
     runs-on: [ubuntu-latest]
+    env:
+      QT_VERSION: '5.10.1'
+      WINDOWS_DEPS_VERSION: '2017'
+      CMAKE_GENERATOR: "Visual Studio 16 2019"
+      CMAKE_SYSTEM_VERSION: "10.0"
     steps:
       - name: 'Install prerequisite'
         run: |
@@ -142,6 +147,12 @@ jobs:
            libvlc-dev libx11-dev libx264-dev libxcb-shm0-dev libxcb-xinerama0-dev libxcomposite-dev \
            libxinerama-dev pkg-config python3-dev qtbase5-dev libqt5svg5-dev swig libxcb-randr0-dev \
            libxcb-xfixes0-dev libx11-xcb-dev libxcb1-dev
+      - name: 'Install prerequisite: Pre-built OBS dependencies'
+        run: |
+          curl -kLO https://cdn-fastly.obsproject.com/downloads/cef_binary_3770_linux32.tar.bz2 -f --retry 5 -C -
+          curl -kLO https://cdn-fastly.obsproject.com/downloads/cef_binary_3770_linux64.tar.bz2 -f --retry 5 -C -
+          tar -xjf ./cef_binary_3770_linux32.tar.bz2 -C "${{ github.workspace }}\cmbuild\deps32"
+          tar -xjf ./cef_binary_3770_linux64.tar.bz2 -C "${{ github.workspace }}\cmbuild\deps64"
       - name: 'Checkout OBS'
         uses: actions/checkout@v2
         with:
@@ -179,7 +190,19 @@ jobs:
           git submodule update
       - name: 'Add obs-rtspserver Subdirectory'
         working-directory: ${{ github.workspace }}/obs-studio/plugins
-        run: echo "add_subdirectory(obs-rtspserver)" >> .\CMakeLists.txt
+        run: echo "add_subdirectory(obs-rtspserver)" >> ./CMakeLists.txt
+      - name: 'Configure OBS 32-bit'
+        working-directory: ${{ github.workspace }}/obs-studio
+        run: |
+          mkdir ./build32
+          cd ./build32
+          cmake -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="${{ github.workspace }}\cmbuild\deps32" ..
+      - name: 'Configure OBS 64-bit'
+        working-directory: ${{ github.workspace }}/obs-studio
+        run: |
+          mkdir ./build64
+          cd ./build64
+          cmake -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="${{ github.workspace }}\cmbuild\deps64" ..
       
   make-release:
     name: 'Upload release'
