@@ -133,11 +133,11 @@ jobs:
     steps:
       - name: 'Install prerequisite'
         run: |
-          sudo apt-get install -y libX11-devel mesa-libGL-devel libv4l-devel \
-          pulseaudio-libs-devel x264-devel freetype-devel \
-          fontconfig-devel libXcomposite-devel libXinerama-devel \
-          qt5-qtbase-devel qt5-qtx11extras-devel libcurl-devel \
-          systemd-devel ffmpeg ffmpeg-devel
+          sudo apt-get install -y libX11-dev mesa-libGL-dev libv4l-dev \
+          pulseaudio-libs-dev x264-dev freetype-dev \
+          fontconfig-dev libXcomposite-dev libXinerama-dev \
+          qt5-qtbase-dev qt5-qtx11extras-dev libcurl-dev \
+          systemd-dev ffmpeg ffmpeg-dev
       - name: 'Checkout OBS'
         uses: actions/checkout@v2
         with:
