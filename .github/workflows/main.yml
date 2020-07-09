@@ -146,8 +146,9 @@ jobs:
         run: |
           curl -kLO https://cdn-fastly.obsproject.com/downloads/cef_binary_3770_linux32.tar.bz2 -f --retry 5 -C -
           curl -kLO https://cdn-fastly.obsproject.com/downloads/cef_binary_3770_linux64.tar.bz2 -f --retry 5 -C -
-          tar -xjf ./cef_binary_3770_linux32.tar.bz2 -C "${{ github.workspace }}\cmbuild\deps32"
-          tar -xjf ./cef_binary_3770_linux64.tar.bz2 -C "${{ github.workspace }}\cmbuild\deps64"
+          mkdir "${{ github.workspace }}/cmbuild"
+          tar -xjf ./cef_binary_3770_linux32.tar.bz2 -C "${{ github.workspace }}/cmbuild/deps32"
+          tar -xjf ./cef_binary_3770_linux64.tar.bz2 -C "${{ github.workspace }}/cmbuild/deps64"
       - name: 'Checkout OBS'
         uses: actions/checkout@v2
         with:
