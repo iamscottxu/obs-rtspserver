@@ -138,15 +138,6 @@ jobs:
            libvlc-dev libx11-dev libx264-dev libxcb-shm0-dev libxcb-xinerama0-dev libxcomposite-dev \
            libxinerama-dev pkg-config python3-dev qtbase5-dev libqt5svg5-dev swig libxcb-randr0-dev \
            libxcb-xfixes0-dev libx11-xcb-dev libxcb1-dev
-      - name: 'Install prerequisite: Pre-built OBS dependencies'
-        run: |
-          curl -kLO https://cdn-fastly.obsproject.com/downloads/cef_binary_3770_linux32.tar.bz2 -f --retry 5 -C -
-          curl -kLO https://cdn-fastly.obsproject.com/downloads/cef_binary_3770_linux64.tar.bz2 -f --retry 5 -C -
-          mkdir "${{ github.workspace }}/cmbuild"
-          mkdir "${{ github.workspace }}/cmbuild/deps32"
-          mkdir "${{ github.workspace }}/cmbuild/deps64"
-          tar -xjf ./cef_binary_3770_linux32.tar.bz2 -C "${{ github.workspace }}/cmbuild/deps32"
-          tar -xjf ./cef_binary_3770_linux64.tar.bz2 -C "${{ github.workspace }}/cmbuild/deps64"
       - name: 'Checkout OBS'
         uses: actions/checkout@v2
         with:
@@ -190,7 +181,7 @@ jobs:
         run: |
           mkdir ./build32
           cd ./build32
-          cmake -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="${{ github.workspace }}\cmbuild\deps32" ..
+          cmake -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr ..
 #      - name: 'Build obs-rtspserver 32-bit'
 #        working-directory: ${{ github.workspace }}/obs-studio/build32/plugins/obs-rtspserver/
 #        run: |
@@ -200,7 +191,7 @@ jobs:
         run: |
           mkdir ./build64
           cd ./build64
-          cmake -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="${{ github.workspace }}\cmbuild\deps64" ..
+          cmake -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr ..
       - name: 'Build obs-rtspserver 64-bit'
         working-directory: ${{ github.workspace }}/obs-studio/build64/plugins/obs-rtspserver/
         run: |
@@ -210,14 +201,22 @@ jobs:
         run: |
           FILENAME="obs-rtspserver-${{ env.GIT_TAG }}-linux"
           echo "::set-env name=LINUX_FILENAME::$FILENAME"
-      - name: 'Publish ${{ env.LINUX_FILENAME }}.zip'
+      - name: 'Package obs-rtspserver'
+        working-directory: ${{ github.workspace }}
+        run: |
+          mkdir -p build-package/obs-plugins/64bit
+          mkdir -p build-package/obs-plugins/32bit
+          mkdir -p build-package/data/obs-plugins/obs-rtspserver/locale/
+          cp ./obs-studio/build64/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/obs-plugins/64bit/
+          cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/data/obs-plugins/obs-rtspserver/
+          mkdir release
+          tar zcvf "./release/${{ env.LINUX_FILENAME }}.tar.gz" "./build-package"
+      - name: 'Publish ${{ env.LINUX_FILENAME }}.tar.gz'
         if: success()
         uses: actions/upload-artifact@v2-preview
         with:
           name: '${{ env.GIT_TAG }}-linux'
-#          path: ${{ github.workspace }}\release\*.zip
-          path: ${{ github.workspace }}
-      
+          path: ${{ github.workspace }}/release/*.tar.gz
 
   make-release:
     name: 'Upload release'
@@ -248,5 +247,14 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-windows-installer/obs-rtspserver-${{ env.TAG_VERSION }}-windows-installer.exe
           asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-windows-installer.exe
-          asset_content_type: application/zip
+          asset_content_type: application/x-msdownload
+      - name: 'Upload linux .tar.gz artifact to release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-windows/obs-rtspserver-${{ env.TAG_VERSION }}-linux.zip
+          asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-linux.tar.gz
+          asset_content_type: application/x-tar
       
