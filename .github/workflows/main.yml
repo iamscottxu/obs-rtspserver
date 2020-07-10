@@ -181,17 +181,17 @@ jobs:
         run: |
           mkdir ./build32
           cd ./build32
-          cmake -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr ..
-#      - name: 'Build obs-rtspserver 32-bit'
-#        working-directory: ${{ github.workspace }}/obs-studio/build32/plugins/obs-rtspserver/
-#        run: |
-#          make -j4
+          cmake -d CMAKE_CXX_FLAGS=-m32 -d CMAKE_C_FLAGS=-m32 -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr ..
+      - name: 'Build obs-rtspserver 32-bit'
+        working-directory: ${{ github.workspace }}/obs-studio/build32/plugins/obs-rtspserver/
+        run: |
+          make -j4
       - name: 'Configure OBS 64-bit'
         working-directory: ${{ github.workspace }}/obs-studio
         run: |
           mkdir ./build64
           cd ./build64
-          cmake -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr ..
+          cmake -d CMAKE_CXX_FLAGS=-m64 -d CMAKE_C_FLAGS=-m64 -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr ..
       - name: 'Build obs-rtspserver 64-bit'
         working-directory: ${{ github.workspace }}/obs-studio/build64/plugins/obs-rtspserver/
         run: |
@@ -204,9 +204,10 @@ jobs:
       - name: 'Package obs-rtspserver'
         working-directory: ${{ github.workspace }}
         run: |
-          mkdir -p build-package/obs-plugins/64bit
           mkdir -p build-package/obs-plugins/32bit
+          mkdir -p build-package/obs-plugins/64bit
           mkdir -p build-package/data/obs-plugins/obs-rtspserver/locale/
+          cp ./obs-studio/build32/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/obs-plugins/32bit/
           cp ./obs-studio/build64/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/obs-plugins/64bit/
           cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/data/obs-plugins/obs-rtspserver/
           mkdir release
