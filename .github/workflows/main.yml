@@ -129,6 +129,7 @@ jobs:
     steps:
       - name: 'Install prerequisite'
         run: |
+         sudo dpkg --add-architecture i386
          sudo apt-get update
          sudo apt-get install \
            build-essential checkinstall cmake git libmbedtls-dev libasound2-dev libavcodec-dev libavdevice-dev \
