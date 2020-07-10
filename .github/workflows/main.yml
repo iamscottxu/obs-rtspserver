@@ -254,7 +254,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-windows/obs-rtspserver-${{ env.TAG_VERSION }}-linux.zip
+          asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-linux/obs-rtspserver-${{ env.TAG_VERSION }}-linux.tar.gz
           asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-linux.tar.gz
           asset_content_type: application/x-tar
       
