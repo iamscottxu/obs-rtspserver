@@ -235,7 +235,6 @@ jobs:
       - name: 'Install prerequisite'
         run: |
             brew install ffmpeg x264 qt5 git
-            brew linkapps qt5
             export CMAKE_PREFIX_PATH=/usr/local/opt/qt5
       - name: 'Checkout OBS'
         uses: actions/checkout@v2
