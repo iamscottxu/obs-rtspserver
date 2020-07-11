@@ -145,7 +145,7 @@ jobs:
            libfreetype6-dev:i386 libgl1-mesa-dev:i386 libjack-jackd2-dev:i386 libjansson-dev libluajit-5.1-dev:i386 libpulse-dev:i386 \
            libqt5x11extras5-dev:i386 libspeexdsp-dev:i386 libswresample-dev:i386 libswscale-dev:i386 libudev-dev:i386 libv4l-dev:i386 \
            libvlc-dev:i386 libx11-dev:i386 libx264-dev:i386 libxcb-shm0-dev:i386 libxcb-xinerama0-dev:i386 libxcomposite-dev:i386 \
-           libxinerama-dev:i386 python3-dev:i386 qtbase5-dev:i386 libqt5svg5-dev:i386 libxcb-randr0-dev:i386 \
+           libxinerama-dev:i386 qtbase5-dev:i386 libqt5svg5-dev:i386 libxcb-randr0-dev:i386 \
            libxcb-xfixes0-dev:i386 libx11-xcb-dev:i386 libxcb1-dev:i386
       - name: 'Checkout OBS'
         uses: actions/checkout@v2
