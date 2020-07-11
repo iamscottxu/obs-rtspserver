@@ -128,7 +128,6 @@ jobs:
     runs-on: [ubuntu-latest]
     steps:
       - name: 'Install prerequisite'
-#       run: |
 #         sudo dpkg --add-architecture i386
         run: |
           sudo apt-get update
@@ -213,6 +212,7 @@ jobs:
           echo "::set-env name=LINUX_FILENAME::$FILENAME"
       - name: 'Package obs-rtspserver'
         working-directory: ${{ github.workspace }}
+        run: |
           mkdir -p build-package/obs-plugins/64bit
           mkdir -p build-package/data/obs-plugins/obs-rtspserver/locale/
           cp ./obs-studio/build64/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/obs-plugins/64bit/
@@ -292,6 +292,7 @@ jobs:
           echo "::set-env name=MACOS_FILENAME::$FILENAME"
       - name: 'Package obs-rtspserver'
         working-directory: ${{ github.workspace }}
+        run: |
           mkdir -p build-package/obs-plugins/64bit
           mkdir -p build-package/data/obs-plugins/obs-rtspserver/locale/
           cp ./obs-studio/build64/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/obs-plugins/64bit/
