@@ -234,7 +234,7 @@ jobs:
         run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
       - name: 'Install prerequisite'
         run: |
-            brew install ffmpeg x264 qt5
+            brew install ffmpeg x264 qt5 git
             brew linkapps qt5
             export CMAKE_PREFIX_PATH=/usr/local/opt/qt5
       - name: 'Checkout OBS'
@@ -339,6 +339,11 @@ jobs:
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-windows/obs-rtspserver-${{ env.TAG_VERSION }}-linux.zip
+          asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-linux.tar.gz
+          asset_content_type: application/x-tar
       - name: 'Upload macos .zip artifact to release'
         uses: actions/upload-release-asset@v1
         env:
