@@ -235,9 +235,7 @@ jobs:
       - name: 'Install prerequisite'
         run: |
             brew install ffmpeg x264 qt5 git
-            export LDFLAGS="-L/usr/local/opt/qt/lib"
-            export CPPFLAGS="-I/usr/local/opt/qt/include"
-            export CMAKE_PREFIX_PATH=/usr/local/opt/qt
+            export QTDIR=/usr/local/opt/qt
       - name: 'Checkout OBS'
         uses: actions/checkout@v2
         with:
