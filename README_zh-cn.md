@@ -1,0 +1,25 @@
+![CI Release](https://github.com/iamscottxu/obs-rtspserver/workflows/CI%20Release/badge.svg)
+
+# OBS-RTSPServer
+
+这是一个 OBS Studio 插件，此插件可对输出进行编码并发布 RTSP 流。
+
+**支持的平台** : Windows 7 、 Windows 8 、 Windows 10 和 Linux
+
+**支持的 OBS Studio 版本** : 24.0.0+
+
+# 安装
+如果你使用的是 Windows 操作系统，您可以使用安装程序进行安装，安装程序可以在[发布页面](https://github.com/iamscottxu/obs-rtspserver/releases)中找到。
+
+如果要使用压缩文件手动安装，可以解压缩 obs-rtspserver.x.x.x-x 把它放到你的 OBS Studio 安装文件夹里。
+
+# 生成
+* 安装 cmake 、 visual studio （仅 Windows ）和 qt ；
+* 下载并配置 OBS Studio 的源代码；
+* 将源代码复制到 (OBS Studio 源代码目录)/plugins/obs-rtspserver/ 中；
+* 添加 `add_subdirectory(obs-rtspserver)` 到 (OBS Studio 源代码目录)/plugins/obs-rtspserver/CMakeLists.txt 中；
+* 生成 obs-rtspserver 。
+
+# 许可信息
+* [RtspServer](https://github.com/PHZ76/RtspServer/blob/master/LICENSE) - [MIT License](https://github.com/PHZ76/RtspServer/blob/master/LICENSE)
+* [Qt5](https://www.qt.io/) - [GPL version 2](https://doc.qt.io/qt-5/licensing.html)
