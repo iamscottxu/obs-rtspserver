@@ -1,4 +1,4 @@
-![CI Windows Release](https://github.com/iamscottxu/obs-rtspserver/workflows/CI%20Windows%20Release/badge.svg) 
+![CI Release](https://github.com/iamscottxu/obs-rtspserver/workflows/CI%20Release/badge.svg)
 
 # OBS-RTSPServer
 
@@ -19,3 +19,7 @@ If you want to use compressed file to install manually, you can unzip obs-rtspse
 * Copy source code to (obs-studio source code)/plugins/obs-rtspserver/
 * Add `add_subdirectory(obs-rtspserver)` to (obs-studio source code)/plugins/obs-rtspserver/CMakeLists.txt
 * Compile obs-rtspserver.
+
+# License
+* [RtspServer](https://github.com/PHZ76/RtspServer/blob/master/LICENSE) - [MIT License](https://github.com/PHZ76/RtspServer/blob/master/LICENSE)
+* [Qt5](https://www.qt.io/) - [GPL version 2](https://doc.qt.io/qt-5/licensing.html)
