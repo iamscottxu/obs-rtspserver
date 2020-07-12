@@ -4,7 +4,7 @@
 #ifndef XOP_SOCKET_H
 #define XOP_SOCKET_H
 
-#if defined(__linux) || defined(__linux__) 
+#if defined(__unix) || defined(__unix__) 
 #include <sys/types.h>         
 #include <sys/socket.h>
 #include <sys/ioctl.h>
