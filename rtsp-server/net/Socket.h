@@ -21,13 +21,17 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h>
-#if defined(__linux) || defined(__linux__)
-#include <netinet/ether.h>
-#else
+#if defined(__APPLE) || defined(__APPLE__)
 #include <netinet/if_ether.h>
+#else
+#include <netinet/ether.h>
 #endif
 #include <netinet/ip.h>
+/*#if defined(__APPLE) || defined(__APPLE__)
+
+#else
 #include <netpacket/packet.h>
+#endif*/
 #include <arpa/inet.h>
 #include <net/ethernet.h>
 #include <net/route.h>
