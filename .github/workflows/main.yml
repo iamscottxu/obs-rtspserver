@@ -278,9 +278,7 @@ jobs:
         run: |
           mkdir ./build64
           cd ./build64
-          export QTDIR=/usr/local/opt/qt
-          ls /usr/local/opt/qt
-          cmake ..
+          cmake -DQTDIR="/usr/local/opt/qt" ..
       - name: 'Build obs-rtspserver 64-bit'
         working-directory: ${{ github.workspace }}/obs-studio/build64/plugins/obs-rtspserver/
         run: |
