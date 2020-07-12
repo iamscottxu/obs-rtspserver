@@ -4,7 +4,28 @@
 #ifndef XOP_SOCKET_H
 #define XOP_SOCKET_H
 
-#if defined(WIN32) || defined(_WIN32) 
+#if defined(__linux) || defined(__linux__) 
+#include <sys/types.h>         
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h> 
+#include <netinet/ether.h>   
+#include <netinet/ip.h>  
+#include <netpacket/packet.h>   
+#include <arpa/inet.h>
+#include <net/ethernet.h>   
+#include <net/route.h>  
+#include <netdb.h>
+#include <net/if.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <sys/select.h>
+#define SOCKET int
+#define INVALID_SOCKET  (-1)
+#define SOCKET_ERROR    (-1) 
+
+#elif defined(WIN32) || defined(_WIN32) 
 #define FD_SETSIZE      1024
 #define WIN32_LEAN_AND_MEAN
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
@@ -17,33 +38,6 @@
 #define SHUT_RDWR 2
 
 #else
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <netinet/in.h>
-#if defined(__APPLE) || defined(__APPLE__)
-#include <netinet/if_ether.h>
-#else
-#include <netinet/ether.h>
-#endif
-#include <netinet/ip.h>
-/*#if defined(__APPLE) || defined(__APPLE__)
-
-#else
-#include <netpacket/packet.h>
-#endif*/
-#include <arpa/inet.h>
-#include <net/ethernet.h>
-#include <net/route.h>
-#include <netdb.h>
-#include <net/if.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <sys/select.h>
-#define SOCKET int
-#define INVALID_SOCKET (-1)
-#define SOCKET_ERROR (-1)
 
 #endif
 
