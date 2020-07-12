@@ -1,6 +1,6 @@
 ![CI Release](https://github.com/iamscottxu/obs-rtspserver/workflows/CI%20Release/badge.svg)
 
-[简体中文](/iamscottxu/obs-rtspserver/blob/master/README_zh-cn.md)
+[简体中文](//github.com/iamscottxu/obs-rtspserver/blob/master/README_zh-cn.md)
 
 # OBS-RTSPServer
 
