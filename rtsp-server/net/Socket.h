@@ -4,7 +4,7 @@
 #ifndef XOP_SOCKET_H
 #define XOP_SOCKET_H
 
-#if defined(WIN32) || defined(_WIN32)
+#if defined(WIN32) || defined(_WIN32) 
 #define FD_SETSIZE      1024
 #define WIN32_LEAN_AND_MEAN
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
@@ -21,7 +21,11 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h>
+#if defined(__linux) || defined(__linux__)
 #include <netinet/ether.h>
+#else
+#include <netinet/if_ether.h>
+#endif
 #include <netinet/ip.h>
 #include <netpacket/packet.h>
 #include <arpa/inet.h>
