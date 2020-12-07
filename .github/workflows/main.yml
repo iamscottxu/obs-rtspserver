@@ -16,7 +16,7 @@ jobs:
       CMAKE_SYSTEM_VERSION: "10.0"
     steps:
       - name: 'Add msbuild to PATH'
-        uses: microsoft/setup-msbuild@v1.0.0
+        uses: microsoft/setup-msbuild@v1.0.2
       - name: 'Install prerequisite: QT'
         run: |
           curl -kLO https://cdn-fastly.obsproject.com/downloads/Qt_${{ env.QT_VERSION }}.7z -f --retry 5 -C -
