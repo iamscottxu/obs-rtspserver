@@ -24,7 +24,7 @@ public:
 	{
 		unique_lock<mutex> lk(mut);
 		data_cond.wait(lk, [this] {
-			return ((!data_queue.empty()) || m_bTermination);
+			return ((!data_queue.empty()) || m_bTermination.load(memory_order_acquire));
 		});
 
 		//不为空则出队
@@ -56,7 +56,7 @@ public:
 	{
 		unique_lock<mutex> lk(mut);
 		data_cond.wait(lk, [this] {
-			return ((!data_queue.empty()) || m_bTermination);
+			return ((!data_queue.empty()) || m_bTermination.load(memory_order_acquire));
 		});
 		if (!data_queue.empty())
 		{
@@ -83,10 +83,8 @@ public:
 	//插入一项
 	void push(T new_value)
 	{
-		if (m_bTermination)
-		{
+		if (m_bTermination.load(memory_order_acquire))
 			return;
-		}
 		shared_ptr<T> data(make_shared<T>(move(new_value)));
 		lock_guard<mutex> lk(mut);
 		data_queue.push(data);
@@ -108,17 +106,19 @@ public:
 	void termination()
 	{
 		lock_guard<mutex> lk(mut);
-		m_bTermination = true;
+		m_bTermination.store(true, memory_order_release);
 		data_cond.notify_all();
 	}
 	//是退出状态吗
-	bool is_termination() { return m_bTermination; }
+	bool is_termination() {
+		return m_bTermination.load(memory_order_acquire);
+	}
 
 private:
 	mutex mut;
 	queue<shared_ptr<T>> data_queue;
 	condition_variable data_cond;
-	atomic<bool> m_bTermination;
+	atomic_bool m_bTermination;
 };
 
 #endif

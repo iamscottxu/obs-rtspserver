@@ -84,12 +84,11 @@ static void rtsp_output_stop_free(void *data, char *msg, bool start_fail)
 
 	if (out_data->frame_queue)
 		out_data->frame_queue->termination();
+
 	if (out_data->frame_push_thread) {
 		out_data->frame_push_thread->join();
 		out_data->frame_push_thread.reset();
 	}
-	if (out_data->frame_queue)
-		out_data->frame_queue.reset();
 
 	if (out_data->session_id) {
 		out_data->server->RemoveSession(out_data->session_id);
@@ -97,6 +96,9 @@ static void rtsp_output_stop_free(void *data, char *msg, bool start_fail)
 	}
 	out_data->server->Stop();
 	out_data->num_clients = 0;
+
+	if (out_data->frame_queue)
+		out_data->frame_queue.reset();
 
 	if (start_fail) {
 		do_output_error_signal(data, msg);
@@ -268,12 +270,12 @@ static void rtsp_output_data(void *param, struct encoder_packet *packet)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)param;
 
-	if (packet->type == OBS_ENCODER_VIDEO)
-		rtsp_output_video(param, packet);
-	else if (packet->type == OBS_ENCODER_AUDIO)
-		rtsp_output_audio(param, packet);
-
-	if (out_data->num_clients == 0) {
+	if (out_data->num_clients > 0) {
+		if (packet->type == OBS_ENCODER_VIDEO)
+			rtsp_output_video(param, packet);
+		else if (packet->type == OBS_ENCODER_AUDIO)
+			rtsp_output_audio(param, packet);
+	} else {
 		obs_output_pause(out_data->output, true);
 		do_output_signal(param, "pause");
 	}
