@@ -1,5 +1,8 @@
 // PHZ
 // 2020-5-15
+// Scott Xu
+// 2020-12-2
+// Add LogWriteCallbackFun.
 
 #ifndef XOP_LOGGER_H
 #define XOP_LOGGER_H
@@ -19,7 +22,9 @@ enum Priority
 {
     LOG_DEBUG, LOG_STATE, LOG_INFO, LOG_WARNING, LOG_ERROR,
 };	
-	
+
+typedef void (*LogWriteCallbackFun)(Priority priority,std::string info);
+
 class Logger
 {
 public:
@@ -30,6 +35,7 @@ public:
 
 	void init(char *pathname = nullptr);
 	void exit();
+	void setWriteCallback(LogWriteCallbackFun writeCallback);
 
 	void log(Priority priority, const char* __file, const char* __func, int __line, const char *fmt, ...);
 	void log2(Priority priority, const char *fmt, ...);
@@ -40,15 +46,16 @@ private:
 
 	std::mutex _mutex;
 	std::ofstream _ofs;
+	xop::LogWriteCallbackFun _writeCallback;
 };
  
 }
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #define LOG_DEBUG(fmt, ...) xop::Logger::instance().log(LOG_DEBUG, __FILE__, __FUNCTION__,__LINE__, fmt, ##__VA_ARGS__)
-#else
-#define LOG_DEBUG(fmt, ...)
-#endif
+//#else
+//#define LOG_DEBUG(fmt, ...)
+//#endif
 #define LOG_INFO(fmt, ...) xop::Logger::instance().log2(LOG_INFO, fmt, ##__VA_ARGS__)
 #define LOG_ERROR(fmt, ...) xop::Logger::instance().log(LOG_ERROR, __FILE__, __FUNCTION__,__LINE__, fmt, ##__VA_ARGS__)
 

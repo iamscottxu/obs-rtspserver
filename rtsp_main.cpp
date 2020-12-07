@@ -3,6 +3,7 @@
 #include <util/config-file.h>
 #include <QMainWindow>
 #include <QAction>
+#include <net/Logger.h>
 #include "helper.h"
 #include "my_rtsp_output.h"
 #include "rtsp_properties.h"
@@ -15,6 +16,7 @@ RtspProperties *rtspProperties;
 void obs_frontend_event(enum obs_frontend_event event, void *ptr);
 void rtsp_output_auto_start();
 void rtsp_output_stop();
+void server_log_write_callback(xop::Priority priority, std::string info);
 
 const char *obs_module_name(void)
 {
@@ -28,6 +30,8 @@ const char *obs_module_description(void)
 
 bool obs_module_load(void)
 {
+	xop::Logger::instance().setWriteCallback(server_log_write_callback);
+
 	QMainWindow *mainWindow = (QMainWindow *)obs_frontend_get_main_window();
 	QAction *action = (QAction *)obs_frontend_add_tools_menu_qaction(
 		obs_module_text("RtspServer"));
@@ -83,4 +87,27 @@ void rtsp_output_auto_start()
 void rtsp_output_stop()
 {
 	rtspProperties->GetMyRtspOutput()->Stop();
+}
+
+void server_log_write_callback(xop::Priority priority, std::string info)
+{
+	switch (priority) {
+	case xop::LOG_DEBUG:
+		blog(LOG_DEBUG, "[rtsp-server] %s", info.c_str());
+		break;
+	case xop::LOG_STATE:
+		blog(LOG_INFO, "[rtsp-server] %s", info.c_str());
+		break;
+	case xop::LOG_INFO:
+		blog(LOG_INFO, "[rtsp-server] %s", info.c_str());
+		break;
+	case xop::LOG_WARNING:
+		blog(LOG_WARNING, "[rtsp-server] %s", info.c_str());
+		break;
+	case xop::LOG_ERROR:
+		blog(LOG_ERROR, "[rtsp-server] %s", info.c_str());
+		break;
+	default:
+		break;
+	}
 }

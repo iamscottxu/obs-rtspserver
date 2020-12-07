@@ -63,6 +63,11 @@ void Logger::exit()
 	}
 }
 
+void Logger::setWriteCallback(LogWriteCallbackFun writeCallback)
+{
+	_writeCallback = writeCallback;
+}
+
 void Logger::log(Priority priority, const char* __file, const char* __func, int __line, const char *fmt, ...)
 {	
 	std::unique_lock<std::mutex> lock(_mutex);
@@ -75,6 +80,7 @@ void Logger::log(Priority priority, const char* __file, const char* __func, int 
 	va_end(args);
 
 	write(std::string(buf));
+	_writeCallback(priority, std::string(buf));
 }
 
 void Logger::log2(Priority priority, const char *fmt, ...)
@@ -89,6 +95,7 @@ void Logger::log2(Priority priority, const char *fmt, ...)
 	va_end(args);
 
 	write(std::string(buf));
+	_writeCallback(priority, std::string(buf));
 }
 
 void Logger::write(std::string info)
@@ -98,7 +105,4 @@ void Logger::write(std::string info)
 		_ofs << "[" << Timestamp::localtime() << "]"
 			<< info << std::endl;
 	}
-   
-	std::cout << "[" << Timestamp::localtime() << "]"  
-			<< info << std::endl;
 }
