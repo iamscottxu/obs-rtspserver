@@ -42,9 +42,9 @@ jobs:
         working-directory: ${{ github.workspace }}/obs-studio
         run: |
           git fetch --prune --unshallow
-          echo ::set-env name=OBS_GIT_BRANCH::$(git rev-parse --abbrev-ref HEAD)
-          echo ::set-env name=OBS_GIT_HASH::$(git rev-parse --short HEAD)
-          echo ::set-env name=OBS_GIT_TAG::$(git describe --tags --abbrev=0)
+          echo OBS_GIT_BRANCH=`git rev-parse --abbrev-ref HEAD` >> $GITHUB_ENV
+          echo OBS_GIT_HASH=`git rev-parse --short HEAD` >> $GITHUB_ENV
+          echo OBS_GIT_TAG=`git describe --tags --abbrev=0` >> $GITHUB_ENV
       - name: 'Checkout last OBS-Studio release (${{ env.OBS_GIT_TAG }})'
         shell: bash
         working-directory: ${{ github.workspace }}/obs-studio
@@ -59,7 +59,7 @@ jobs:
       - name: 'Get obs-rtspserver tag'
         shell: bash
         run: |
-          echo ::set-env name=GIT_TAG::${GITHUB_REF/refs\/tags\//}
+          echo GIT_TAG=${GITHUB_REF/refs\/tags\//} >> $GITHUB_ENV
       - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
         shell: bash
         working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
@@ -93,7 +93,7 @@ jobs:
         shell: bash
         run: |
           FILENAME="obs-rtspserver-${{ env.GIT_TAG }}-windows"
-          echo "::set-env name=WIN_FILENAME::$FILENAME"
+          echo WIN_FILENAME=$FILENAME >> $GITHUB_ENV
       - name: 'Package obs-rtspserver'
         working-directory: ${{ github.workspace }}
         run: |
@@ -158,9 +158,9 @@ jobs:
         working-directory: ${{ github.workspace }}/obs-studio
         run: |
           git fetch --prune --unshallow
-          echo ::set-env name=OBS_GIT_BRANCH::$(git rev-parse --abbrev-ref HEAD)
-          echo ::set-env name=OBS_GIT_HASH::$(git rev-parse --short HEAD)
-          echo ::set-env name=OBS_GIT_TAG::$(git describe --tags --abbrev=0)
+          echo OBS_GIT_BRANCH=`git rev-parse --abbrev-ref HEAD` >> $GITHUB_ENV
+          echo OBS_GIT_HASH=`git rev-parse --short HEAD` >> $GITHUB_ENV
+          echo OBS_GIT_TAG=`git describe --tags --abbrev=0` >> $GITHUB_ENV
       - name: 'Checkout last OBS-Studio release (${{ env.OBS_GIT_TAG }})'
         shell: bash
         working-directory: ${{ github.workspace }}/obs-studio
@@ -175,7 +175,7 @@ jobs:
       - name: 'Get obs-rtspserver tag'
         shell: bash
         run: |
-          echo ::set-env name=GIT_TAG::${GITHUB_REF/refs\/tags\//}
+          echo GIT_TAG=${GITHUB_REF/refs\/tags\//} >> $GITHUB_ENV
       - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
         shell: bash
         working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
@@ -209,7 +209,7 @@ jobs:
         shell: bash
         run: |
           FILENAME="obs-rtspserver-${{ env.GIT_TAG }}-linux"
-          echo "::set-env name=LINUX_FILENAME::$FILENAME"
+          echo LINUX_FILENAME=$FILENAME >> $GITHUB_ENV
       - name: 'Package obs-rtspserver'
         working-directory: ${{ github.workspace }}
         run: |
@@ -246,9 +246,9 @@ jobs:
 #        working-directory: ${{ github.workspace }}/obs-studio
 #        run: |
 #          git fetch --prune --unshallow
-#          echo ::set-env name=OBS_GIT_BRANCH::$(git rev-parse --abbrev-ref HEAD)
-#          echo ::set-env name=OBS_GIT_HASH::$(git rev-parse --short HEAD)
-#          echo ::set-env name=OBS_GIT_TAG::$(git describe --tags --abbrev=0)
+#          echo OBS_GIT_BRANCH=`git rev-parse --abbrev-ref HEAD` >> $GITHUB_ENV
+#          echo OBS_GIT_HASH=`git rev-parse --short HEAD` >> $GITHUB_ENV
+#          echo OBS_GIT_TAG=`git describe --tags --abbrev=0` >> $GITHUB_ENV
 #      - name: 'Checkout last OBS-Studio release (${{ env.OBS_GIT_TAG }})'
 #        shell: bash
 #        working-directory: ${{ github.workspace }}/obs-studio
@@ -263,7 +263,7 @@ jobs:
 #      - name: 'Get obs-rtspserver tag'
 #        shell: bash
 #        run: |
-#          echo ::set-env name=GIT_TAG::${GITHUB_REF/refs\/tags\//}
+#          echo GIT_TAG=${GITHUB_REF/refs\/tags\//} >> $GITHUB_ENV
 #      - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
 #        shell: bash
 #        working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
@@ -287,7 +287,7 @@ jobs:
 #        shell: bash
 #        run: |
 #          FILENAME="obs-rtspserver-${{ env.GIT_TAG }}-macos"
-#          echo "::set-env name=MACOS_FILENAME::$FILENAME"
+#          echo MACOS_FILENAME=$FILENAME >> $GITHUB_ENV
 #      - name: 'Package obs-rtspserver'
 #        working-directory: ${{ github.workspace }}
 #        run: |
@@ -313,7 +313,7 @@ jobs:
         shell: bash
         id: get_version
         run: |
-          echo ::set-env name=TAG_VERSION::${GITHUB_REF/refs\/tags\//}
+          echo TAG_VERSION=${GITHUB_REF/refs\/tags\//} >> $GITHUB_ENV
       - name: 'Download release artifacts'
         uses: actions/download-artifact@v2-preview
       - name: 'Upload Windows .zip artifact to release'
