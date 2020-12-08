@@ -50,7 +50,7 @@ public:
     void SetRtspUrlSuffix(std::string& suffix)
     { suffix_ = suffix; }
 
-    std::string MediaSession::GetSdpMessage(std::string ip, std::string sessionName, bool ipv6 = false);
+    std::string GetSdpMessage(std::string ip, std::string sessionName, bool ipv6 = false);
 
     MediaSource* GetMediaSource(MediaChannelId channel_id);
 
