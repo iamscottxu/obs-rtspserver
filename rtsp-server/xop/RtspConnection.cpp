@@ -1,5 +1,7 @@
-﻿// PHZ
+// PHZ
 // 2018-6-10
+// Scott Xu
+// 2020-12-5 Add IPv6 Support.
 
 #include "RtspConnection.h"
 #include "RtspServer.h"
@@ -262,8 +264,8 @@ void RtspConnection::HandleCmdDescribe()
 			}
 		}
 
-		std::string sdp = media_session->GetSdpMessage(rtsp->GetVersion());
-		if(sdp == "") {
+		auto sdp = media_session->GetSdpMessage(SocketUtil::GetSocketIp(GetSocket(), IsIpv6()), rtsp->GetVersion(), IsIpv6());
+		if (sdp == "") {
 			size = rtsp_request_->BuildServerErrorRes(res.get(), 4096);
 		}
 		else {
@@ -287,7 +289,7 @@ void RtspConnection::HandleCmdSetup()
 	MediaSessionPtr media_session = nullptr;
 
 	auto rtsp = rtsp_.lock();
-	if (rtsp) {
+	if (rtsp && session_id_) {
 		media_session = rtsp->LookMediaSession(session_id_);
 	}
 
@@ -463,7 +465,7 @@ void RtspConnection::SendAnnounce()
 		}
 	}
 
-	std::string sdp = media_session->GetSdpMessage(rtsp->GetVersion());
+	auto sdp = media_session->GetSdpMessage(SocketUtil::GetSocketIp(GetSocket(), IsIpv6()), rtsp->GetVersion(), IsIpv6());
 	if (sdp == "") {
 		HandleClose();
 		return;

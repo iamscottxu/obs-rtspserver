@@ -1,5 +1,7 @@
 // PHZ
 // 2018-5-15
+// Scott Xu
+// 2020-12-2 Add IPv6 Support. 
 
 #ifndef XOP_SOCKET_H
 #define XOP_SOCKET_H
@@ -40,6 +42,9 @@
 #else
 
 #endif
+
+#define INET_ADDRSTRLEN 16 /* for IPv4 dotted-decimal */
+#define INET6_ADDRSTRLEN 46 /* for IPv6 hex string */
 
 #include <cstdint>
 #include <cstring>

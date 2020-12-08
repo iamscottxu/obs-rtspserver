@@ -120,7 +120,8 @@ static bool rtsp_output_start(void *data)
 		return false;
 	}
 
-	if (!out_data->server->Start("0.0.0.0", out_data->port)) {
+	if (!out_data->server->Start("0.0.0.0", out_data->port) ||
+	    !out_data->server->Start("::0", out_data->port)) {
 		rtsp_output_stop_free(
 			data, "starting rstp server failed on port '%d'", true);
 		return false;

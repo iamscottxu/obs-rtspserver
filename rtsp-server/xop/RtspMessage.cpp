@@ -1,5 +1,7 @@
-﻿// PHZ
+// PHZ
 // 2018-5-16
+// Scott Xu
+// 2020-12-5 Add IPv6 Support.
 
 #if defined(WIN32) || defined(_WIN32)
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -95,13 +97,20 @@ bool RtspRequest::ParseRequestLine(const char* begin, const char* end)
 
 	// parse url
 	uint16_t port = 0;
-	char ip[64] = {0};
+	char host[64] = {0};
 	char suffix[64] = {0};
 
-	if(sscanf(url+7, "%[^:]:%hu/%s", ip, &port, suffix) == 3) {
+	if (sscanf(url + 7, "[%[^]]]:%hu/%s", host, &port, suffix) ==
+	    3) { //IPv6
 
 	}
-	else if(sscanf(url+7, "%[^/]/%s", ip, suffix) == 2) {
+	else if (sscanf(url + 7, "[%[^]]]/%s", host, &port, suffix) == 3) {
+		port = 554;
+	}
+	else if (sscanf(url + 7, "%[^:]:%hu/%s", host, &port, suffix) == 3) { //IPv4, domain
+
+	}
+	else if (sscanf(url + 7, "%[^/]/%s", host, suffix) == 2) {
 		port = 554;
 	}
 	else {
@@ -109,7 +118,7 @@ bool RtspRequest::ParseRequestLine(const char* begin, const char* end)
 	}
 
 	request_line_param_.emplace("url", make_pair(string(url), 0));
-	request_line_param_.emplace("url_ip", make_pair(string(ip), 0));
+	request_line_param_.emplace("url_host", make_pair(string(host), 0));
 	request_line_param_.emplace("url_port", make_pair("", (uint32_t)port));
 	request_line_param_.emplace("url_suffix", make_pair(string(suffix), 0));
 	request_line_param_.emplace("version", make_pair(string(version), 0));
@@ -296,7 +305,7 @@ uint32_t RtspRequest::GetCSeq() const
 	return cseq;
 }
 
-std::string RtspRequest::GetIp() const
+std::string RtspRequest::GetHost() const
 {
 	auto iter = request_line_param_.find("url_ip");
 	if(iter != request_line_param_.end()) {
@@ -412,7 +421,7 @@ int RtspRequest::BuildSetupMulticastRes(const char* buf, int buf_size, const cha
 			"\r\n",
 			this->GetCSeq(),
 			multicast_ip,
-			this->GetIp().c_str(),
+			this->GetHost().c_str(),
 			port,
 			session_id);
 

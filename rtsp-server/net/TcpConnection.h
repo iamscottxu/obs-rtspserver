@@ -1,3 +1,5 @@
+//Scott Xu
+//2020-12-6 Add IPv6 support.
 #ifndef XOP_TCP_CONNECTION_H
 #define XOP_TCP_CONNECTION_H
 
@@ -39,6 +41,9 @@ public:
 	bool IsClosed() const 
 	{ return is_closed_; }
 
+	bool IsIpv6() const
+	{ return ipv6_; }
+
 	SOCKET GetSocket() const
 	{ return channel_->GetSocket(); }
 
@@ -66,6 +71,7 @@ private:
 	DisconnectCallback disconnect_cb_;
 	CloseCallback close_cb_;
 	ReadCallback read_cb_;
+	bool ipv6_;
 };
 
 }

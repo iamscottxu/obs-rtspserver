@@ -1,5 +1,7 @@
 // PHZ
 // 2018-9-30
+// Scott Xu
+// 2020-12-5 Add IPv6 Support.
 
 #include "MediaSession.h"
 #include "RtpConnection.h"
@@ -119,25 +121,19 @@ bool MediaSession::StartMulticast()
 	return true;
 }
 
-std::string MediaSession::GetSdpMessage(std::string sessionName)
+std::string MediaSession::GetSdpMessage(std::string ip, std::string sessionName, bool ipv6)
 {
-	if (sdp_ != "") {
-		return sdp_;
-	}
-    
-	if (media_sources_.empty()) {
-		return "";
-	}
+	if (media_sources_.empty()) return "";
                 
-	std::string ip = NetInterface::GetLocalIPAddress();
+	//std::string ip = NetInterface::GetLocalIPAddress(ipv6);
 	char buf[2048] = {0};
 
 	snprintf(buf, sizeof(buf),
 			"v=0\r\n"
-			"o=- 9%ld 1 IN IP4 %s\r\n"
+			"o=- 9%ld 1 IN IP%d %s\r\n"
 			"t=0 0\r\n"
 			"a=control:*\r\n" ,
-			(long)std::time(NULL), ip.c_str()); 
+			(long)std::time(NULL), ipv6 ? 6 : 4 , ip.c_str()); 
 
 	if(sessionName != "") {
 		snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf), 
@@ -159,8 +155,8 @@ std::string MediaSession::GetSdpMessage(std::string sessionName)
 						media_sources_[chn]->GetMediaDescription(multicast_port_[chn]).c_str()); 
                      
 				snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf), 
-						"c=IN IP4 %s/255\r\n",
-						multicast_ip_.c_str()); 
+						"c=IN IP%d %s/255\r\n",
+						ipv6 ? 6 : 4, multicast_ip_.c_str()); 
 			}
 			else {
 				snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf), 
@@ -177,8 +173,7 @@ std::string MediaSession::GetSdpMessage(std::string sessionName)
 		}
 	}
 
-	sdp_ = buf;
-	return sdp_;
+	return std::string(buf);
 }
 
 MediaSource* MediaSession::GetMediaSource(MediaChannelId channelId)

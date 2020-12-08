@@ -1,3 +1,5 @@
+//Scott Xu
+//2020-12-6 Add IPv6 support.
 #include "TcpConnection.h"
 #include "SocketUtil.h"
 
@@ -8,6 +10,7 @@ TcpConnection::TcpConnection(TaskScheduler *task_scheduler, SOCKET sockfd)
 	, read_buffer_(new BufferReader)
 	, write_buffer_(new BufferWriter(500))
 	, channel_(new Channel(sockfd))
+	, ipv6_(SocketUtil::IsIpv6Socket(sockfd))
 {
 	is_closed_ = false;
 

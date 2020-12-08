@@ -1,3 +1,5 @@
+// Scott Xu
+// 2020-12-04 Add multiple socket support.
 #include "TcpServer.h"
 #include "Acceptor.h"
 #include "EventLoop.h"
@@ -9,11 +11,36 @@ using namespace std;
 
 TcpServer::TcpServer(EventLoop* event_loop)
 	: event_loop_(event_loop)
-	, port_(0)
-	, acceptor_(new Acceptor(event_loop_))
-	, is_started_(false)
+	//, port_(0)
+	//, acceptor_(new Acceptor(event_loop_))
+	//, is_started_(false)
 {
-	acceptor_->SetNewConnectionCallback([this](SOCKET sockfd) {
+
+}
+
+TcpServer::~TcpServer()
+{
+	Stop();
+}
+
+bool TcpServer::Start(std::string ip, uint16_t port)
+{
+	/*Stop();
+
+	if (!is_started_) {
+		if (acceptor_->Listen(ip, port) < 0) {
+			return false;
+		}
+
+		port_ = port;
+		ip_ = ip;
+		is_started_ = true;
+		return true;
+	}*/
+	//return false;
+
+	auto acceptor = unique_ptr<Acceptor>(new Acceptor(event_loop_));
+	acceptor->SetNewConnectionCallback([this](SOCKET sockfd) {
 		TcpConnection::Ptr conn = this->OnConnect(sockfd);
 		if (conn) {
 			this->AddConnection(sockfd, conn);
@@ -26,34 +53,14 @@ TcpServer::TcpServer(EventLoop* event_loop)
 			});
 		}
 	});
-}
-
-TcpServer::~TcpServer()
-{
-	Stop();
-}
-
-bool TcpServer::Start(std::string ip, uint16_t port)
-{
-	Stop();
-
-	if (!is_started_) {
-		if (acceptor_->Listen(ip, port) < 0) {
-			return false;
-		}
-
-		port_ = port;
-		ip_ = ip;
-		is_started_ = true;
-		return true;
-	}
-
-	return false;
+	if (acceptor->Listen(ip, port) < 0) return false;
+	acceptors_.push_back(std::move(acceptor));
+	return true;
 }
 
 void TcpServer::Stop()
 {
-	if (is_started_) {
+	/*if (is_started_) {
 		
 		mutex_.lock();
 		for (auto iter : connections_) {
@@ -70,7 +77,24 @@ void TcpServer::Stop()
 				break;
 			}
 		}
-	}	
+	}*/
+	if (acceptors_.empty())
+		return;
+
+	mutex_.lock();
+	for (auto iter : connections_)
+		iter.second->Disconnect();
+	mutex_.unlock();
+
+	for (auto it = acceptors_.begin(); it != acceptors_.end(); it++)
+		(*it)->Close();
+
+	while (!connections_.empty())
+		Timer::Sleep(1);
+
+	acceptors_.clear();
+
+	return;
 }
 
 TcpConnection::Ptr TcpServer::OnConnect(SOCKET sockfd)

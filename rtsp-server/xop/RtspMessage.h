@@ -1,5 +1,7 @@
-﻿// PHZ
+// PHZ
 // 2018-6-8
+// Scott Xu
+// 2020-12-5 Add IPv6 Support.
 
 #ifndef XOP_RTSP_MESSAGE_H
 #define XOP_RTSP_MESSAGE_H
@@ -59,7 +61,7 @@ public:
 
 	std::string GetRtspUrlSuffix() const;
 
-	std::string GetIp() const;
+	std::string GetHost() const;
 
 	std::string GetAuthResponse() const;
 
