@@ -36,7 +36,7 @@ public:
 	static bool Connect(SOCKET sockfd, std::string ip, uint16_t port,
 			    int timeout = 0, bool ipv6 = false);
 	static bool IsIpv6Address(std::string ip);
-	static bool SocketUtil::IsIpv6Socket(SOCKET sockfd);
+	static bool IsIpv6Socket(SOCKET sockfd);
 };
 
 }
