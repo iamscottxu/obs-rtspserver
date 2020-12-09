@@ -22,7 +22,8 @@
 
 # 我在菜单中找不到插件
 请参阅 [https://github.com/iamscottxu/obs-rtspserver/issues/1](https://github.com/iamscottxu/obs-rtspserver/issues/1) 。
-请下载 VC++ 运行时并安装。[https://cdn-fastly.obsproject.com/downloads/vc_redist.x64.exe](https://cdn-fastly.obsproject.com/downloads/vc_redist.x64.exe)
+
+请下载 VC++ 运行时并安装。[https://www.microsoft.com/zh-CN/download/details.aspx?id=48145](https://www.microsoft.com/zh-CN/download/details.aspx?id=48145)
 
 # 许可信息
 * [RtspServer](https://github.com/PHZ76/RtspServer/blob/master/LICENSE) - [MIT License](https://github.com/PHZ76/RtspServer/blob/master/LICENSE)
