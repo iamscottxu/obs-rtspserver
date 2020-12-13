@@ -1,3 +1,5 @@
+//Scott Xu
+//2020-12-6 Add IPv6 support.
 #include "Acceptor.h"
 #include "EventLoop.h"
 #include "SocketUtil.h"
@@ -7,7 +9,7 @@ using namespace xop;
 
 Acceptor::Acceptor(EventLoop* eventLoop)
     : event_loop_(eventLoop)
-    , tcp_socket_(new TcpSocket)
+    , tcp_socket_(new TcpSocket())
 {	
 	
 }
@@ -24,8 +26,7 @@ int Acceptor::Listen(std::string ip, uint16_t port)
 	if (tcp_socket_->GetSocket() > 0) {
 		tcp_socket_->Close();
 	}
-
-	SOCKET sockfd = tcp_socket_->Create();
+	SOCKET sockfd = tcp_socket_->Create(SocketUtil::IsIpv6Address(ip));
 	channel_ptr_.reset(new Channel(sockfd));
 	SocketUtil::SetReuseAddr(sockfd);
 	SocketUtil::SetReusePort(sockfd);

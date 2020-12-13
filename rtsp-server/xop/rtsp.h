@@ -1,5 +1,7 @@
-﻿// PHZ
+// PHZ
 // 2018-6-8
+// Scott Xu
+// 2020-12-5 Add IPv6 Support.
 
 #ifndef XOP_RTSP_H
 #define XOP_RTSP_H
@@ -11,6 +13,7 @@
 #include "net/EventLoop.h"
 #include "net/Socket.h"
 #include "net/Timer.h"
+#include "net/Logger.h"
 
 namespace xop
 {
@@ -56,9 +59,25 @@ public:
 		char suffix[100] = { 0 };
 		uint16_t port = 0;
 #if defined(__linux) || defined(__linux__)
-		if (sscanf(url.c_str() + 7, "%[^:]:%hu/%s", ip, &port, suffix) == 3)
+		if (sscanf(url.c_str() + 7, "[%[^]]]:%hu/%s", ip, &port, suffix) == 3) //IPv6
 #elif defined(WIN32) || defined(_WIN32)
-		if (sscanf_s(url.c_str() + 7, "%[^:]:%hu/%s", ip, 100, &port, suffix, 100) == 3)
+		if (sscanf_s(url.c_str() + 7, "[%[^]]]:%hu/%s", ip, 100, &port, suffix, 100) == 3)
+#endif
+		{
+			rtsp_url_info_.port = port;
+		}
+#if defined(__linux) || defined(__linux__)
+		else if (sscanf(url.c_str() + 7, "[%[^]]]/%s", ip, suffix) == 2)
+#elif defined(WIN32) || defined(_WIN32)
+		else if (sscanf_s(url.c_str() + 7, "[%[^]]]/%s", ip, 100, suffix, 100) == 2)
+#endif
+		{
+			rtsp_url_info_.port = 554;
+		}
+#if defined(__linux) || defined(__linux__)
+		else if(sscanf(url.c_str() + 7, "%[^:]:%hu/%s", ip, &port, suffix) == 3) //IPv4, domain
+#elif defined(WIN32) || defined(_WIN32)
+		else if(sscanf_s(url.c_str() + 7, "%[^:]:%hu/%s", ip, 100, &port, suffix, 100) == 3)
 #endif
 		{
 			rtsp_url_info_.port = port;
@@ -73,7 +92,7 @@ public:
 		}
 		else
 		{
-			//LOG("%s was illegal.\n", url.c_str());
+			LOG_ERROR("%s was illegal.\n", url.c_str());
 			return false;
 		}
 

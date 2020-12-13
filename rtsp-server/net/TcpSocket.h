@@ -1,5 +1,7 @@
 // PHZ
 // 2018-5-15
+// Scott Xu
+// 2020-12-2 Add IPv6 Support. 
 
 #ifndef XOP_TCP_SOCKET_H
 #define XOP_TCP_SOCKET_H
@@ -14,10 +16,10 @@ namespace xop
 class TcpSocket
 {
 public:
-	TcpSocket(SOCKET sockfd=-1);
+	TcpSocket(SOCKET sockfd = -1, bool ipv6 = false);
 	virtual ~TcpSocket();
 
-	SOCKET Create();
+	SOCKET Create(bool ipv6 = false);
 	bool Bind(std::string ip, uint16_t port);
 	bool Listen(int backlog);
 	SOCKET Accept();
@@ -26,9 +28,11 @@ public:
 	void ShutdownWrite();
 
 	SOCKET GetSocket() const { return sockfd_; }
+	bool IsIpv6Socket() const { return ipv6_; }
     
 private:
-    SOCKET sockfd_ = -1;
+	SOCKET sockfd_ = -1;
+	bool ipv6_;
 };
 
 }

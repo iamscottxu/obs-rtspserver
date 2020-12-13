@@ -1,4 +1,4 @@
-#ifndef _XOP_LOG_H
+/*#ifndef _XOP_LOG_H
 #define _XOP_LOG_H
 
 #include <cstdio>
@@ -15,3 +15,4 @@
 
 
 #endif
+*/

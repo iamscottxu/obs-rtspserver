@@ -1,5 +1,7 @@
-﻿// PHZ
+// PHZ
 // 2018-6-8
+// Scott Xu
+// 2020-12-5 Add IPv6 Support.
 
 #ifndef _RTSP_CONNECTION_H
 #define _RTSP_CONNECTION_H

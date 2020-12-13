@@ -1,12 +1,12 @@
 // PHZ
 // 2018-5-15
 
-#include "NetInterface.h"
+/*#include "NetInterface.h"
 #include "Socket.h"
 
 using namespace xop;
 
-std::string NetInterface::GetLocalIPAddress()
+std::string NetInterface::GetLocalIPAddress(bool ipv6)
 {
 #if defined(__linux) || defined(__linux__) 
     SOCKET sockfd = 0;
@@ -87,4 +87,4 @@ std::string NetInterface::GetLocalIPAddress()
 #endif
 }
 
-
+*/

@@ -1,4 +1,4 @@
-﻿// PHZ
+// PHZ
 // 2018-5-16
 
 #if defined(WIN32) || defined(_WIN32)

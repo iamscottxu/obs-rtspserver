@@ -1,5 +1,7 @@
-﻿// PHZ
+// PHZ
 // 2018-6-8
+// Scott Xu
+// 2020-12-5 Add IPv6 Support.
 
 #ifndef XOP_RTP_CONNECTION_H
 #define XOP_RTP_CONNECTION_H
@@ -92,10 +94,12 @@ private:
 	SOCKET rtpfd_[MAX_MEDIA_CHANNEL];
 	SOCKET rtcpfd_[MAX_MEDIA_CHANNEL];
 
-    struct sockaddr_in peer_addr_;
-    struct sockaddr_in peer_rtp_addr_[MAX_MEDIA_CHANNEL];
-    struct sockaddr_in peer_rtcp_sddr_[MAX_MEDIA_CHANNEL];
+    struct sockaddr_in6 peer_addr_;
+    struct sockaddr_in6 peer_rtp_addr_[MAX_MEDIA_CHANNEL];
+    struct sockaddr_in6 peer_rtcp_sddr_[MAX_MEDIA_CHANNEL];
     MediaChannelInfo media_channel_info_[MAX_MEDIA_CHANNEL];
+
+    bool ipv6_;
 };
 
 }

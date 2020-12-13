@@ -1,3 +1,5 @@
+//Scott Xu
+//2020-12-6 Add IPv6 support.
 #ifndef XOP_ACCEPTOR_H
 #define XOP_ACCEPTOR_H
 

@@ -1,5 +1,7 @@
 // PHZ
 // 2018-6-8
+// Scott Xu
+// 2020-12-5 Add IPv6 Support.
 
 #ifndef XOP_MEDIA_SESSION_H
 #define XOP_MEDIA_SESSION_H
@@ -48,7 +50,7 @@ public:
     void SetRtspUrlSuffix(std::string& suffix)
     { suffix_ = suffix; }
 
-    std::string GetSdpMessage(std::string sessionName="");
+    std::string GetSdpMessage(std::string ip, std::string sessionName, bool ipv6 = false);
 
     MediaSource* GetMediaSource(MediaChannelId channel_id);
 
@@ -84,7 +86,6 @@ private:
 
     MediaSessionId session_id_ = 0;
     std::string suffix_;
-    std::string sdp_;
 
     std::vector<std::unique_ptr<MediaSource>> media_sources_;
     std::vector<RingBuffer<AVFrame>> _buffer;
