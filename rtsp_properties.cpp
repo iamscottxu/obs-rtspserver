@@ -105,15 +105,11 @@ void RtspProperties::UpdateParameter()
 	obs_data_release(data);
 }
 
-void RtspProperties::showEvent(QShowEvent *event)
-{
-	setModal(true);
-}
+void RtspProperties::showEvent(QShowEvent *event) {}
 
 void RtspProperties::closeEvent(QCloseEvent *event)
 {
 	SaveSetting();
-	setModal(false);
 }
 
 void RtspProperties::SaveSetting()

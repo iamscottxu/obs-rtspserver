@@ -41,7 +41,7 @@ bool obs_module_load(void)
 	obs_frontend_pop_ui_translation();
 
 	auto menu_cb = [] {
-		rtspProperties->setVisible(!rtspProperties->isVisible());
+		rtspProperties->exec();
 	};
 
 	action->connect(action, &QAction::triggered, menu_cb);
