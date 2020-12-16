@@ -16,6 +16,7 @@ class RtspProperties : public QDialog {
 public:
 	explicit RtspProperties(QWidget *parent = 0);
 	~RtspProperties();
+	void SetVisable();
 	void showEvent(QShowEvent *event);
 	void closeEvent(QCloseEvent *event);
 	void EnableOptions(bool enable);
