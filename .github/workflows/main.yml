@@ -213,10 +213,10 @@ jobs:
       - name: 'Package obs-rtspserver'
         working-directory: ${{ github.workspace }}
         run: |
-          mkdir -p build-package/obs-plugins/64bit
-          mkdir -p build-package/data/obs-plugins/obs-rtspserver/locale/
-          cp ./obs-studio/build64/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/obs-plugins/64bit/
-          cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/data/obs-plugins/obs-rtspserver/
+          mkdir -p build-package/obs-rtspserver/bin/64bit
+          mkdir -p build-package/obs-rtspserver/data
+          cp ./obs-studio/build64/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/obs-rtspserver/bin/64bit/
+          cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/obs-rtspserver/data/
           mkdir release
           tar zcvf "./release/${{ env.LINUX_FILENAME }}.tar.gz" -C "./build-package" .
       - name: 'Publish ${{ env.LINUX_FILENAME }}.tar.gz'
