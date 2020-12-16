@@ -38,7 +38,6 @@ bool obs_module_load(void)
 
 	obs_frontend_push_ui_translation(obs_module_get_string);
 	rtspProperties = new RtspProperties(mainWindow);
-	rtspProperties->setModal(true);
 	obs_frontend_pop_ui_translation();
 
 	auto menu_cb = [] {
