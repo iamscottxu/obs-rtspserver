@@ -7,29 +7,28 @@
 #include "ui_rtsp_properties.h"
 #include "helper.h"
 
-RtspProperties::RtspProperties(QWidget *parent)
+RtspProperties::RtspProperties(std::string rtspOutputName, QWidget *parent)
 	: QDialog(parent), ui(new Ui::RtspProperties)
 {
 	ui->setupUi(this);
-	connect(ui->pushButtonStart, SIGNAL(clicked()), this, SLOT(onStart()));
-	connect(ui->pushButtonStop, SIGNAL(clicked()), this, SLOT(onStop()));
-	connect(ui->pushButtonAddressCopy, SIGNAL(clicked()), this,
-		SLOT(onButtonAddressCopy()));
+	connect(ui->pushButtonStart,&QPushButton::clicked, this, &RtspProperties::onStart);
+	connect(ui->pushButtonStop, &QPushButton::clicked, this, &RtspProperties::onStop);
+	connect(ui->pushButtonAddressCopy, &QPushButton::clicked, this, &RtspProperties::onButtonAddressCopy);
+	connect(this, &RtspProperties::enableOptions, this, &RtspProperties::onEnableOptions);
+	connect(this, &RtspProperties::showWarning, this, &RtspProperties::onShowWarning);
 
-	{
-		obs_data_t *data = rtsp_output_read_data();
-		myRtspOutput = std::make_unique<MyRtspOutput>(data);
-		obs_data_release(data);
-	}
+	rtspOutputHelper = new RtspOutputHelper(rtspOutputName);
+	onEnableOptions(!rtspOutputHelper->IsActive(), rtspOutputHelper->IsActive());
 
-	myRtspOutput->SignalConnect("start", OnStartSignal, this);
-	myRtspOutput->SignalConnect("stop", OnStopSignal, this);
-
-	config_t *config = rtsp_properties_open_config();
+	rtspOutputHelper->SignalConnect("stop", OnStopSignal, this);
+	rtspOutputHelper->SignalConnect("starting", OnStartSignal, this);
+	rtspOutputHelper->SignalConnect("start", OnStartSignal, this);
+	rtspOutputHelper->SignalConnect("stoping", OnStartSignal, this);
+	auto config = rtsp_properties_open_config();
 	auto autoStart = config_get_bool(config, CONFIG_SECTIION, "AutoStart");
 	config_close(config);
 
-	obs_data_t *data = rtsp_output_read_data();
+	auto data = rtsp_output_read_data();
 	int port = obs_data_get_int(data, "port");
 	obs_data_release(data);
 
@@ -37,31 +36,26 @@ RtspProperties::RtspProperties(QWidget *parent)
 	ui->spinBoxPort->setValue(port);
 	ui->labelMessage->setStyleSheet("QLabel { color : red; }");
 	ui->labelMessage->setVisible(false);
-	ui->pushButtonStop->setEnabled(false);
 }
 
 RtspProperties::~RtspProperties()
 {
-	myRtspOutput->SignalDisconnect("start", OnStartSignal, this);
-	myRtspOutput->SignalDisconnect("stop", OnStopSignal, this);
+	rtspOutputHelper->SignalDisconnect("start", OnStartSignal, this);
+	rtspOutputHelper->SignalDisconnect("stop", OnStopSignal, this);
 	delete ui;
+	delete rtspOutputHelper;
 }
 
-void RtspProperties::EnableOptions(bool enable)
+void RtspProperties::onEnableOptions(bool startEnable, bool stopRnable)
 {
-	ui->spinBoxPort->setEnabled(enable);
-	ui->pushButtonStart->setEnabled(enable);
-	ui->pushButtonStop->setEnabled(!enable);
+	ui->spinBoxPort->setEnabled(startEnable);
+	ui->pushButtonStart->setEnabled(startEnable);
+	ui->pushButtonStop->setEnabled(stopRnable);
 }
 
-void RtspProperties::ShowWarning(bool show)
+void RtspProperties::onShowWarning(bool show)
 {
 	ui->labelMessage->setVisible(show);
-}
-
-MyRtspOutput *RtspProperties::GetMyRtspOutput()
-{
-	return myRtspOutput.get();
 }
 
 void RtspProperties::onButtonAddressCopy()
@@ -75,33 +69,35 @@ void RtspProperties::onButtonAddressCopy()
 
 void RtspProperties::onStart()
 {
+	enableOptions(false, false);
 	UpdateParameter();
-	myRtspOutput->UpdateEncoder();
-	ShowWarning(!myRtspOutput->Start());
+	rtspOutputHelper->UpdateEncoder();
+	showWarning(!rtspOutputHelper->Start());
 }
 
 void RtspProperties::onStop()
 {
-	myRtspOutput->Stop();
+	enableOptions(false, false);
+	rtspOutputHelper->Stop();
 }
 
 void RtspProperties::OnStartSignal(void *data, calldata_t *cd)
 {
 	auto page = (RtspProperties *)data;
-	page->EnableOptions(false);
+	page->enableOptions(false, true);
 }
 
 void RtspProperties::OnStopSignal(void *data, calldata_t *cd)
 {
+	auto code = calldata_int(cd, "code");
 	auto page = (RtspProperties *)data;
-	page->EnableOptions(true);
+	page->enableOptions(true, false);
 }
 
 void RtspProperties::UpdateParameter()
 {
-	SaveSetting();
 	auto data = rtsp_output_read_data();
-	myRtspOutput->UpdateSettings(data);
+	rtspOutputHelper->UpdateSettings(data);
 	obs_data_release(data);
 }
 

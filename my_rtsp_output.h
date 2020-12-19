@@ -1,6 +1,7 @@
 #ifndef MY_RTSP_OUTPUT_H
 #define MY_RTSP_OUTPUT_H
 
+#include <mutex>
 #include <obs-module.h>
 
 struct rtsp_output_settings {
@@ -9,10 +10,11 @@ struct rtsp_output_settings {
 	uint32_t rescale_cy = 0;
 };
 
-class MyRtspOutput {
+class RtspOutputHelper {
 public:
-	MyRtspOutput(obs_data_t *settings);
-	~MyRtspOutput();
+	RtspOutputHelper(std::string outputName);
+	~RtspOutputHelper();
+	static RtspOutputHelper *CreateRtspOutput(obs_data_t *settings);
 	void UpdateSettings(obs_data_t *settings);
 	void UpdateEncoder();
 	bool Start();
@@ -21,17 +23,16 @@ public:
 			   void *data);
 	void SignalDisconnect(const char *signal, signal_callback_t callback,
 			      void *data);
-	bool IsRunning();
+	std::string GetOutputName();
+	bool IsActive();
 
 private:
+	RtspOutputHelper(obs_output_t *obsOutput);
 	void CreateVideoEncoder();
 	void CreateAudioEncoder();
 	void GetBaseConfig();
 	static void releaseEncoder(obs_encoder_t **encoder);
-	static void onStartSignal(void *data, calldata_t *cd);
-	static void onStopSignal(void *data, calldata_t *cd);
-	obs_output_t *rtspOut;
-	bool isRunning = false;
+	obs_output_t *obsOutput;
 	struct rtsp_output_settings outputSettings;
 	obs_encoder_t *videoEncoder = nullptr;
 	obs_encoder_t *audioEncoder = nullptr;

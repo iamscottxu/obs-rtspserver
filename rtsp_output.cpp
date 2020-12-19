@@ -19,6 +19,10 @@ struct rtsp_out_data {
 
 	uint16_t port = 0;
 
+	volatile bool active;
+	volatile bool stopping;
+	uint64_t stop_ts;
+
 	uint32_t num_clients = 0;
 	uint32_t audio_timestamp_clock = 0;
 
@@ -35,24 +39,14 @@ static const char *rtsp_output_getname(void *unused)
 	return obs_module_text("RtspOutput");
 }
 
-static void do_output_error_signal(void *data, char *msg)
+static inline bool stopping(rtsp_out_data *out_data)
 {
-	rtsp_out_data *out_data = (rtsp_out_data *)data;
-	struct calldata call_data;
-	calldata_init(&call_data);
-	calldata_set_string(&call_data, "msg", msg);
-	signal_handler_t *handler =
-		obs_output_get_signal_handler(out_data->output);
-	signal_handler_signal(handler, "error", &call_data);
-	calldata_free(&call_data);
+	return os_atomic_load_bool(&out_data->stopping);
 }
 
-static void do_output_signal(void *data, const char *signal)
+static inline bool active(rtsp_out_data *out_data)
 {
-	rtsp_out_data *out_data = (rtsp_out_data *)data;
-	signal_handler_t *handler =
-		obs_output_get_signal_handler(out_data->output);
-	signal_handler_signal(handler, signal, nullptr);
+	return os_atomic_load_bool(&out_data->active);
 }
 
 static void rtsp_output_destroy(void *data)
@@ -77,33 +71,10 @@ static void *rtsp_output_create(obs_data_t *settings, obs_output_t *output)
 }
 
 static void rtsp_push_frame(void *param);
-static void rtsp_output_stop_free(void *data, char *msg, bool start_fail)
+static void set_output_error(rtsp_out_data *out_data, char *msg)
 {
-	rtsp_out_data *out_data = (rtsp_out_data *)data;
-	obs_output_end_data_capture(out_data->output);
-
-	if (out_data->frame_queue)
-		out_data->frame_queue->termination();
-
-	if (out_data->frame_push_thread) {
-		out_data->frame_push_thread->join();
-		out_data->frame_push_thread.reset();
-	}
-
-	if (out_data->session_id) {
-		out_data->server->RemoveSession(out_data->session_id);
-		out_data->session_id = NULL;
-	}
-	out_data->server->Stop();
-	out_data->num_clients = 0;
-
-	if (out_data->frame_queue)
-		out_data->frame_queue.reset();
-
-	if (start_fail) {
-		do_output_error_signal(data, msg);
-		blog(LOG_WARNING, msg);
-	}
+	obs_output_set_last_error(out_data->output, msg);
+	blog(LOG_WARNING, msg);
 }
 
 static bool rtsp_output_start(void *data)
@@ -111,21 +82,24 @@ static bool rtsp_output_start(void *data)
 	rtsp_out_data *out_data = (rtsp_out_data *)data;
 
 	if (!obs_output_can_begin_data_capture(out_data->output, 0)) {
-		rtsp_output_stop_free(data, "can't begin data capture", true);
+		set_output_error(out_data, "can't begin data capture");
 		return false;
 	}
 
 	if (!obs_output_initialize_encoders(out_data->output, 0)) {
-		rtsp_output_stop_free(data, "initialize encoders error", true);
+		set_output_error(out_data, "initialize encoders error");
 		return false;
 	}
 
 	if (!out_data->server->Start("0.0.0.0", out_data->port) ||
 	    !out_data->server->Start("::0", out_data->port)) {
-		rtsp_output_stop_free(
-			data, "starting rstp server failed on port '%d'", true);
+		set_output_error(
+			out_data, "starting rstp server failed on port '%d'");
+		out_data->server->Stop();
 		return false;
 	}
+
+	os_atomic_set_bool(&out_data->stopping, false);
 
 	video_t *video = obs_output_video(out_data->output);
 	audio_t *audio = obs_output_audio(out_data->output);
@@ -151,7 +125,6 @@ static bool rtsp_output_start(void *data)
 					      uint32_t num_clients) {
 		if (num_clients > 0 && out_data->num_clients == 0) {
 			obs_output_pause(out_data->output, false);
-			do_output_signal(out_data, "unpause");
 		}
 		out_data->num_clients = num_clients;
 		blog(LOG_INFO, "the number of rtsp clients: %d", num_clients);
@@ -159,25 +132,53 @@ static bool rtsp_output_start(void *data)
 
 	out_data->session_id = out_data->server->AddSession(session);
 
-	obs_output_begin_data_capture(out_data->output, 0);
-
 	out_data->frame_push_thread =
 		std::make_unique<std::thread>(rtsp_push_frame, out_data);
 
-	blog(LOG_INFO, "starting virtual-output on port '%d'", out_data->port);
+	os_atomic_set_bool(&out_data->active, true);
+	obs_output_begin_data_capture(out_data->output, 0);
 
-	do_output_signal(data, "start");
+	blog(LOG_INFO, "starting rstp server on port '%d'", out_data->port);
 
 	return true;
 }
 
 static void rtsp_output_stop(void *data, uint64_t ts)
 {
-	rtsp_output_stop_free(data, "stop", false);
+	rtsp_out_data *out_data = (rtsp_out_data *)data;
+	out_data->stop_ts = ts / 1000ULL;
+	os_atomic_set_bool(&out_data->stopping, true);
+}
 
-	blog(LOG_INFO, "rstp-output stopped");
+static void rtsp_output_actual_stop(rtsp_out_data *out_data, int code)
+{
+	os_atomic_set_bool(&out_data->active, false);
 
-	do_output_signal(data, "stop");
+	if (code) {
+		obs_output_signal_stop(out_data->output, code);
+	} else {
+		obs_output_end_data_capture(out_data->output);
+	}
+
+	if (out_data->frame_queue)
+		out_data->frame_queue->termination();
+
+	if (out_data->frame_push_thread) {
+		out_data->frame_push_thread->join();
+		out_data->frame_push_thread.reset();
+	}
+
+	if (out_data->session_id) {
+		out_data->server->RemoveSession(out_data->session_id);
+		out_data->session_id = NULL;
+	}
+	out_data->server->Stop();
+	out_data->num_clients = 0;
+
+	if (out_data->frame_queue)
+		out_data->frame_queue.reset();
+
+	blog(LOG_INFO, "rstp server stopped");
 }
 
 static size_t get_video_header(obs_encoder_t *vencoder, uint8_t **header)
@@ -267,18 +268,31 @@ static void rtsp_output_audio(void *param, struct encoder_packet *packet)
 	out_data->frame_queue->push(queue_frame);
 }
 
-static void rtsp_output_data(void *param, struct encoder_packet *packet)
+static void rtsp_output_data(void *data, struct encoder_packet *packet)
 {
-	rtsp_out_data *out_data = (rtsp_out_data *)param;
+	rtsp_out_data *out_data = (rtsp_out_data *)data;
+
+	if (!active(out_data))
+		return;
+
+	if (!packet) {
+		rtsp_output_actual_stop(out_data, OBS_OUTPUT_ENCODE_ERROR);
+		return;
+	}
+
+	if (stopping(out_data) &&
+	    packet->sys_dts_usec >= (int64_t)out_data->stop_ts) {
+		rtsp_output_actual_stop(out_data, OBS_OUTPUT_SUCCESS);
+		return;
+	}
 
 	if (out_data->num_clients > 0) {
 		if (packet->type == OBS_ENCODER_VIDEO)
-			rtsp_output_video(param, packet);
+			rtsp_output_video(data, packet);
 		else if (packet->type == OBS_ENCODER_AUDIO)
-			rtsp_output_audio(param, packet);
+			rtsp_output_audio(data, packet);
 	} else {
 		obs_output_pause(out_data->output, true);
-		do_output_signal(param, "pause");
 	}
 }
 
@@ -293,7 +307,7 @@ static void rtsp_output_update(void *data, obs_data_t *settings)
 	out_data->port = obs_data_get_int(settings, "port");
 }
 
-obs_properties_t *rtsp_getproperties(void *data)
+obs_properties_t *rtsp_output_properties(void *data)
 {
 	UNUSED_PARAMETER(data);
 
@@ -306,12 +320,14 @@ obs_properties_t *rtsp_getproperties(void *data)
 	return props;
 }
 
-struct obs_output_info create_output_info()
+void rtsp_output_register()
 {
 	struct obs_output_info output_info = {};
 	output_info.id = "rtsp_output";
 	output_info.flags = OBS_OUTPUT_AV | OBS_OUTPUT_ENCODED |
 			    OBS_OUTPUT_CAN_PAUSE;
+	output_info.encoded_video_codecs = "h264";
+	output_info.encoded_audio_codecs = "aac";
 	output_info.get_name = rtsp_output_getname;
 	output_info.create = rtsp_output_create;
 	output_info.destroy = rtsp_output_destroy;
@@ -320,7 +336,7 @@ struct obs_output_info create_output_info()
 	output_info.encoded_packet = rtsp_output_data;
 	output_info.get_defaults = rtsp_output_defaults;
 	output_info.update = rtsp_output_update;
-	output_info.get_properties = rtsp_getproperties;
+	output_info.get_properties = rtsp_output_properties;
 
-	return output_info;
+	obs_register_output(&output_info);
 }
