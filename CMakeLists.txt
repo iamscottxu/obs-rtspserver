@@ -18,13 +18,13 @@ set(obs-rtspserver_SOURCES
 	rtspoutput.rc
 	rtsp_output.cpp
 	rtsp_properties.cpp
-	my_rtsp_output.cpp
+	rtsp_output_helper.cpp
 	)
 
 set(obs-rtspserver_HEADERS
 	rtsp_output.h
 	rtsp_properties.h
-	my_rtsp_output.h
+	rtsp_output_helper.h
 	)
 	
 if(WIN32)

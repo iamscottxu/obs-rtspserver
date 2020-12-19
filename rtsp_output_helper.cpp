@@ -3,7 +3,7 @@
 #include <obs-frontend-api.h>
 #include <util/config-file.h>
 #include <util/dstr.h>
-#include "my_rtsp_output.h"
+#include "rtsp_output_helper.h"
 #include "rtsp_output.h"
 
 using namespace std;

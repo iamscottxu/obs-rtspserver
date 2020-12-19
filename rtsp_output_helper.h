@@ -1,5 +1,5 @@
-#ifndef MY_RTSP_OUTPUT_H
-#define MY_RTSP_OUTPUT_H
+#ifndef RTSP_OUTPUT_HELPER_H
+#define RTSP_OUTPUT_HELPER_H
 
 #include <mutex>
 #include <obs-module.h>
@@ -38,4 +38,4 @@ private:
 	obs_encoder_t *audioEncoder = nullptr;
 };
 
-#endif // MY_RTSP_OUTPUT_H
+#endif // RTSP_OUTPUT_HELPER_H
