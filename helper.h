@@ -19,14 +19,15 @@ static bool make_config_dir()
 static obs_data_t *rtsp_output_read_data(bool create = false)
 {
 	obs_data_t *data;
-	if (create)
-		data = obs_data_create();
-	else {
+	if (create) {
+		data = obs_output_defaults("rtsp_output");
+	}  else {
 		auto path = obs_module_config_path("rtsp_output.json");
 		data = obs_data_create_from_json_file_safe(path, "bak");
 		bfree(path);
+		if (data == nullptr)
+			data = rtsp_output_read_data(true);
 	}
-	obs_data_set_default_int(data, "port", 554);
 	return data;
 }
 

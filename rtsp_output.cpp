@@ -282,6 +282,11 @@ static void rtsp_output_data(void *param, struct encoder_packet *packet)
 	}
 }
 
+static void rtsp_output_defaults(obs_data_t *defaults)
+{
+	obs_data_set_default_int(defaults, "port", 554);
+}
+
 static void rtsp_output_update(void *data, obs_data_t *settings)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)data;
@@ -313,6 +318,7 @@ struct obs_output_info create_output_info()
 	output_info.start = rtsp_output_start;
 	output_info.stop = rtsp_output_stop;
 	output_info.encoded_packet = rtsp_output_data;
+	output_info.get_defaults = rtsp_output_defaults;
 	output_info.update = rtsp_output_update;
 	output_info.get_properties = rtsp_getproperties;
 
