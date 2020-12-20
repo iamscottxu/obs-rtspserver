@@ -19,6 +19,7 @@ public:
 	void UpdateEncoder();
 	bool Start();
 	void Stop();
+	std::string GetLastError();
 	void SignalConnect(const char *signal, signal_callback_t callback,
 			   void *data);
 	void SignalDisconnect(const char *signal, signal_callback_t callback,

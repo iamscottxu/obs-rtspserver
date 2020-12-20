@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>428</width>
-    <height>332</height>
+    <height>334</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -264,8 +264,8 @@
           <height>0</height>
          </size>
         </property>
-        <property name="text">
-         <string>StartFailed</string>
+        <property name="styleSheet">
+         <string notr="true">QLabel { color : red; }</string>
         </property>
         <property name="margin">
          <number>0</number>

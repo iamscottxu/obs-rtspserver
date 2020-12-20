@@ -59,6 +59,11 @@ void RtspOutputHelper::Stop()
 	obs_output_stop(obsOutput);
 }
 
+string RtspOutputHelper::GetLastError()
+{
+	return string(obs_output_get_last_error(obsOutput));
+}
+
 void RtspOutputHelper::SignalConnect(const char *signal, signal_callback_t callback,
 				 void *data)
 {

@@ -17,25 +17,31 @@ RtspProperties::RtspProperties(std::string rtspOutputName, QWidget *parent)
 	connect(this, &RtspProperties::enableOptions, this, &RtspProperties::onEnableOptions);
 	connect(this, &RtspProperties::showWarning, this, &RtspProperties::onShowWarning);
 
+	{
+		auto config = rtsp_properties_open_config();
+		auto autoStart =
+			config_get_bool(config, CONFIG_SECTIION, "AutoStart");
+		config_close(config);
+		ui->checkBoxAuto->setChecked(autoStart);
+	}
+
+	{
+		auto data = rtsp_output_read_data();
+		int port = obs_data_get_int(data, "port");
+		obs_data_release(data);
+		ui->spinBoxPort->setValue(port);
+	}
+
+	ui->labelMessage->setVisible(false);
+
 	rtspOutputHelper = new RtspOutputHelper(rtspOutputName);
-	onEnableOptions(!rtspOutputHelper->IsActive(), rtspOutputHelper->IsActive());
+	onEnableOptions(!rtspOutputHelper->IsActive(),
+			rtspOutputHelper->IsActive());
 
 	rtspOutputHelper->SignalConnect("stop", OnStopSignal, this);
 	rtspOutputHelper->SignalConnect("starting", OnStartSignal, this);
 	rtspOutputHelper->SignalConnect("start", OnStartSignal, this);
 	rtspOutputHelper->SignalConnect("stoping", OnStartSignal, this);
-	auto config = rtsp_properties_open_config();
-	auto autoStart = config_get_bool(config, CONFIG_SECTIION, "AutoStart");
-	config_close(config);
-
-	auto data = rtsp_output_read_data();
-	int port = obs_data_get_int(data, "port");
-	obs_data_release(data);
-
-	ui->checkBoxAuto->setChecked(autoStart);
-	ui->spinBoxPort->setValue(port);
-	ui->labelMessage->setStyleSheet("QLabel { color : red; }");
-	ui->labelMessage->setVisible(false);
 }
 
 RtspProperties::~RtspProperties()
@@ -55,6 +61,9 @@ void RtspProperties::onEnableOptions(bool startEnable, bool stopRnable)
 
 void RtspProperties::onShowWarning(bool show)
 {
+	if (show)
+		ui->labelMessage->setText(
+			QString(rtspOutputHelper->GetLastError().c_str()));
 	ui->labelMessage->setVisible(show);
 }
 
@@ -69,7 +78,6 @@ void RtspProperties::onButtonAddressCopy()
 
 void RtspProperties::onStart()
 {
-	enableOptions(false, false);
 	UpdateParameter();
 	rtspOutputHelper->UpdateEncoder();
 	showWarning(!rtspOutputHelper->Start());
@@ -89,8 +97,10 @@ void RtspProperties::OnStartSignal(void *data, calldata_t *cd)
 
 void RtspProperties::OnStopSignal(void *data, calldata_t *cd)
 {
-	auto code = calldata_int(cd, "code");
 	auto page = (RtspProperties *)data;
+	auto code = calldata_int(cd, "code");
+	if (code != OBS_OUTPUT_SUCCESS)
+		page->showWarning(true);
 	page->enableOptions(true, false);
 }
 

@@ -9,6 +9,11 @@
 
 #define USEC_IN_SEC 1000000
 
+#define ERROR_BEGIN_DATA_CAPTURE 1
+#define ERROR_INIT_ENCODERS 2
+#define ERROR_START_RTSP_SERVER 3
+#define ERROR_ENCODE OBS_OUTPUT_ENCODE_ERROR
+
 struct queue_frame {
 	struct xop::AVFrame av_frame;
 	xop::MediaChannelId channe_id;
@@ -71,10 +76,54 @@ static void *rtsp_output_create(obs_data_t *settings, obs_output_t *output)
 }
 
 static void rtsp_push_frame(void *param);
-static void set_output_error(rtsp_out_data *out_data, char *msg)
+static void set_output_error(rtsp_out_data *out_data, char code, ...)
 {
-	obs_output_set_last_error(out_data->output, msg);
-	blog(LOG_WARNING, msg);
+	char *message;
+	char *lookup_string;
+	switch (code)
+	{
+	case ERROR_BEGIN_DATA_CAPTURE:
+		message = "can't begin data capture";
+		lookup_string = "ErrorBeginDataCapture";
+		break;
+	case ERROR_INIT_ENCODERS:
+		message = "initialize encoders error";
+		lookup_string = "ErrorInitEncoders";
+		break;
+	case ERROR_START_RTSP_SERVER:
+		message = "starting RTSP server failed on port '%d'";
+		lookup_string = "ErrorStartRtspServer";
+		break;
+	case ERROR_ENCODE:
+		message = "encode error";
+		lookup_string = "ErrorEncode";
+		break;
+	default:
+		message = "unknown error";
+		lookup_string = "ErrorUnknown";
+		break;
+	}
+
+	{
+		char buffer[500] = {0};
+		va_list args;
+		va_start(args, code);
+#if defined(WIN32) || defined(_WIN32)
+		vsprintf_s(buffer, obs_module_text(lookup_string), args);
+#else
+		vsnprintf(buffer, sizeof(buffer), obs_module_text(lookup_string),
+			 args);
+#endif
+		va_end(args);
+		obs_output_set_last_error(out_data->output, buffer);
+	}
+
+	{
+		va_list args;
+		va_start(args, code);
+		blogva(LOG_WARNING, message, args);
+		va_end(args);
+	}
 }
 
 static bool rtsp_output_start(void *data)
@@ -82,19 +131,19 @@ static bool rtsp_output_start(void *data)
 	rtsp_out_data *out_data = (rtsp_out_data *)data;
 
 	if (!obs_output_can_begin_data_capture(out_data->output, 0)) {
-		set_output_error(out_data, "can't begin data capture");
+		set_output_error(out_data, ERROR_BEGIN_DATA_CAPTURE);
 		return false;
 	}
 
 	if (!obs_output_initialize_encoders(out_data->output, 0)) {
-		set_output_error(out_data, "initialize encoders error");
+		set_output_error(out_data, ERROR_INIT_ENCODERS);
 		return false;
 	}
 
 	if (!out_data->server->Start("0.0.0.0", out_data->port) ||
 	    !out_data->server->Start("::0", out_data->port)) {
-		set_output_error(
-			out_data, "starting rstp server failed on port '%d'");
+		set_output_error(out_data, ERROR_START_RTSP_SERVER,
+				 out_data->port);
 		out_data->server->Stop();
 		return false;
 	}
@@ -147,6 +196,7 @@ static void rtsp_output_stop(void *data, uint64_t ts)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)data;
 	out_data->stop_ts = ts / 1000ULL;
+	obs_output_pause(out_data->output, false);
 	os_atomic_set_bool(&out_data->stopping, true);
 }
 
@@ -155,6 +205,7 @@ static void rtsp_output_actual_stop(rtsp_out_data *out_data, int code)
 	os_atomic_set_bool(&out_data->active, false);
 
 	if (code) {
+		set_output_error(out_data, code);
 		obs_output_signal_stop(out_data->output, code);
 	} else {
 		obs_output_end_data_capture(out_data->output);
@@ -291,7 +342,7 @@ static void rtsp_output_data(void *data, struct encoder_packet *packet)
 			rtsp_output_video(data, packet);
 		else if (packet->type == OBS_ENCODER_AUDIO)
 			rtsp_output_audio(data, packet);
-	} else {
+	} else if (!stopping(out_data)) {
 		obs_output_pause(out_data->output, true);
 	}
 }
