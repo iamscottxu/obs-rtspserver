@@ -19,17 +19,15 @@ RtspProperties::RtspProperties(std::string rtspOutputName, QWidget *parent)
 
 	{
 		auto config = rtsp_properties_open_config();
-		auto autoStart =
-			config_get_bool(config, CONFIG_SECTIION, "AutoStart");
+		ui->checkBoxAuto->setChecked(
+			config_get_bool(config, CONFIG_SECTIION, "AutoStart"));
 		config_close(config);
-		ui->checkBoxAuto->setChecked(autoStart);
 	}
 
 	{
 		auto data = rtsp_output_read_data();
-		int port = obs_data_get_int(data, "port");
+		ui->spinBoxPort->setValue(obs_data_get_int(data, "port"));
 		obs_data_release(data);
-		ui->spinBoxPort->setValue(port);
 	}
 
 	ui->labelMessage->setVisible(false);
@@ -106,7 +104,8 @@ void RtspProperties::OnStopSignal(void *data, calldata_t *cd)
 
 void RtspProperties::UpdateParameter()
 {
-	auto data = rtsp_output_read_data();
+	auto data = rtsp_output_read_data(true);
+	obs_data_set_int(data, "port", ui->spinBoxPort->value());
 	rtspOutputHelper->UpdateSettings(data);
 	obs_data_release(data);
 }
@@ -129,7 +128,6 @@ void RtspProperties::SaveSetting()
 		config_close(config);
 	}
 	auto data = rtsp_output_read_data(true);
-	int port = ui->spinBoxPort->value();
-	obs_data_set_int(data, "port", port);
+	obs_data_set_int(data, "port", ui->spinBoxPort->value());
 	rtsp_output_save_data(data);
 }
