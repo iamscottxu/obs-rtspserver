@@ -76,7 +76,7 @@ void obs_frontend_event(enum obs_frontend_event event, void *ptr)
 
 void rtsp_output_auto_start(RtspOutputHelper *rtspOutputHelper)
 {
-	config_t *config = rtsp_properties_open_config();
+	auto *config = rtsp_properties_open_config();
 	auto autoStart = false;
 	if (config) {
 		autoStart =
