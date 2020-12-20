@@ -13,11 +13,9 @@
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE("obs-rtspserver", "en-US")
 
-RtspOutputHelper* rtspOutputHelper;
-
 void obs_frontend_event(enum obs_frontend_event event, void *ptr);
-void rtsp_output_auto_start();
-void rtsp_output_stop();
+void rtsp_output_auto_start(RtspOutputHelper *rtspOutputHelper);
+void rtsp_output_stop(RtspOutputHelper *rtspOutputHelper);
 void server_log_write_callback(xop::Priority priority, std::string info);
 
 const char *obs_module_name(void)
@@ -35,6 +33,7 @@ bool obs_module_load(void)
 	xop::Logger::instance().setWriteCallback(server_log_write_callback);
 	rtsp_output_register();
 
+	RtspOutputHelper *rtspOutputHelper;
 	{
 		auto *data = rtsp_output_read_data();
 		rtspOutputHelper = RtspOutputHelper::CreateRtspOutput(data);
@@ -51,7 +50,7 @@ bool obs_module_load(void)
 
 	action->connect(action, &QAction::triggered, rtspProperties, &QDialog::exec);
 
-	obs_frontend_add_event_callback(obs_frontend_event, nullptr);
+	obs_frontend_add_event_callback(obs_frontend_event, rtspOutputHelper);
 
 	return true;
 }
@@ -63,18 +62,19 @@ void obs_module_unload(void)
 
 void obs_frontend_event(enum obs_frontend_event event, void *ptr)
 {
+	auto rtspOutputHelper = (RtspOutputHelper *)ptr;
 	switch (event) {
 	case OBS_FRONTEND_EVENT_FINISHED_LOADING:
-		rtsp_output_auto_start();
+		rtsp_output_auto_start(rtspOutputHelper);
 		break;
 	case OBS_FRONTEND_EVENT_EXIT:
-		rtsp_output_stop();
+		rtsp_output_stop(rtspOutputHelper);
 		delete rtspOutputHelper;
 		break;
 	}
 }
 
-void rtsp_output_auto_start()
+void rtsp_output_auto_start(RtspOutputHelper *rtspOutputHelper)
 {
 	config_t *config = rtsp_properties_open_config();
 	auto autoStart = false;
@@ -89,7 +89,7 @@ void rtsp_output_auto_start()
 	rtspOutputHelper->Start();
 }
 
-void rtsp_output_stop()
+void rtsp_output_stop(RtspOutputHelper *rtspOutputHelper)
 {
 	rtspOutputHelper->Stop();
 }
