@@ -97,7 +97,8 @@ void MyRtspOutput::CreateAudioEncoder()
 {
 	releaseEncoder(&audioEncoder);
 	if (outputSettings.adv_out) {
-		audioEncoder = obs_get_encoder_by_name("avc_aac_stream");
+		if ((audioEncoder = obs_get_encoder_by_name("adv_stream_aac")) == NULL)
+			audioEncoder = obs_get_encoder_by_name("avc_aac_stream"); //OBS 26.0.2 Or Older
 		return;
 	}
 	audioEncoder = obs_get_encoder_by_name("simple_aac");
