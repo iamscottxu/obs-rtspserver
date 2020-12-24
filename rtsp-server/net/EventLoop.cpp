@@ -58,10 +58,10 @@ void EventLoop::Loop()
 
 	for (uint32_t n = 0; n < num_threads_; n++) 
 	{
-#if defined(__linux) || defined(__linux__) 
-		std::shared_ptr<TaskScheduler> task_scheduler_ptr(new EpollTaskScheduler(n));
-#elif defined(WIN32) || defined(_WIN32) 
+#if defined(WIN32) || defined(_WIN32)
 		std::shared_ptr<TaskScheduler> task_scheduler_ptr(new SelectTaskScheduler(n));
+#else
+                std::shared_ptr<TaskScheduler> task_scheduler_ptr(new EpollTaskScheduler(n));
 #endif
 		task_schedulers_.push_back(task_scheduler_ptr);
 		std::shared_ptr<std::thread> thread(new std::thread(&TaskScheduler::Start, task_scheduler_ptr.get()));
@@ -73,9 +73,7 @@ void EventLoop::Loop()
 
 	for (auto iter : threads_) 
 	{
-#if defined(__linux) || defined(__linux__) 
-
-#elif defined(WIN32) || defined(_WIN32) 
+#if defined(WIN32) || defined(_WIN32)
 		switch (priority) 
 		{
 		case TASK_SCHEDULER_PRIORITY_LOW:
@@ -94,6 +92,8 @@ void EventLoop::Loop()
 			SetThreadPriority(iter->native_handle(), THREAD_PRIORITY_TIME_CRITICAL);
 			break;
 		}
+#else
+
 #endif
 	}
 }

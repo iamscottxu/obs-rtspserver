@@ -66,10 +66,17 @@ target_link_libraries(obs-rtspserver
 	Qt5::Core
 	Qt5::Widgets)
 
-set_target_properties(obs-rtspserver
-	PROPERTIES
-	FOLDER "plugins"
-	VERSION "1.1.3"
-	PRODUCTNAME "OBS RTSP Server Plugin")
+if(APPLE)
+	set_target_properties(obs-rtspserver
+			PROPERTIES
+			FOLDER "plugins"
+			PRODUCTNAME "OBS RTSP Server Plugin")
+else()
+	set_target_properties(obs-rtspserver
+			PROPERTIES
+			FOLDER "plugins"
+			VERSION "1.1.3"
+			PRODUCTNAME "OBS RTSP Server Plugin")
+endif()
 
 install_obs_plugin_with_data(obs-rtspserver data)
