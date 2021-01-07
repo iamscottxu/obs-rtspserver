@@ -22,6 +22,14 @@ If you want to use compressed file to install manually, you can unzip it (e.g.: 
 * mkdir -p $HOME/.config/obs-studio/plugins
 * Untar, e.g.: tar -xzvf obs-rtspserver-v1.1.1-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
 
+### ArchLinux AUR Package
+obs-rtspserver is also available as an [AUR Package](https://aur.archlinux.org/packages/obs-rtspserver-bin/)
+If you use [yay](https://github.com/Jguer/yay) just run this to install it:
+
+```shell
+yay -S obs-rtspserver-bin
+```
+
 # Build
 * Install cmake, visual studio(only windows) and qt.
 * Download and configure the source code of obs-studio.
