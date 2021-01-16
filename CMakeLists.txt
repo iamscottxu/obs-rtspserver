@@ -18,13 +18,13 @@ set(obs-rtspserver_SOURCES
 	rtspoutput.rc
 	rtsp_output.cpp
 	rtsp_properties.cpp
-	my_rtsp_output.cpp
+	rtsp_output_helper.cpp
 	)
 
 set(obs-rtspserver_HEADERS
 	rtsp_output.h
 	rtsp_properties.h
-	my_rtsp_output.h
+	rtsp_output_helper.h
 	)
 	
 if(WIN32)
@@ -69,7 +69,7 @@ target_link_libraries(obs-rtspserver
 set_target_properties(obs-rtspserver
 	PROPERTIES
 	FOLDER "plugins"
-	VERSION "1.1.4"
+	VERSION "1.2.0"
 	PRODUCTNAME "OBS RTSP Server Plugin")
 
 install_obs_plugin_with_data(obs-rtspserver data)
