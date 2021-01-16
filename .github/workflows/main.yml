@@ -104,7 +104,7 @@ jobs:
           robocopy .\obs-studio\build32\plugins\obs-rtspserver\RelWithDebInfo\ .\build-package\obs-plugins\32bit\ obs-rtspserver.dll obs-rtspserver.pdb
           robocopy /E .\obs-studio\plugins\obs-rtspserver\data\ .\build-package\data\obs-plugins\obs-rtspserver\ *
           robocopy .\obs-studio\plugins\obs-rtspserver\ .\installer\ LICENSE
-          robocopy .\obs-studio\plugins\obs-rtspserver\installer\ .\installer\ installer.nsi obs.ico
+          robocopy /E .\obs-studio\plugins\obs-rtspserver\installer\ .\installer\ *
           mkdir release
           7z a ".\release\${{ env.WIN_FILENAME }}.zip" ".\build-package\*"
       - name: 'Publish ${{ env.WIN_FILENAME }}.zip'
