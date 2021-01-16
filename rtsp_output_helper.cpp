@@ -21,8 +21,8 @@ RtspOutputHelper::RtspOutputHelper(obs_output_t *obsOutput)
 RtspOutputHelper::~RtspOutputHelper()
 {
 	obs_output_release(obsOutput);
-	obs_encoder_release(videoEncoder);
-	obs_encoder_release(audioEncoder);
+	releaseEncoder(&videoEncoder);
+	releaseEncoder(&audioEncoder);
 }
 
 RtspOutputHelper *RtspOutputHelper::CreateRtspOutput(obs_data_t* settings)
@@ -30,8 +30,6 @@ RtspOutputHelper *RtspOutputHelper::CreateRtspOutput(obs_data_t* settings)
 	auto rtspOutput =
 		new RtspOutputHelper(obs_output_create("rtsp_output", "RtspOutput",
 						   settings, NULL));
-	rtspOutput->audioEncoder = nullptr;
-	rtspOutput->videoEncoder = nullptr;
 	return rtspOutput;
 }
 
@@ -45,6 +43,10 @@ void RtspOutputHelper::UpdateEncoder()
 	GetBaseConfig();
 	CreateVideoEncoder();
 	CreateAudioEncoder();
+	obs_encoder_set_video(videoEncoder, obs_output_video(obsOutput));
+	obs_encoder_set_audio(audioEncoder, obs_output_audio(obsOutput));
+	obs_output_set_video_encoder(obsOutput, videoEncoder);
+	obs_output_set_audio_encoder(obsOutput, audioEncoder, 0);
 }
 
 bool RtspOutputHelper::Start()
@@ -88,42 +90,26 @@ bool RtspOutputHelper::IsActive()
 
 void RtspOutputHelper::CreateVideoEncoder()
 {
-	obs_encoder_t *encoder = nullptr;
-	if (outputSettings.adv_out)
-		encoder = obs_get_encoder_by_name("streaming_h264");
-	else
-		encoder = obs_get_encoder_by_name("simple_h264_stream");
-	obs_encoder_release(videoEncoder);
-	videoEncoder = obs_video_encoder_create(
-		obs_encoder_get_id(encoder), "rtsp_output_video",
-		obs_encoder_get_settings(encoder), NULL);
-	obs_encoder_release(encoder);
-	if (outputSettings.adv_out)
+	releaseEncoder(&videoEncoder);
+	if (outputSettings.adv_out) {
+		videoEncoder = obs_get_encoder_by_name("streaming_h264");
 		obs_encoder_set_scaled_size(videoEncoder,
 					    outputSettings.rescale_cx,
 					    outputSettings.rescale_cy);
-	obs_encoder_set_video(videoEncoder, obs_output_video(obsOutput));
-	obs_output_set_video_encoder(obsOutput, videoEncoder);
+		return;
+	}
+	videoEncoder = obs_get_encoder_by_name("simple_h264_stream");
 }
 
 void RtspOutputHelper::CreateAudioEncoder()
 {
-	obs_encoder_t *encoder = nullptr;
+	releaseEncoder(&audioEncoder);
 	if (outputSettings.adv_out) {
-		if ((encoder =
-			     obs_get_encoder_by_name("adv_stream_aac")) == NULL)
-			encoder = obs_get_encoder_by_name(
-				"avc_aac_stream"); //OBS 26.0.2 Or Older
+		if ((audioEncoder = obs_get_encoder_by_name("adv_stream_aac")) == NULL)
+			audioEncoder = obs_get_encoder_by_name("avc_aac_stream"); //OBS 26.0.2 Or Older
+		return;
 	}
-	else
-		encoder = obs_get_encoder_by_name("simple_aac");
-	obs_encoder_release(audioEncoder);
-	audioEncoder = obs_audio_encoder_create(
-		obs_encoder_get_id(encoder), "rtsp_output_audio",
-		obs_encoder_get_settings(encoder), 0 , NULL);
-	obs_encoder_release(encoder);
-	obs_encoder_set_audio(audioEncoder, obs_output_audio(obsOutput));
-	obs_output_set_audio_encoder(obsOutput, audioEncoder, 0);
+	audioEncoder = obs_get_encoder_by_name("simple_aac");
 }
 
 void RtspOutputHelper::GetBaseConfig()
@@ -150,5 +136,11 @@ void RtspOutputHelper::GetBaseConfig()
 			}
 		}
 	}
+}
+
+void RtspOutputHelper::releaseEncoder(obs_encoder_t **encoder)
+{
+	obs_encoder_release(*encoder);
+	*encoder = nullptr;
 }
 
