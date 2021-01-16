@@ -2,6 +2,7 @@
 
 🇨🇳 [简体中文](//github.com/iamscottxu/obs-rtspserver/blob/master/README_zh-cn.md)
 🇩🇪 [Deutsch](//github.com/iamscottxu/obs-rtspserver/blob/master/README_de-de.md)
+🇪🇦 [Español](//github.com/iamscottxu/obs-rtspserver/blob/master/README_es-es.md)
 
 # OBS-RTSPServer
 
@@ -15,12 +16,12 @@ This is a plugin for obs-studio, encoding the output and publish rtsp stream.
 ## Windows
 You can use installer to install and the installer can be found in [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases) if use windows.
 
-If you want to use compressed file to install manually, you can unzip it (e.g.: obs-rtspserver-v1.1.1-windows.zip) and put it to your obs-studio install folder.
+If you want to use compressed file to install manually, you can unzip it (e.g.: obs-rtspserver-v1.2.0-windows.zip) and put it to your obs-studio install folder.
 
 ## Linux (Only x64)
 * Download the latest release from the [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases).
 * mkdir -p $HOME/.config/obs-studio/plugins
-* Untar, e.g.: tar -xzvf obs-rtspserver-v1.1.1-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
+* Untar, e.g.: tar -xzvf obs-rtspserver-v1.2.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
 
 ### ArchLinux AUR Package
 obs-rtspserver is also available as an [AUR Package](https://aur.archlinux.org/packages/obs-rtspserver-bin/)
