@@ -69,7 +69,7 @@ target_link_libraries(obs-rtspserver
 set_target_properties(obs-rtspserver
 	PROPERTIES
 	FOLDER "plugins"
-	VERSION "1.2.0"
+	VERSION "1.2.1"
 	PRODUCTNAME "OBS RTSP Server Plugin")
 
 install_obs_plugin_with_data(obs-rtspserver data)
