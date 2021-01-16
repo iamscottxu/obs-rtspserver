@@ -32,7 +32,6 @@ private:
 	void CreateVideoEncoder();
 	void CreateAudioEncoder();
 	void GetBaseConfig();
-	static void releaseEncoder(obs_encoder_t **encoder);
 	obs_output_t *obsOutput;
 	struct rtsp_output_settings outputSettings;
 	obs_encoder_t *videoEncoder = nullptr;
