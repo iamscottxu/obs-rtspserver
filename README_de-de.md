@@ -14,6 +14,8 @@ Sie können das Installationsprogramm zum Installieren verwenden. Das Installati
 
 Wenn Sie eine komprimierte Datei zur manuellen Installation verwenden möchten, können Sie sie entpacken (z. B. obs-rtspserver-v1.2.0-windows.zip) und in Ihrem obs-studio-Installationsordner ablegen.
 
+[![Paketstatus](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
+
 ## Linux (nur x64)
 * Laden Sie die neueste Version: [Release Seite](https://github.com/iamscottxu/obs-rtspserver/releases).
 * mkdir -p $HOME/.config/obs-studio/plugins
