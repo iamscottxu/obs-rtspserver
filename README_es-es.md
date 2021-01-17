@@ -19,6 +19,8 @@ Si desea utilizar un archivo comprimido para la instalación manual, puede desco
 * mkdir -p $HOME/.config/obs-studio/plugins
 * Untar, por Ej.: tar -xzvf obs-rtspserver-v1.2.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
 
+[![Estado de empaque](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
+
 ### ArchLinux Paquete AUR
 obs-rtspserver también está disponible como un [paquete AUR](https://aur.archlinux.org/packages/obs-rtspserver-bin/).
 Si está usando [yay] (https://github.com/Jguer/yay) puede instalarlo con el siguiente comando:
