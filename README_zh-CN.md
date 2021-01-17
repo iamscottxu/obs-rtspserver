@@ -12,12 +12,21 @@
 ## Windows
 如果你使用的是 Windows 操作系统，您可以使用安装程序进行安装，安装程序可以在[发布页面](https://github.com/iamscottxu/obs-rtspserver/releases)中找到。
 
-如果要使用压缩文件手动安装，可以解压缩压缩文件（例如： obs-rtspserver-v1.1.0-windows.zip）把它放到你的 OBS Studio 安装文件夹里。
+如果要使用压缩文件手动安装，可以解压缩压缩文件（例如： obs-rtspserver-v1.2.0-windows.zip）把它放到你的 OBS Studio 安装文件夹里。
 
 ## Linux (仅 x64)
 * 从[发布页面](https://github.com/iamscottxu/obs-rtspserver/releases)下载最新发布版本。
 * mkdir -p $HOME/.config/obs-studio/plugins
-* 解压压缩包。例如：tar -xzvf obs-rtspserver-v1.1.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
+* 解压压缩包。例如：tar -xzvf obs-rtspserver-v1.2.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
+
+[![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
+
+### ArchLinux AUR 软件包
+obs-rtspserver也可以作为[AUR软件包](https://aur.archlinux.org/packages/obs-rtspserver-bin/)提供。如果您使用[yay](https://github.com/Jguer/yay)，请运行以下命令进行安装：
+
+```shell
+yay -S obs-rtspserver-bin
+```
 
 # 生成
 * 安装 cmake 、 visual studio （仅 Windows ）和 qt ；
@@ -32,5 +41,5 @@
 请下载 VC++ 运行时并安装。[https://www.microsoft.com/zh-CN/download/details.aspx?id=48145](https://www.microsoft.com/zh-CN/download/details.aspx?id=48145)
 
 # 许可信息
-* [RtspServer](https://github.com/PHZ76/RtspServer/blob/master/LICENSE) - [MIT License](https://github.com/PHZ76/RtspServer/blob/master/LICENSE)
+* [RtspServer](https://github.com/PHZ76/RtspServer/) - [MIT License](https://github.com/PHZ76/RtspServer/blob/master/LICENSE)
 * [Qt5](https://www.qt.io/) - [GPL version 2](https://doc.qt.io/qt-5/licensing.html)
