@@ -1,9 +1,9 @@
 ![CI Release](https://github.com/iamscottxu/obs-rtspserver/workflows/CI%20Release/badge.svg)
 
-🇨🇳 [简体中文](//github.com/iamscottxu/obs-rtspserver/blob/master/README_zh-cn.md)
-🇪🇦 [Español](//github.com/iamscottxu/obs-rtspserver/blob/master/README_es-es.md)
-🇩🇪 [Deutsch](//github.com/iamscottxu/obs-rtspserver/blob/master/README_de-de.md)
-🇳🇱 [Nederlands](//github.com/iamscottxu/obs-rtspserver/blob/master/README_nl-nl.md)
+🇨🇳 [简体中文](//github.com/iamscottxu/obs-rtspserver/blob/master/README_zh-CN.md)
+🇪🇦 [Español](//github.com/iamscottxu/obs-rtspserver/blob/master/README_es-ES.md)
+🇩🇪 [Deutsch](//github.com/iamscottxu/obs-rtspserver/blob/master/README_de-DE.md)
+🇳🇱 [Nederlands](//github.com/iamscottxu/obs-rtspserver/blob/master/README_nl-NL.md)
 
 
 # OBS-RTSPServer
