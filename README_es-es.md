@@ -14,12 +14,12 @@ Puede utilizar el instalador para instalar. Puede encontrar el programa de insta
 
 Si desea utilizar un archivo comprimido para la instalación manual, puede descomprimirlo (por ejemplo, obs-rtspserver-v1.2.0-windows.zip) y guardarlo en su carpeta de instalación obs-studio.
 
-## Linux (nur x64)
+## Linux (solamente x64)
 * Descarge la última versión: [Página de lanzamiento](https://github.com/iamscottxu/obs-rtspserver/releases).
 * mkdir -p $HOME/.config/obs-studio/plugins
 * Untar, por Ej.: tar -xzvf obs-rtspserver-v1.2.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
 
-### ArchLinux AUR Paket
+### ArchLinux Paquete AUR
 obs-rtspserver también está disponible como un [paquete AUR](https://aur.archlinux.org/packages/obs-rtspserver-bin/).
 Si está usando [yay] (https://github.com/Jguer/yay) puede instalarlo con el siguiente comando:
 
