@@ -20,7 +20,7 @@
 * 解压压缩包。例如：tar -xzvf obs-rtspserver-v1.2.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
 
 ### ArchLinux AUR 软件包
-obs-rtspserver也可以作为[AUR](https://aur.archlinux.org/packages/obs-rtspserver-bin/)软件包提供。如果您使用[yay](https://github.com/Jguer/yay)，请运行以下命令进行安装：
+obs-rtspserver也可以作为[AUR软件包](https://aur.archlinux.org/packages/obs-rtspserver-bin/)提供。如果您使用[yay](https://github.com/Jguer/yay)，请运行以下命令进行安装：
 
 ```shell
 yay -S obs-rtspserver-bin
