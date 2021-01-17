@@ -1,4 +1,4 @@
-﻿LangString LANGTEXT_DISPLAYNAME ${LANG_GERMAN} "OBS RTSP Server Plugin"
+LangString LANGTEXT_DISPLAYNAME ${LANG_GERMAN} "OBS RTSP Server Plugin"
 LangString LANGTEXT_HEADER_TEXT ${LANG_GERMAN} "Lizenzinformationen"
 LangString LANGTEXT_HEADER_SUBTEXT ${LANG_GERMAN} "Bitte überprüfen Sie die Lizenzbedingungen, bevor Sie ${DISPLAYNAME} installieren."
 LangString LANGTEXT_LICENSEPAGE_TEXT_TOP ${LANG_GERMAN} "Drücken Sie auf Page Down oder scrollen Sie, um den Rest der Lizenz anzuzeigen."
