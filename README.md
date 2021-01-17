@@ -45,6 +45,8 @@ yay -S obs-rtspserver-bin
 # Can't found the plugin in menu
 See also [https://github.com/iamscottxu/obs-rtspserver/issues/1](https://github.com/iamscottxu/obs-rtspserver/issues/1).
 
+Please download and install the VC++ runtime. [https://www.microsoft.com/en-US/download/details.aspx?id=48145](https://www.microsoft.com/en-US/download/details.aspx?id=48145)
+
 # License
 * [RtspServer](https://github.com/PHZ76/RtspServer/) - [MIT License](https://github.com/PHZ76/RtspServer/blob/master/LICENSE)
 * [Qt5](https://www.qt.io/) - [GPL version 2](https://doc.qt.io/qt-5/licensing.html)
