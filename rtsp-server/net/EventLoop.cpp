@@ -1,16 +1,21 @@
 // PHZ
 // 2019-10-18
+// Scott Xu
+// 2021-1-20 Added MacOS support.
 
 #include "EventLoop.h"
 
 #if defined(WIN32) || defined(_WIN32) 
 #include<windows.h>
-#endif
-
-#if defined(WIN32) || defined(_WIN32) 
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib,"Iphlpapi.lib")
-#endif 
+#elif defined(__linux) || defined(__linux__)
+#include "EpollTaskScheduler.h"
+#elif defined(__APPLE__) || defined(__MACH__)
+#include "KqueueTaskScheduler.h"
+#else
+#include "SelectTaskScheduler.h"
+#endif
 
 using namespace xop;
 
@@ -45,7 +50,7 @@ std::shared_ptr<TaskScheduler> EventLoop::GetTaskScheduler()
 		return task_scheduler;
 	}
 
-	return nullptr;
+	//return nullptr;
 }
 
 void EventLoop::Loop()
@@ -60,8 +65,12 @@ void EventLoop::Loop()
 	{
 #if defined(WIN32) || defined(_WIN32)
 		std::shared_ptr<TaskScheduler> task_scheduler_ptr(new SelectTaskScheduler(n));
-#else
+#elif defined(__linux) || defined(__linux__)
                 std::shared_ptr<TaskScheduler> task_scheduler_ptr(new EpollTaskScheduler(n));
+#elif defined(__APPLE__) || defined(__MACH__)
+                std::shared_ptr<TaskScheduler> task_scheduler_ptr(new KqueueTaskScheduler(n));
+#else
+                std::shared_ptr<TaskScheduler> task_scheduler_ptr(new SelectTaskScheduler(n));
 #endif
 		task_schedulers_.push_back(task_scheduler_ptr);
 		std::shared_ptr<std::thread> thread(new std::thread(&TaskScheduler::Start, task_scheduler_ptr.get()));
