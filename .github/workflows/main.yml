@@ -226,83 +226,83 @@ jobs:
           name: '${{ env.GIT_TAG }}-linux'
           path: ${{ github.workspace }}/release/*.tar.gz
           
-#  macos:  
-#    name: 'Mac OS 64bit'
-#    runs-on: [macos-latest]
-#    steps:
-#      - name: 'Install brew'
-#        run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-#      - name: 'Install prerequisite'
-#        run: |
-#            brew install ffmpeg x264 qt5 git
-#      - name: 'Checkout OBS'
-#        uses: actions/checkout@v2
-#        with:
-#          repository: obsproject/obs-studio
-#          path: ${{ github.workspace }}/obs-studio
-#          submodules: 'recursive'
-#      - name: 'Get OBS-Studio git info'
-#        shell: bash
-#        working-directory: ${{ github.workspace }}/obs-studio
-#        run: |
-#          git fetch --prune --unshallow
-#          echo OBS_GIT_BRANCH=`git rev-parse --abbrev-ref HEAD` >> $GITHUB_ENV
-#          echo OBS_GIT_HASH=`git rev-parse --short HEAD` >> $GITHUB_ENV
-#          echo OBS_GIT_TAG=`git describe --tags --abbrev=0` >> $GITHUB_ENV
-#      - name: 'Checkout last OBS-Studio release (${{ env.OBS_GIT_TAG }})'
-#        shell: bash
-#        working-directory: ${{ github.workspace }}/obs-studio
-#        run: |
-#          git checkout ${{ env.OBS_GIT_TAG }}
-#          git submodule update
-#      - name: 'Checkout obs-rtspserver'
-#        uses: actions/checkout@v2
-#        with:
-#          path: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
-#          submodules: 'recursive'
-#      - name: 'Get obs-rtspserver tag'
-#        shell: bash
-#        run: |
-#          echo GIT_TAG=${GITHUB_REF/refs\/tags\//} >> $GITHUB_ENV
-#      - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
-#        shell: bash
-#        working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
-#        run: |
-#          git checkout ${{ env.GIT_TAG }}
-#          git submodule update
-#      - name: 'Add obs-rtspserver Subdirectory'
-#        working-directory: ${{ github.workspace }}/obs-studio/plugins
-#        run: echo "add_subdirectory(obs-rtspserver)" >> ./CMakeLists.txt
-#      - name: 'Configure OBS 64-bit'
-#        working-directory: ${{ github.workspace }}/obs-studio
-#        run: |
-#          mkdir ./build64
-#          cd ./build64
-#          cmake -DQTDIR="/usr/local/opt/qt" ..
-#      - name: 'Build obs-rtspserver 64-bit'
-#        working-directory: ${{ github.workspace }}/obs-studio/build64/plugins/obs-rtspserver/
-#        run: |
-#          make -j4
-#      - name: 'Set release filename'
-#        shell: bash
-#        run: |
-#          FILENAME="obs-rtspserver-${{ env.GIT_TAG }}-macos"
-#          echo MACOS_FILENAME=$FILENAME >> $GITHUB_ENV
-#      - name: 'Package obs-rtspserver'
-#        working-directory: ${{ github.workspace }}
-#        run: |
-#          mkdir -p build-package/obs-plugins/64bit
-#          mkdir -p build-package/data/obs-plugins/obs-rtspserver/locale/
-#          cp ./obs-studio/build64/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/obs-plugins/64bit/
-#          cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/data/obs-plugins/obs-rtspserver/
-#          mkdir release
-#          zip -q -r "./release/${{ env.MACOS_FILENAME }}.zip" "./build-package/*"
-#      - name: 'Publish ${{ env.MACOS_FILENAME }}.zip'
-#        if: success()
-#        uses: actions/upload-artifact@v2-preview
-#        with:
-#          name: '${{ env.GIT_TAG }}-macos'
-#          path: ${{ github.workspace }}/release/*.zip
+  macos:
+    name: 'Mac OS 64bit'
+    runs-on: [macos-latest]
+    steps:
+      - name: 'Install brew'
+        run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+      - name: 'Install prerequisite'
+        run: |
+            brew install ffmpeg x264 qt5 git
+      - name: 'Checkout OBS'
+        uses: actions/checkout@v2
+        with:
+          repository: obsproject/obs-studio
+          path: ${{ github.workspace }}/obs-studio
+          submodules: 'recursive'
+      - name: 'Get OBS-Studio git info'
+        shell: bash
+        working-directory: ${{ github.workspace }}/obs-studio
+        run: |
+          git fetch --prune --unshallow
+          echo OBS_GIT_BRANCH=`git rev-parse --abbrev-ref HEAD` >> $GITHUB_ENV
+          echo OBS_GIT_HASH=`git rev-parse --short HEAD` >> $GITHUB_ENV
+          echo OBS_GIT_TAG=`git describe --tags --abbrev=0` >> $GITHUB_ENV
+      - name: 'Checkout last OBS-Studio release (${{ env.OBS_GIT_TAG }})'
+        shell: bash
+        working-directory: ${{ github.workspace }}/obs-studio
+        run: |
+          git checkout ${{ env.OBS_GIT_TAG }}
+          git submodule update
+      - name: 'Checkout obs-rtspserver'
+        uses: actions/checkout@v2
+        with:
+          path: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
+          submodules: 'recursive'
+      - name: 'Get obs-rtspserver tag'
+        shell: bash
+        run: |
+          echo GIT_TAG=${GITHUB_REF/refs\/tags\//} >> $GITHUB_ENV
+      - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
+        shell: bash
+        working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
+        run: |
+          git checkout ${{ env.GIT_TAG }}
+          git submodule update
+      - name: 'Add obs-rtspserver Subdirectory'
+        working-directory: ${{ github.workspace }}/obs-studio/plugins
+        run: echo "add_subdirectory(obs-rtspserver)" >> ./CMakeLists.txt
+      - name: 'Configure OBS 64-bit'
+        working-directory: ${{ github.workspace }}/obs-studio
+        run: |
+          mkdir ./build64
+          cd ./build64
+          cmake -DQTDIR="/usr/local/opt/qt" ..
+      - name: 'Build obs-rtspserver 64-bit'
+        working-directory: ${{ github.workspace }}/obs-studio/build64/plugins/obs-rtspserver/
+        run: |
+          make -j4
+      - name: 'Set release filename'
+        shell: bash
+        run: |
+          FILENAME="obs-rtspserver-${{ env.GIT_TAG }}-macos"
+          echo MACOS_FILENAME=$FILENAME >> $GITHUB_ENV
+      - name: 'Package obs-rtspserver'
+        working-directory: ${{ github.workspace }}
+        run: |
+          mkdir -p build-package/obs-plugins/64bit
+          mkdir -p build-package/data/obs-plugins/obs-rtspserver/locale/
+          cp ./obs-studio/build64/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/obs-plugins/64bit/
+          cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/data/obs-plugins/obs-rtspserver/
+          mkdir release
+          zip -q -r "./release/${{ env.MACOS_FILENAME }}.zip" "./build-package/*"
+      - name: 'Publish ${{ env.MACOS_FILENAME }}.zip'
+        if: success()
+        uses: actions/upload-artifact@v2-preview
+        with:
+          name: '${{ env.GIT_TAG }}-macos'
+          path: ${{ github.workspace }}/release/*.zip
             
   make-release:
     name: 'Upload release'
@@ -343,13 +343,13 @@ jobs:
           asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-linux/obs-rtspserver-${{ env.TAG_VERSION }}-linux.tar.gz
           asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-linux.tar.gz
           asset_content_type: application/x-tar
-#      - name: 'Upload macos .zip artifact to release'
-#        uses: actions/upload-release-asset@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          upload_url: ${{ github.event.release.upload_url }}
-#          asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-macos/obs-rtspserver-${{ env.TAG_VERSION }}-macos.zip
-#          asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-macos.zip
-#          asset_content_type: application/zip
+      - name: 'Upload macos .zip artifact to release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-macos/obs-rtspserver-${{ env.TAG_VERSION }}-macos.zip
+          asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-macos.zip
+          asset_content_type: application/zip
       
