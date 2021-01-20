@@ -75,7 +75,7 @@ else()
 	set_target_properties(obs-rtspserver
 			PROPERTIES
 			FOLDER "plugins"
-			VERSION "1.2.1"
+			VERSION "1.3.0"
 			PRODUCTNAME "OBS RTSP Server Plugin")
 endif()
 
