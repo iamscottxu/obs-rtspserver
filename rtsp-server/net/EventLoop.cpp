@@ -7,6 +7,7 @@
 
 #if defined(WIN32) || defined(_WIN32) 
 #include<windows.h>
+#include "SelectTaskScheduler.h"
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib,"Iphlpapi.lib")
 #elif defined(__linux) || defined(__linux__)
