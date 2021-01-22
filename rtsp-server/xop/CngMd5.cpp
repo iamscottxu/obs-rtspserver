@@ -13,18 +13,36 @@ CngMd5::CngMd5() : Md5()
 {
 
 #if defined(WIN32) || defined(_WIN32)
+        DWORD cbData = 0;
 	NTSTATUS status = STATUS_UNSUCCESSFUL;
 	if (!NT_SUCCESS(status = BCryptOpenAlgorithmProvider(
 				&hAlgorithm_, BCRYPT_MD5_ALGORITHM, NULL, 0))) {
 		LOG_ERROR("**** Error 0x%x returned by BCryptOpenAlgorithmProvider",
 			status);
+		return;
+	}
+	if (!NT_SUCCESS(status = BCryptGetProperty(
+				hAlgorithm_, BCRYPT_OBJECT_LENGTH,
+						   (PBYTE)&cbHashObject_,
+						   sizeof(DWORD), &cbData,
+						   0))) {
+		LOG_ERROR("**** Error 0x%x returned by BCryptGetProperty",
+			status);
+		return;
+	}
+	if (!NT_SUCCESS(status = BCryptGetProperty(
+				hAlgorithm_, BCRYPT_HASH_LENGTH, (PBYTE)&cbHash_,
+				sizeof(DWORD), &cbData, 0))) {
+		LOG_ERROR("**** Error 0x%x returned by BCryptGetProperty",
+			status);
+		return;
 	}
 #endif
 }
 
 CngMd5::~CngMd5() {
 #if defined(WIN32) || defined(_WIN32)
-	BCryptCloseAlgorithmProvider(hAlgorithm_, 0);
+	if (hAlgorithm_) BCryptCloseAlgorithmProvider(hAlgorithm_, 0);
 #endif
 }
 
@@ -32,16 +50,8 @@ void CngMd5::GetMd5Hash(const unsigned char *data, size_t dataSize,
 			  unsigned char *outHash)
 {
 #if defined(WIN32) || defined(_WIN32)
-	DWORD cbData = 0, cbHash = 0, cbHashObject = 0;
-	BCRYPT_HASH_HANDLE hHash = NULL;
-	NTSTATUS status = STATUS_UNSUCCESSFUL;
-	if (!NT_SUCCESS(status = BCryptGetProperty(
-				hAlgorithm_, BCRYPT_OBJECT_LENGTH,
-						   (PBYTE)&cbHashObject,
-						   sizeof(DWORD), &cbData,
-						   0))) {
-		LOG_ERROR("**** Error 0x%x returned by BCryptGetProperty",
-			status);
+	if (cbHash > MD5_HASH_LENGTH) {
+		LOG_ERROR("**** The generated hash value is too long");
 		goto Cleanup;
 	}
 	PBYTE pbHashObject =
@@ -50,21 +60,12 @@ void CngMd5::GetMd5Hash(const unsigned char *data, size_t dataSize,
 		LOG_ERROR("**** memory allocation failed");
 		goto Cleanup;
 	}
-	if (!NT_SUCCESS(status = BCryptGetProperty(
-				hAlgorithm_, BCRYPT_HASH_LENGTH, (PBYTE)&cbHash,
-				sizeof(DWORD), &cbData, 0))) {
-		LOG_ERROR("**** Error 0x%x returned by BCryptGetProperty",
-			status);
-		goto Cleanup;
-	}
-	if (cbHash > MD5_HASH_LENGTH) {
-		LOG_ERROR("**** The generated hash value is too long");
-		goto Cleanup;
-	}
 	//create a hash
+	BCRYPT_HASH_HANDLE hHash = NULL;
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
 	if (!NT_SUCCESS(status = BCryptCreateHash(hAlgorithm_, &hHash,
 						  pbHashObject,
-						  cbHashObject, NULL, 0, 0))) {
+						  cbHashObject_, NULL, 0, 0))) {
 		LOG_ERROR("**** Error 0x%x returned by BCryptCreateHash",
 			status);
 		goto Cleanup;
@@ -77,7 +78,7 @@ void CngMd5::GetMd5Hash(const unsigned char *data, size_t dataSize,
 	}
 
 	//close the hash
-	if (!NT_SUCCESS(status = BCryptFinishHash(hHash, outHash, cbHash, 0))) {
+	if (!NT_SUCCESS(status = BCryptFinishHash(hHash, outHash, cbHash_, 0))) {
 		LOG_ERROR("**** Error 0x%x returned by BCryptFinishHash",
 			status);
 		goto Cleanup;
