@@ -19,7 +19,9 @@ public:
 			unsigned char *outHash);
 
 private:
+#if defined(WIN32) || defined(_WIN32)
 	BCRYPT_ALG_HANDLE hAlgorithm_ = NULL;
+#endif
 };
 }
 

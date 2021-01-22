@@ -10,7 +10,6 @@
 #include <map>
 #include <forward_list>
 #include "net/Logger.h"
-#include "net/NetInterface.h"
 #include "net/SocketUtil.h"
 
 using namespace xop;

@@ -14,6 +14,6 @@ void MacMd5::GetMd5Hash(const unsigned char *data, size_t dataSize,
 			  unsigned char *outHash)
 {
 #if defined(__APPLE__) || defined(__MACH__)
-	CC_MD5((char)data, (CC_LONG)dataSize, outHash);
+	CC_MD5(data, (CC_LONG)dataSize, outHash);
 #endif
 }

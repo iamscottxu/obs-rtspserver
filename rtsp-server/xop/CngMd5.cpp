@@ -23,7 +23,9 @@ CngMd5::CngMd5() : Md5()
 }
 
 CngMd5::~CngMd5() {
+#if defined(WIN32) || defined(_WIN32)
 	BCryptCloseAlgorithmProvider(hAlgorithm_, 0);
+#endif
 }
 
 void CngMd5::GetMd5Hash(const unsigned char *data, size_t dataSize,
