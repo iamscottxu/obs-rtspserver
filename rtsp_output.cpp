@@ -1,5 +1,6 @@
 #include <thread>
 #include <memory>
+#include <map>
 #include <iostream>
 #include <obs-module.h>
 #include <util/threading.h>
@@ -29,7 +30,8 @@ struct rtsp_out_data {
 	uint64_t stop_ts;
 
 	uint32_t num_clients = 0;
-	uint32_t audio_timestamp_clock = 0;
+	std::map<size_t, uint32_t> audio_timestamp_clocks;
+        std::map<size_t, xop::MediaChannelId> channel_ids;
 
 	std::unique_ptr<xop::EventLoop> event_loop;
 	std::shared_ptr<xop::RtspServer> server;
@@ -126,6 +128,34 @@ static void set_output_error(rtsp_out_data *out_data, char code, ...)
 	}
 }
 
+
+static bool rtsp_output_add_video_channel(void *data, xop::MediaSession *session)
+{
+        auto *out_data = (rtsp_out_data *)data;
+        auto video_encoder = obs_output_get_video_encoder(out_data->output);
+	auto video = obs_encoder_video(video_encoder);
+        auto video_frame_rate = video_output_get_frame_rate(video);
+        session->AddSource(xop::channel_0, xop::H264Source::CreateNew(
+                (uint32_t)video_frame_rate));
+	return true;
+}
+
+static bool rtsp_output_add_audio_channel(void *data, xop::MediaSession *session, size_t idx, xop::MediaChannelId channel_id)
+{
+        auto *out_data = (rtsp_out_data *)data;
+        auto audio_encoder = obs_output_get_audio_encoder(out_data->output, idx);
+        auto audio = obs_encoder_audio(audio_encoder);
+        auto audio_info = audio_output_get_info(audio);
+        auto audio_channels = get_audio_channels(audio_info->speakers);
+        auto audio_sample_rate = obs_encoder_get_sample_rate(audio_encoder);
+        session->AddSource(channel_id,
+                           xop::AACSource::CreateNew(audio_sample_rate,
+                                                     audio_channels, false));
+	out_data->channel_ids[idx] = channel_id;
+        out_data->audio_timestamp_clocks[idx] = audio_sample_rate;
+        return true;
+}
+
 static bool rtsp_output_start(void *data)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)data;
@@ -150,25 +180,28 @@ static bool rtsp_output_start(void *data)
 
 	os_atomic_set_bool(&out_data->stopping, false);
 
-	video_t *video = obs_output_video(out_data->output);
-	audio_t *audio = obs_output_audio(out_data->output);
-	const struct audio_output_info *audio_info =
-		audio_output_get_info(audio);
-	uint32_t audio_channels = get_audio_channels(audio_info->speakers);
-	uint32_t audio_sample_rate = obs_encoder_get_sample_rate(
-		obs_output_get_audio_encoder(out_data->output, 0));
-	double video_frame_rate = video_output_get_frame_rate(video);
-	out_data->audio_timestamp_clock = audio_sample_rate;
+        xop::MediaSession *session = xop::MediaSession::CreateNew("live", 4);
+
+        out_data->channel_ids = std::map<size_t, xop::MediaChannelId>();
+        out_data->audio_timestamp_clocks = std::map<size_t, uint32_t>();
+	if (!rtsp_output_add_video_channel(data, session)) {
+                return false;
+	}
+
+        if (!rtsp_output_add_audio_channel(data, session, 0, xop::channel_1)) {
+                return false;
+	}
+
+        if (!rtsp_output_add_audio_channel(data, session, 1, xop::channel_2)) {
+                return false;
+        }
+
+        if (!rtsp_output_add_audio_channel(data, session, 2, xop::channel_3)) {
+                return false;
+        }
 
 	out_data->frame_queue =
 		std::make_unique<threadsafe_queue<queue_frame>>();
-
-	xop::MediaSession *session = xop::MediaSession::CreateNew("live");
-	session->AddSource(xop::channel_0, xop::H264Source::CreateNew(
-						   (uint32_t)video_frame_rate));
-	session->AddSource(xop::channel_1,
-			   xop::AACSource::CreateNew(audio_sample_rate,
-						     audio_channels, false));
 
 	session->SetNotifyCallback([out_data](xop::MediaSessionId session_id,
 					      uint32_t num_clients) {
@@ -309,13 +342,13 @@ static void rtsp_output_audio(void *param, struct encoder_packet *packet)
 	audioFrame.type = xop::AUDIO_FRAME;
 	audioFrame.size = packet->size;
 	audioFrame.timestamp =
-		get_timestamp(out_data->audio_timestamp_clock, packet);
+		get_timestamp(out_data->audio_timestamp_clocks[packet->track_idx], packet);
 	audioFrame.buffer.reset(new uint8_t[audioFrame.size]);
 	memcpy(audioFrame.buffer.get(), packet->data, packet->size);
 
 	struct queue_frame queue_frame;
 	queue_frame.av_frame = audioFrame;
-	queue_frame.channe_id = xop::channel_1;
+	queue_frame.channe_id = out_data->channel_ids[packet->track_idx];
 	out_data->frame_queue->push(queue_frame);
 }
 
@@ -367,7 +400,6 @@ obs_properties_t *rtsp_output_properties(void *data)
 
 	obs_properties_add_int(props, "port",
 			       obs_module_text("RtspOutput.Port"), 1, 65535, 1);
-
 	return props;
 }
 
@@ -376,7 +408,7 @@ void rtsp_output_register()
 	struct obs_output_info output_info = {};
 	output_info.id = "rtsp_output";
 	output_info.flags = OBS_OUTPUT_AV | OBS_OUTPUT_ENCODED |
-			    OBS_OUTPUT_CAN_PAUSE;
+			    OBS_OUTPUT_CAN_PAUSE | OBS_OUTPUT_MULTI_TRACK;
 	output_info.encoded_video_codecs = "h264";
 	output_info.encoded_audio_codecs = "aac";
 	output_info.get_name = rtsp_output_getname;
