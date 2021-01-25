@@ -23,7 +23,7 @@ If you want to use compressed file to install manually, you can unzip it (e.g.: 
 ## Linux (Only x64)
 * Download the latest release from the [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases).
 * mkdir -p $HOME/.config/obs-studio/plugins
-* Untar, e.g.: tar -xzvf obs-rtspserver-v1.2.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
+* Untar, e.g.: tar -xzvf obs-rtspserver-v1.2.2-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
