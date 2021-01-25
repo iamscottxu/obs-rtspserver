@@ -10,15 +10,21 @@
 using namespace std;
 using namespace xop;
 
-RtpConnection::RtpConnection(std::weak_ptr<TcpConnection> rtsp_connection)
+RtpConnection::RtpConnection(std::weak_ptr<TcpConnection> rtsp_connection, uint32_t max_channel_count)
     : rtsp_connection_(rtsp_connection)
     , ipv6_(rtsp_connection.lock()->IsIpv6())
+    , local_rtp_port_(max_channel_count)
+    , local_rtcp_port_(max_channel_count)
+    , rtpfd_(max_channel_count, 0)
+    , rtcpfd_(max_channel_count, 0)
+    , peer_rtp_addr_(max_channel_count)
+    , peer_rtcp_sddr_(max_channel_count)
+    , media_channel_info_(max_channel_count)
+    , max_channel_count_(max_channel_count)
 {
 	std::random_device rd;
 
-	for(int chn=0; chn<MAX_MEDIA_CHANNEL; chn++) {
-		rtpfd_[chn] = 0;
-		rtcpfd_[chn] = 0;
+	for(int chn=0; chn<max_channel_count; chn++) {
 		memset(&media_channel_info_[chn], 0, sizeof(media_channel_info_[chn]));
 		media_channel_info_[chn].rtp_header.version = RTP_VERSION;
 		media_channel_info_[chn].packet_seq = rd()&0xffff;
@@ -30,7 +36,7 @@ RtpConnection::RtpConnection(std::weak_ptr<TcpConnection> rtsp_connection)
 
 RtpConnection::~RtpConnection()
 {
-	for(int chn=0; chn<MAX_MEDIA_CHANNEL; chn++) {
+	for(int chn=0; chn<max_channel_count_; chn++) {
 		if(rtpfd_[chn] > 0) {
 			SocketUtil::Close(rtpfd_[chn]);
 		}
@@ -190,7 +196,7 @@ bool RtpConnection::SetupRtpOverMulticast(MediaChannelId channel_id, std::string
 
 void RtpConnection::Play()
 {
-	for(int chn=0; chn<MAX_MEDIA_CHANNEL; chn++) {
+	for(int chn=0; chn<max_channel_count_; chn++) {
 		if (media_channel_info_[chn].is_setup) {
 			media_channel_info_[chn].is_play = true;
 		}
@@ -199,7 +205,7 @@ void RtpConnection::Play()
 
 void RtpConnection::Record()
 {
-	for (int chn=0; chn<MAX_MEDIA_CHANNEL; chn++) {
+	for (int chn=0; chn<max_channel_count_; chn++) {
 		if (media_channel_info_[chn].is_setup) {
 			media_channel_info_[chn].is_record = true;
 			media_channel_info_[chn].is_play = true;
@@ -211,7 +217,7 @@ void RtpConnection::Teardown()
 {
 	if(!is_closed_) {
 		is_closed_ = true;
-		for(int chn=0; chn<MAX_MEDIA_CHANNEL; chn++) {
+		for(int chn=0; chn<max_channel_count_; chn++) {
 			media_channel_info_[chn].is_play = false;
 			media_channel_info_[chn].is_record = false;
 		}
@@ -242,7 +248,7 @@ string RtpConnection::GetRtpInfo(const std::string& rtsp_url)
 
 	auto time_point = chrono::time_point_cast<chrono::milliseconds>(chrono::steady_clock::now());
 	auto ts = time_point.time_since_epoch().count();
-	for (int chn = 0; chn<MAX_MEDIA_CHANNEL; chn++) {
+	for (int chn = 0; chn<max_channel_count_; chn++) {
 		uint32_t rtpTime = (uint32_t)(ts*media_channel_info_[chn].clock_rate / 1000);
 		if (media_channel_info_[chn].is_setup) {
 			if (num_channel != 0) {

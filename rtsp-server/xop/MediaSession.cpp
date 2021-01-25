@@ -17,22 +17,20 @@ using namespace std;
 
 std::atomic_uint MediaSession::last_session_id_(1);
 
-MediaSession::MediaSession(std::string url_suffxx)
+MediaSession::MediaSession(std::string url_suffxx, uint32_t max_channel_count)
     : suffix_(url_suffxx)
-    , media_sources_(2)
-    , _buffer(2)
+    , media_sources_(max_channel_count)
+    , multicast_port_(max_channel_count, 0)
+    , _buffer(max_channel_count)
+    , max_channel_count_(max_channel_count)
 {
 	has_new_client_ = false;
 	session_id_ = ++last_session_id_;
-
-	for(int n=0; n<MAX_MEDIA_CHANNEL; n++) {
-		multicast_port_[n] = 0;
-	}
 }
 
-MediaSession* MediaSession::CreateNew(std::string url_suffxx)
+MediaSession* MediaSession::CreateNew(std::string url_suffxx, uint32_t max_channel_count)
 {
-	return new MediaSession(std::move(url_suffxx));
+	return new MediaSession(std::move(url_suffxx), max_channel_count);
 }
 
 MediaSession::~MediaSession()
@@ -44,6 +42,7 @@ MediaSession::~MediaSession()
 
 bool MediaSession::AddSource(MediaChannelId channelId, MediaSource* source)
 {
+	if (channelId >= max_channel_count_) return false;
 	source->SetSendFrameCallback([this](MediaChannelId channelId, RtpPacket pkt) {
 		std::forward_list<std::shared_ptr<RtpConnection>> clients;
 		std::map<int, RtpPacket> packets;
@@ -113,8 +112,8 @@ bool MediaSession::StartMulticast()
 	}
 
 	std::random_device rd;
-	multicast_port_[channel_0] = htons(rd() & 0xfffe);
-	multicast_port_[channel_1] = htons(rd() & 0xfffe);
+	for(uint32_t chn=0;chn< max_channel_count_;chn++)
+		multicast_port_[chn] = htons(rd() & 0xfffe);
 
 	is_multicast_ = true;
 	return true;
@@ -146,7 +145,7 @@ std::string MediaSession::GetSdpMessage(std::string ip, std::string sessionName,
 					"a=rtcp-unicast: reflection\r\n");
 	}
 		
-	for (uint32_t chn=0; chn<media_sources_.size(); chn++) {
+	for (uint32_t chn=0; chn< max_channel_count_; chn++) {
 		if(media_sources_[chn]) {	
 			if(is_multicast_) {
 				snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf), 
@@ -177,7 +176,7 @@ std::string MediaSession::GetSdpMessage(std::string ip, std::string sessionName,
 
 MediaSource* MediaSession::GetMediaSource(MediaChannelId channelId)
 {
-	if (media_sources_[channelId]) {
+	if (channelId < max_channel_count_) {
 		return media_sources_[channelId].get();
 	}
 
@@ -188,7 +187,7 @@ bool MediaSession::HandleFrame(MediaChannelId channelId, AVFrame frame)
 {
 	std::lock_guard<std::mutex> lock(mutex_);
 
-	if(media_sources_[channelId]) {
+        if (channelId < max_channel_count_) {
 		media_sources_[channelId]->HandleFrame(channelId, frame);
 	}
 	else {

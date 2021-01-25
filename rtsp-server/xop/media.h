@@ -44,12 +44,18 @@ struct AVFrame
 	uint32_t timestamp;		  	     /* 时间戳 */
 };
 
-#define MAX_MEDIA_CHANNEL 2
-
 enum MediaChannelId
 {
 	channel_0,
-	channel_1
+	channel_1,
+        channel_2,
+        channel_3,
+        channel_4,
+        channel_5,
+        channel_6,
+        channel_7,
+        channel_8,
+        channel_9
 };
 
 typedef uint32_t MediaSessionId;
