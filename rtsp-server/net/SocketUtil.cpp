@@ -258,7 +258,6 @@ bool SocketUtil::IsIpv6Socket(SOCKET sockfd)
 {
 	struct sockaddr_in6 addr = {0};
 	socklen_t addrlen = sizeof(addr);
-	auto a = getsockname(sockfd, (struct sockaddr*)&addr, &addrlen);
 	if (addr.sin6_family == AF_INET6)
 		return true;
 	return false;
