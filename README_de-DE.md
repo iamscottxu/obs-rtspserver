@@ -19,7 +19,7 @@ Wenn Sie eine komprimierte Datei zur manuellen Installation verwenden möchten, 
 ## Linux (nur x64)
 * Laden Sie die neueste Version: [Release Seite](https://github.com/iamscottxu/obs-rtspserver/releases).
 * mkdir -p $HOME/.config/obs-studio/plugins
-* Untar, z.B.: tar -xzvf obs-rtspserver-v1.2.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
+* Untar, z.B.: tar -xzvf obs-rtspserver-v1.2.2-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
 
 ### ArchLinux AUR Paket
 obs-rtspserver ist auch als [AUR Paket](https://aur.archlinux.org/packages/obs-rtspserver-bin/) verfügbar.
