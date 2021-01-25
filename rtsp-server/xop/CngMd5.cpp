@@ -50,12 +50,12 @@ void CngMd5::GetMd5Hash(const unsigned char *data, size_t dataSize,
 			  unsigned char *outHash)
 {
 #if defined(WIN32) || defined(_WIN32)
-	if (cbHash > MD5_HASH_LENGTH) {
+	if (cbHash_ > MD5_HASH_LENGTH) {
 		LOG_ERROR("**** The generated hash value is too long");
 		goto Cleanup;
 	}
 	PBYTE pbHashObject =
-		(PBYTE)HeapAlloc(GetProcessHeap(), 0, cbHashObject);
+		(PBYTE)HeapAlloc(GetProcessHeap(), 0, cbHashObject_);
 	if (NULL == pbHashObject) {
 		LOG_ERROR("**** memory allocation failed");
 		goto Cleanup;
