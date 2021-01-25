@@ -21,6 +21,7 @@ public:
 private:
 #if defined(WIN32) || defined(_WIN32)
 	BCRYPT_ALG_HANDLE hAlgorithm_ = NULL;
+	DWORD cbHash_ = 0, cbHashObject_ = 0;
 #endif
 };
 }
