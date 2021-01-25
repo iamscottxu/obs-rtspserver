@@ -12,7 +12,7 @@ Dies ist ein Plugin für obs-studio, das die Ausgabe codiert und ein RTSP-Stream
 ## Windows
 Sie können das Installationsprogramm zum Installieren verwenden. Das Installationsprogramm finden Sie hier [Release Seite](https://github.com/iamscottxu/obs-rtspserver/releases).
 
-Wenn Sie eine komprimierte Datei zur manuellen Installation verwenden möchten, können Sie sie entpacken (z. B. obs-rtspserver-v1.2.0-windows.zip) und in Ihrem obs-studio-Installationsordner ablegen.
+Wenn Sie eine komprimierte Datei zur manuellen Installation verwenden möchten, können Sie sie entpacken (z. B. obs-rtspserver-v1.2.2-windows.zip) und in Ihrem obs-studio-Installationsordner ablegen.
 
 [![Paketstatus](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
