@@ -292,10 +292,10 @@ jobs:
       - name: 'Package obs-rtspserver'
         working-directory: ${{ github.workspace }}
         run: |
-          mkdir -p build-package/obs-plugins/64bit
-          mkdir -p build-package/data/obs-plugins/obs-rtspserver/locale/
-          cp ./obs-studio/build64/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/obs-plugins/64bit/
-          cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/data/obs-plugins/obs-rtspserver/
+          mkdir -p build-package/Contents/Resources/data/obs-plugins/obs-rtspserver
+          mkdir -p build-package/Contents/PlugIns
+          cp ./obs-studio/build64/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/Contents/PlugIns/
+          cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/Contents/Resources/data/obs-plugins/obs-rtspserver/
           mkdir release
           cd ./build-package
           zip -r "../release/${{ env.MACOS_FILENAME }}.zip" "./"
