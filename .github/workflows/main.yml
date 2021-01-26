@@ -298,6 +298,11 @@ jobs:
           cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/Contents/Resources/data/obs-plugins/obs-rtspserver/
           mkdir release
           cd ./build-package
+          install_name_tool -change /usr/local/opt/ffmpeg/lib/libavutil.56.dylib @rpath/libavutil.56.dylib ./Contents/PlugIns/obs-rtspserver.so
+          install_name_tool -change /usr/local/opt/ffmpeg/lib/libavfilter.7.dylib @rpath/libavfilter.7.dylib ./Contents/PlugIns/obs-rtspserver.so
+          install_name_tool -change /usr/local/opt/qt/lib/QtWidgets.framework/Versions/5/QtWidgets @rpath/QtWidgets.framework/Versions/5/QtWidgets ./Contents/PlugIns/obs-rtspserver.so
+          install_name_tool -change /usr/local/opt/qt/lib/QtGui.framework/Versions/5/QtGui @rpath/QtGui.framework/Versions/5/QtGui ./Contents/PlugIns/obs-rtspserver.so
+          install_name_tool -change /usr/local/opt/qt/lib/QtCore.framework/Versions/5/QtCore @rpath/QtCore.framework/Versions/5/QtCore ./Contents/PlugIns/obs-rtspserver.so
           zip -r "../release/${{ env.MACOS_FILENAME }}.zip" "./"
       - name: 'Publish ${{ env.MACOS_FILENAME }}.zip'
         if: success()
