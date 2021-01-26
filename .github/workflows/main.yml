@@ -234,6 +234,7 @@ jobs:
         run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
       - name: 'Install prerequisite'
         run: |
+            rm -rf '/usr/local/bin/2to3'
             brew install ffmpeg x264 qt5
       - name: 'Checkout OBS'
         uses: actions/checkout@v2
