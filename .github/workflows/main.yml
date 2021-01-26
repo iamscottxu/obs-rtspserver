@@ -307,7 +307,7 @@ jobs:
   make-release:
     name: 'Upload release'
     runs-on: [ubuntu-latest]
-    needs: [windows, linux]
+    needs: [windows, linux, macos]
     steps:
       - name: 'Get the version'
         shell: bash
