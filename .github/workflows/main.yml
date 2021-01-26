@@ -298,7 +298,7 @@ jobs:
           cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/data/obs-plugins/obs-rtspserver/
           mkdir release
           cd ./build-package
-          zip -r "./release/${{ env.MACOS_FILENAME }}.zip" "./"
+          zip -r "../release/${{ env.MACOS_FILENAME }}.zip" "./"
       - name: 'Publish ${{ env.MACOS_FILENAME }}.zip'
         if: success()
         uses: actions/upload-artifact@v2-preview
