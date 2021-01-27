@@ -125,7 +125,7 @@ private:
 	std::unique_ptr<DigestAuthentication> auth_info_;
 
 	std::shared_ptr<Channel>       rtp_channel_;
-	std::map<uint32_t, std::shared_ptr<Channel>> rtcp_channels_;
+	std::shared_ptr<Channel>       rtcp_channels_[MAX_MEDIA_CHANNEL];
 	std::unique_ptr<RtspRequest>   rtsp_request_;
 	std::unique_ptr<RtspResponse>  rtsp_response_;
 	std::shared_ptr<RtpConnection> rtp_conn_;
