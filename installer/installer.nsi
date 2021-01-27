@@ -27,9 +27,6 @@ SetCompressor LZMA
 ; Include library for dll stuff
 !include Library.nsh
 
-; Include uninstall Previous function
-!include .\function\unprevious.nsi
-
 !define MUI_ICON "obs.ico"
 !define MUI_UNICON "obs.ico"
 ;!define MUI_HEADERIMAGE
