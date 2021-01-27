@@ -296,6 +296,8 @@ jobs:
           mkdir -p build-package/obs-rtspserver/data
           cp ./obs-studio/build64/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/obs-rtspserver/bin/
           cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/obs-rtspserver/data/
+          cp -r ./obs-studio/plugins/obs-rtspserver/pkg ./pkg
+          cp ./obs-studio/plugins/obs-rtspserver/LICENSE ./pkg/LICENSE.txt
           mkdir release
           cd ./build-package
           install_name_tool \
@@ -312,6 +314,17 @@ jobs:
         with:
           name: '${{ env.GIT_TAG }}-macos'
           path: ${{ github.workspace }}/release/*.zip
+      - name: Build obs-rtspserver package
+        working-directory: ${{ github.workspace }}/pkg
+        run: |
+            packagesbuild ./obs-rtspserver.pkgproj
+            mv ./build/obs-rtspserver.pkg ./build/${{ env.MACOS_FILENAME }}.pkg
+      - name: 'Publish ${{ env.MACOS_FILENAME }}.pkg'
+        if: success()
+        uses: actions/upload-artifact@v2-preview
+        with:
+          name: '${{ env.GIT_TAG }}-macos-pkg'
+          path: ${{ github.workspace }}/pkg/build/*.pkg
             
   make-release:
     name: 'Upload release'
@@ -361,4 +374,13 @@ jobs:
           asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-macos/obs-rtspserver-${{ env.TAG_VERSION }}-macos.zip
           asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-macos.zip
           asset_content_type: application/zip
+      - name: 'Upload macos .pkg artifact to release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-macos-pkg/obs-rtspserver-${{ env.TAG_VERSION }}-macos.pkg
+          asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-macos.pkg
+          asset_content_type: application/vnd.apple.installer+xml
       
