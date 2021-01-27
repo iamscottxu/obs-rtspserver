@@ -4,6 +4,8 @@ name: 'CI Release'
 on:
     release:
       types: [published]
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+(-[a-z]+[0-9]*)?'
 
 jobs:
   windows:
@@ -60,8 +62,10 @@ jobs:
         shell: bash
         run: |
           export GIT_TAG=${GITHUB_REF/refs\/tags\//}
+          export TAG_VERSION=${GIT_TAG#v}
           echo GIT_TAG=${GIT_TAG} >> $GITHUB_ENV
-          echo TAG_VERSION=${GIT_TAG/v/} >> $GITHUB_ENV
+          echo TAG_VERSION=${TAG_VERSION} >> $GITHUB_ENV
+          echo TAG_FVERSION=${TAG_VERSION/-*/}.0 >> $GITHUB_ENV
       - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
         shell: bash
         working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
@@ -111,7 +115,7 @@ jobs:
           7z a ".\release\${{ env.WIN_FILENAME }}.zip" ".\build-package\*"
       - name: 'Build obs-rtspserver installer'
         working-directory: ${{ github.workspace }}\installer
-        run: makensis /V4 /DVERSION=${{ env.TAG_VERSION }} .\installer.nsi
+        run: makensis /V4 /DVERSION=${{ env.TAG_VERSION }} /DFVERSION=${{ env.TAG_FVERSION }} .\installer.nsi
       - name: 'Publish files'
         if: success()
         uses: actions/upload-artifact@v2
@@ -173,7 +177,7 @@ jobs:
         run: |
           export GIT_TAG=${GITHUB_REF/refs\/tags\//}
           echo GIT_TAG=${GIT_TAG} >> $GITHUB_ENV
-          echo TAG_VERSION=${GIT_TAG/v/} >> $GITHUB_ENV
+          echo TAG_VERSION=${GIT_TAG#v} >> $GITHUB_ENV
       - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
         shell: bash
         working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
@@ -264,7 +268,7 @@ jobs:
         run: |
           export GIT_TAG=${GITHUB_REF/refs\/tags\//}
           echo GIT_TAG=${GIT_TAG} >> $GITHUB_ENV
-          echo TAG_VERSION=${GIT_TAG/v/} >> $GITHUB_ENV
+          echo TAG_VERSION=${GIT_TAG#v} >> $GITHUB_ENV
       - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
         shell: bash
         working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
