@@ -109,7 +109,7 @@ jobs:
           7z a ".\release\${{ env.WIN_FILENAME }}.zip" ".\build-package\*"
       - name: 'Publish ${{ env.WIN_FILENAME }}.zip'
         if: success()
-        uses: actions/upload-artifact@v2-preview
+        uses: actions/upload-artifact@v2
         with:
           name: '${{ env.GIT_TAG }}-windows'
           path: ${{ github.workspace }}\release\*.zip
@@ -118,7 +118,7 @@ jobs:
         run: makensis /DVERSION=${{ env.GIT_TAG }} .\installer.nsi
       - name: 'Publish ${{ env.WIN_FILENAME }}-windows-installer.exe'
         if: success()
-        uses: actions/upload-artifact@v2-preview
+        uses: actions/upload-artifact@v2
         with:
           name: '${{ env.GIT_TAG }}-windows-installer'
           path: ${{ github.workspace }}\build-package\*.exe
@@ -221,7 +221,7 @@ jobs:
           tar zcvf "./release/${{ env.LINUX_FILENAME }}.tar.gz" -C "./build-package" .
       - name: 'Publish ${{ env.LINUX_FILENAME }}.tar.gz'
         if: success()
-        uses: actions/upload-artifact@v2-preview
+        uses: actions/upload-artifact@v2
         with:
           name: '${{ env.GIT_TAG }}-linux'
           path: ${{ github.workspace }}/release/*.tar.gz
@@ -234,7 +234,8 @@ jobs:
         run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
       - name: 'Install prerequisite'
         run: |
-            brew install ffmpeg x264 qt5 git
+            rm -rf '/usr/local/bin/2to3'
+            brew install ffmpeg x264 qt5
       - name: 'Checkout OBS'
         uses: actions/checkout@v2
         with:
@@ -291,23 +292,44 @@ jobs:
       - name: 'Package obs-rtspserver'
         working-directory: ${{ github.workspace }}
         run: |
-          mkdir -p build-package/obs-plugins/64bit
-          mkdir -p build-package/data/obs-plugins/obs-rtspserver/locale/
-          cp ./obs-studio/build64/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/obs-plugins/64bit/
-          cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/data/obs-plugins/obs-rtspserver/
+          mkdir -p build-package/obs-rtspserver/bin
+          mkdir -p build-package/obs-rtspserver/data
+          cp ./obs-studio/build64/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/obs-rtspserver/bin/
+          cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/obs-rtspserver/data/
+          cp -r ./obs-studio/plugins/obs-rtspserver/pkg ./pkg
+          cp ./obs-studio/plugins/obs-rtspserver/LICENSE ./pkg/LICENSE.txt
           mkdir release
-          zip -q -r "./release/${{ env.MACOS_FILENAME }}.zip" "./build-package/*"
+          cd ./build-package
+          install_name_tool \
+            -change /usr/local/opt/ffmpeg/lib/libavutil.56.dylib @rpath/libavutil.56.dylib \
+            -change /usr/local/opt/ffmpeg/lib/libavfilter.7.dylib @rpath/libavfilter.7.dylib \
+            -change /usr/local/opt/qt/lib/QtWidgets.framework/Versions/5/QtWidgets @rpath/QtWidgets.framework/Versions/5/QtWidgets \
+            -change /usr/local/opt/qt/lib/QtGui.framework/Versions/5/QtGui @rpath/QtGui.framework/Versions/5/QtGui \
+            -change /usr/local/opt/qt/lib/QtCore.framework/Versions/5/QtCore @rpath/QtCore.framework/Versions/5/QtCore \
+            ./build-package/obs-rtspserver/bin/obs-rtspserver.so
+          zip -r "../release/${{ env.MACOS_FILENAME }}.zip" "./"
       - name: 'Publish ${{ env.MACOS_FILENAME }}.zip'
         if: success()
-        uses: actions/upload-artifact@v2-preview
+        uses: actions/upload-artifact@v2
         with:
           name: '${{ env.GIT_TAG }}-macos'
           path: ${{ github.workspace }}/release/*.zip
+      - name: Build obs-rtspserver package
+        working-directory: ${{ github.workspace }}/pkg
+        run: |
+            packagesbuild ./obs-rtspserver.pkgproj
+            mv ./build/obs-rtspserver.pkg ./build/${{ env.MACOS_FILENAME }}.pkg
+      - name: 'Publish ${{ env.MACOS_FILENAME }}.pkg'
+        if: success()
+        uses: actions/upload-artifact@v2
+        with:
+          name: '${{ env.GIT_TAG }}-macos-pkg'
+          path: ${{ github.workspace }}/pkg/build/*.pkg
             
   make-release:
     name: 'Upload release'
     runs-on: [ubuntu-latest]
-    needs: [windows, linux]
+    needs: [windows, linux, macos]
     steps:
       - name: 'Get the version'
         shell: bash
@@ -352,4 +374,13 @@ jobs:
           asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-macos/obs-rtspserver-${{ env.TAG_VERSION }}-macos.zip
           asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-macos.zip
           asset_content_type: application/zip
+      - name: 'Upload macos .pkg artifact to release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-macos-pkg/obs-rtspserver-${{ env.TAG_VERSION }}-macos.pkg
+          asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-macos.pkg
+          asset_content_type: application/vnd.apple.installer+xml
       
