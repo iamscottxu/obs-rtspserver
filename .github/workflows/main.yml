@@ -117,7 +117,7 @@ jobs:
           path: ${{ github.workspace }}\release\*.zip
       - name: Build obs-rtspserver installer
         working-directory: ${{ github.workspace }}\installer
-        run: makensis /DVERSION=${{ env.GIT_TAG }} .\installer.nsi
+        run: makensis /V4 /DVERSION=${{ env.GIT_TAG }} .\installer.nsi
       - name: 'Publish ${{ env.WIN_FILENAME }}-windows-installer.exe'
         if: success()
         uses: actions/upload-artifact@v2
