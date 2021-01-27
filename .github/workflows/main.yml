@@ -235,7 +235,7 @@ jobs:
       - name: 'Install prerequisite'
         run: |
             rm -rf '/usr/local/bin/2to3'
-            brew install ffmpeg x264 qt5
+            brew install ffmpeg x264 qt5 packages
       - name: 'Checkout OBS'
         uses: actions/checkout@v2
         with:
