@@ -306,7 +306,7 @@ jobs:
             -change /usr/local/opt/qt/lib/QtWidgets.framework/Versions/5/QtWidgets @rpath/QtWidgets.framework/Versions/5/QtWidgets \
             -change /usr/local/opt/qt/lib/QtGui.framework/Versions/5/QtGui @rpath/QtGui.framework/Versions/5/QtGui \
             -change /usr/local/opt/qt/lib/QtCore.framework/Versions/5/QtCore @rpath/QtCore.framework/Versions/5/QtCore \
-            ./build-package/obs-rtspserver/bin/obs-rtspserver.so
+            ./obs-rtspserver/bin/obs-rtspserver.so
           zip -r "../release/${{ env.MACOS_FILENAME }}.zip" "./"
       - name: 'Publish ${{ env.MACOS_FILENAME }}.zip'
         if: success()
