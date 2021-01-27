@@ -292,17 +292,19 @@ jobs:
       - name: 'Package obs-rtspserver'
         working-directory: ${{ github.workspace }}
         run: |
-          mkdir -p build-package/Contents/Resources/data/obs-plugins/obs-rtspserver
-          mkdir -p build-package/Contents/PlugIns
-          cp ./obs-studio/build64/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/Contents/PlugIns/
-          cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/Contents/Resources/data/obs-plugins/obs-rtspserver/
+          mkdir -p build-package/obs-rtspserver/bin
+          mkdir -p build-package/obs-rtspserver/data
+          cp ./obs-studio/build64/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/obs-rtspserver/bin/
+          cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/obs-rtspserver/data/
           mkdir release
           cd ./build-package
-          install_name_tool -change /usr/local/opt/ffmpeg/lib/libavutil.56.dylib @rpath/libavutil.56.dylib ./Contents/PlugIns/obs-rtspserver.so
-          install_name_tool -change /usr/local/opt/ffmpeg/lib/libavfilter.7.dylib @rpath/libavfilter.7.dylib ./Contents/PlugIns/obs-rtspserver.so
-          install_name_tool -change /usr/local/opt/qt/lib/QtWidgets.framework/Versions/5/QtWidgets @rpath/QtWidgets.framework/Versions/5/QtWidgets ./Contents/PlugIns/obs-rtspserver.so
-          install_name_tool -change /usr/local/opt/qt/lib/QtGui.framework/Versions/5/QtGui @rpath/QtGui.framework/Versions/5/QtGui ./Contents/PlugIns/obs-rtspserver.so
-          install_name_tool -change /usr/local/opt/qt/lib/QtCore.framework/Versions/5/QtCore @rpath/QtCore.framework/Versions/5/QtCore ./Contents/PlugIns/obs-rtspserver.so
+          install_name_tool \
+            -change /usr/local/opt/ffmpeg/lib/libavutil.56.dylib @rpath/libavutil.56.dylib \
+            -change /usr/local/opt/ffmpeg/lib/libavfilter.7.dylib @rpath/libavfilter.7.dylib \
+            -change /usr/local/opt/qt/lib/QtWidgets.framework/Versions/5/QtWidgets @rpath/QtWidgets.framework/Versions/5/QtWidgets \
+            -change /usr/local/opt/qt/lib/QtGui.framework/Versions/5/QtGui @rpath/QtGui.framework/Versions/5/QtGui \
+            -change /usr/local/opt/qt/lib/QtCore.framework/Versions/5/QtCore @rpath/QtCore.framework/Versions/5/QtCore \
+            ./build-package/obs-rtspserver/bin/obs-rtspserver.so
           zip -r "../release/${{ env.MACOS_FILENAME }}.zip" "./"
       - name: 'Publish ${{ env.MACOS_FILENAME }}.zip'
         if: success()
