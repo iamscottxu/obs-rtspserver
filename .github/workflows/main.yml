@@ -74,7 +74,7 @@ jobs:
         run: |
           mkdir .\build32
           cd .\build32
-          cmake -G "${{ env.CMAKE_GENERATOR }}" -A Win32 -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DQTDIR="${{ github.workspace }}\cmbuild\QT\${{ env.QT_VERSION }}\msvc2017" -DDepsPath="${{ github.workspace }}\cmbuild\deps\win32" -DBUILD_CAPTIONS=YES -DCOPIED_DEPENDENCIES=NO -DCOPY_DEPENDENCIES=YES ..
+          cmake -G "${{ env.CMAKE_GENERATOR }}" -A Win32 -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DQTDIR="${{ github.workspace }}\cmbuild\QT\${{ env.QT_VERSION }}\msvc2017" -DDepsPath="${{ github.workspace }}\cmbuild\deps\win32" -DBUILD_CAPTIONS=YES -DCOPIED_DEPENDENCIES=NO -DCOPY_DEPENDENCIES=YES -DDISABLE_PYTHON="ON" ..
       - name: 'Build obs-rtspserver 32-bit'
         working-directory: ${{ github.workspace }}/obs-studio
         run: |
@@ -84,7 +84,7 @@ jobs:
         run: |
           mkdir .\build64
           cd .\build64
-          cmake -G "${{ env.CMAKE_GENERATOR }}" -A x64 -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DQTDIR="${{ github.workspace }}\cmbuild\QT\${{ env.QT_VERSION }}\msvc2017_64" -DDepsPath="${{ github.workspace }}\cmbuild\deps\win64" -DBUILD_CAPTIONS=YES -DCOPIED_DEPENDENCIES=NO -DCOPY_DEPENDENCIES=YES ..
+          cmake -G "${{ env.CMAKE_GENERATOR }}" -A x64 -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DQTDIR="${{ github.workspace }}\cmbuild\QT\${{ env.QT_VERSION }}\msvc2017_64" -DDepsPath="${{ github.workspace }}\cmbuild\deps\win64" -DBUILD_CAPTIONS=YES -DCOPIED_DEPENDENCIES=NO -DCOPY_DEPENDENCIES=YES -DDISABLE_PYTHON="ON" ..
       - name: 'Build obs-rtspserver 64-bit'
         working-directory: ${{ github.workspace }}/obs-studio
         run: |
@@ -200,7 +200,7 @@ jobs:
         run: |
           mkdir ./build64
           cd ./build64
-          cmake -D -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr ..
+          cmake -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DDISABLE_PYTHON="ON" ..
       - name: 'Build obs-rtspserver 64-bit'
         working-directory: ${{ github.workspace }}/obs-studio/build64/plugins/obs-rtspserver/
         run: |
@@ -235,7 +235,7 @@ jobs:
       - name: 'Install prerequisite'
         run: |
             rm -rf '/usr/local/bin/2to3'
-            brew install ffmpeg x264 qt5
+            brew install ffmpeg x264 qt5 packages
       - name: 'Checkout OBS'
         uses: actions/checkout@v2
         with:
@@ -265,6 +265,7 @@ jobs:
         shell: bash
         run: |
           echo GIT_TAG=${GITHUB_REF/refs\/tags\//} >> $GITHUB_ENV
+          echo TAG_VERSION=${GIT_TAG/v/} >> $GITHUB_ENV
       - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
         shell: bash
         working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
@@ -279,7 +280,7 @@ jobs:
         run: |
           mkdir ./build64
           cd ./build64
-          cmake -DQTDIR="/usr/local/opt/qt" ..
+          cmake -DQTDIR="/usr/local/opt/qt" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.13" -DDISABLE_PYTHON="ON" ..
       - name: 'Build obs-rtspserver 64-bit'
         working-directory: ${{ github.workspace }}/obs-studio/build64/plugins/obs-rtspserver/
         run: |
@@ -306,7 +307,7 @@ jobs:
             -change /usr/local/opt/qt/lib/QtWidgets.framework/Versions/5/QtWidgets @rpath/QtWidgets.framework/Versions/5/QtWidgets \
             -change /usr/local/opt/qt/lib/QtGui.framework/Versions/5/QtGui @rpath/QtGui.framework/Versions/5/QtGui \
             -change /usr/local/opt/qt/lib/QtCore.framework/Versions/5/QtCore @rpath/QtCore.framework/Versions/5/QtCore \
-            ./build-package/obs-rtspserver/bin/obs-rtspserver.so
+            ./obs-rtspserver/bin/obs-rtspserver.so
           zip -r "../release/${{ env.MACOS_FILENAME }}.zip" "./"
       - name: 'Publish ${{ env.MACOS_FILENAME }}.zip'
         if: success()
@@ -317,7 +318,8 @@ jobs:
       - name: Build obs-rtspserver package
         working-directory: ${{ github.workspace }}/pkg
         run: |
-            packagesbuild ./obs-rtspserver.pkgproj
+            sed -i "" 's/%{VERSION}/${{ env.TAG_VERSION }}/g' ./obs-rtspserver.pkgproj
+            packagesbuild -v --package-version "${{ env.TAG_VERSION }}" ./obs-rtspserver.pkgproj
             mv ./build/obs-rtspserver.pkg ./build/${{ env.MACOS_FILENAME }}.pkg
       - name: 'Publish ${{ env.MACOS_FILENAME }}.pkg'
         if: success()
