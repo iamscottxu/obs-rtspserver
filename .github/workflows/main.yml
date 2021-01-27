@@ -109,21 +109,15 @@ jobs:
           robocopy /E .\obs-studio\plugins\obs-rtspserver\installer\ .\installer\ *
           mkdir release
           7z a ".\release\${{ env.WIN_FILENAME }}.zip" ".\build-package\*"
-      - name: 'Publish ${{ env.WIN_FILENAME }}.zip'
+      - name: 'Build obs-rtspserver installer'
+        working-directory: ${{ github.workspace }}\installer
+        run: makensis /V4 /DVERSION=${{ env.TAG_VERSION }} .\installer.nsi
+      - name: 'Publish files'
         if: success()
         uses: actions/upload-artifact@v2
         with:
           name: '${{ env.GIT_TAG }}-windows'
-          path: ${{ github.workspace }}\release\*.zip
-      - name: Build obs-rtspserver installer
-        working-directory: ${{ github.workspace }}\installer
-        run: makensis /V4 /DVERSION=${{ env.GIT_TAG }} .\installer.nsi
-      - name: 'Publish ${{ env.WIN_FILENAME }}-windows-installer.exe'
-        if: success()
-        uses: actions/upload-artifact@v2
-        with:
-          name: '${{ env.GIT_TAG }}-windows-installer'
-          path: ${{ github.workspace }}\build-package\*.exe
+          path: ${{ github.workspace }}\release\*
 
   linux:
     name: 'Linux 64bit'
@@ -223,12 +217,12 @@ jobs:
           cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/obs-rtspserver/data/
           mkdir release
           tar zcvf "./release/${{ env.LINUX_FILENAME }}.tar.gz" -C "./build-package" .
-      - name: 'Publish ${{ env.LINUX_FILENAME }}.tar.gz'
+      - name: 'Publish files'
         if: success()
         uses: actions/upload-artifact@v2
         with:
           name: '${{ env.GIT_TAG }}-linux'
-          path: ${{ github.workspace }}/release/*.tar.gz
+          path: ${{ github.workspace }}/release/*
           
   macos:
     name: 'Mac OS 64bit'
@@ -314,24 +308,18 @@ jobs:
             -change /usr/local/opt/qt/lib/QtCore.framework/Versions/5/QtCore @rpath/QtCore.framework/Versions/5/QtCore \
             ./obs-rtspserver/bin/obs-rtspserver.so
           zip -r "../release/${{ env.MACOS_FILENAME }}.zip" "./"
-      - name: 'Publish ${{ env.MACOS_FILENAME }}.zip'
-        if: success()
-        uses: actions/upload-artifact@v2
-        with:
-          name: '${{ env.GIT_TAG }}-macos'
-          path: ${{ github.workspace }}/release/*.zip
-      - name: Build obs-rtspserver package
+      - name: 'Build obs-rtspserver package'
         working-directory: ${{ github.workspace }}/pkg
         run: |
             sed -i "" 's/%{VERSION}/${{ env.TAG_VERSION }}/g' ./obs-rtspserver.pkgproj
             packagesbuild -v --package-version "${{ env.TAG_VERSION }}" ./obs-rtspserver.pkgproj
-            mv ./build/obs-rtspserver.pkg ./build/${{ env.MACOS_FILENAME }}.pkg
-      - name: 'Publish ${{ env.MACOS_FILENAME }}.pkg'
+            mv ./build/obs-rtspserver.pkg ../release/${{ env.MACOS_FILENAME }}.pkg
+      - name: 'Publish files'
         if: success()
         uses: actions/upload-artifact@v2
         with:
-          name: '${{ env.GIT_TAG }}-macos-pkg'
-          path: ${{ github.workspace }}/pkg/build/*.pkg
+          name: '${{ env.GIT_TAG }}-macos'
+          path:  ${{ github.workspace }}/release/*
             
   make-release:
     name: 'Upload release'
@@ -342,17 +330,17 @@ jobs:
         shell: bash
         id: get_version
         run: |
-          echo TAG_VERSION=${GITHUB_REF/refs\/tags\//} >> $GITHUB_ENV
+          echo GIT_TAG=${GITHUB_REF/refs\/tags\//} >> $GITHUB_ENV
       - name: 'Download release artifacts'
-        uses: actions/download-artifact@v2-preview
+        uses: actions/download-artifact@v2
       - name: 'Upload Windows .zip artifact to release'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-windows/obs-rtspserver-${{ env.TAG_VERSION }}-windows.zip
-          asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-windows.zip
+          asset_path: ${{ github.workspace }}/${{ env.GIT_TAG }}-windows/obs-rtspserver-${{ env.GIT_TAG }}-windows.zip
+          asset_name: obs-rtspserver-${{ env.GIT_TAG }}-windows.zip
           asset_content_type: application/zip
       - name: 'Upload Windows .exe artifact to release'
         uses: actions/upload-release-asset@v1
@@ -360,8 +348,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-windows-installer/obs-rtspserver-${{ env.TAG_VERSION }}-windows-installer.exe
-          asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-windows-installer.exe
+          asset_path: ${{ github.workspace }}/${{ env.GIT_TAG }}-windows/obs-rtspserver-${{ env.GIT_TAG }}-windows-installer.exe
+          asset_name: obs-rtspserver-${{ env.GIT_TAG }}-windows-installer.exe
           asset_content_type: application/x-msdownload
       - name: 'Upload linux .tar.gz artifact to release'
         uses: actions/upload-release-asset@v1
@@ -369,8 +357,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-linux/obs-rtspserver-${{ env.TAG_VERSION }}-linux.tar.gz
-          asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-linux.tar.gz
+          asset_path: ${{ github.workspace }}/${{ env.GIT_TAG }}-linux/obs-rtspserver-${{ env.GIT_TAG }}-linux.tar.gz
+          asset_name: obs-rtspserver-${{ env.GIT_TAG }}-linux.tar.gz
           asset_content_type: application/x-tar
       - name: 'Upload macos .zip artifact to release'
         uses: actions/upload-release-asset@v1
@@ -378,8 +366,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-macos/obs-rtspserver-${{ env.TAG_VERSION }}-macos.zip
-          asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-macos.zip
+          asset_path: ${{ github.workspace }}/${{ env.GIT_TAG }}-macos/obs-rtspserver-${{ env.GIT_TAG }}-macos.zip
+          asset_name: obs-rtspserver-${{ env.GIT_TAG }}-macos.zip
           asset_content_type: application/zip
       - name: 'Upload macos .pkg artifact to release'
         uses: actions/upload-release-asset@v1
@@ -387,7 +375,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.TAG_VERSION }}-macos-pkg/obs-rtspserver-${{ env.TAG_VERSION }}-macos.pkg
-          asset_name: obs-rtspserver-${{ env.TAG_VERSION }}-macos.pkg
+          asset_path: ${{ github.workspace }}/${{ env.GIT_TAG }}-macos/obs-rtspserver-${{ env.GIT_TAG }}-macos.pkg
+          asset_name: obs-rtspserver-${{ env.GIT_TAG }}-macos.pkg
           asset_content_type: application/vnd.apple.installer+xml
-      
