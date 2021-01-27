@@ -265,6 +265,7 @@ jobs:
         shell: bash
         run: |
           echo GIT_TAG=${GITHUB_REF/refs\/tags\//} >> $GITHUB_ENV
+          echo TAG_VERSION=${GIT_TAG/v/} >> $GITHUB_ENV
       - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
         shell: bash
         working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
@@ -317,6 +318,7 @@ jobs:
       - name: Build obs-rtspserver package
         working-directory: ${{ github.workspace }}/pkg
         run: |
+            sed -i "" 's/%{VERSION}/${{ env.TAG_VERSION }}/g' ./obs-rtspserver.pkgproj
             packagesbuild ./obs-rtspserver.pkgproj
             mv ./build/obs-rtspserver.pkg ./build/${{ env.MACOS_FILENAME }}.pkg
       - name: 'Publish ${{ env.MACOS_FILENAME }}.pkg'
