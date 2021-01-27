@@ -264,7 +264,8 @@ jobs:
       - name: 'Get obs-rtspserver tag'
         shell: bash
         run: |
-          echo GIT_TAG=${GITHUB_REF/refs\/tags\//} >> $GITHUB_ENV
+          export GIT_TAG=${GITHUB_REF/refs\/tags\//}
+          echo GIT_TAG=${GIT_TAG} >> $GITHUB_ENV
           echo TAG_VERSION=${GIT_TAG/v/} >> $GITHUB_ENV
       - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
         shell: bash
