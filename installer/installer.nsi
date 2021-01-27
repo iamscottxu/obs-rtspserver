@@ -57,12 +57,6 @@ SetCompressor LZMA
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
-Section -SecUninstallPrevious
-
-    Call UninstallPrevious
-	
-SectionEnd
-
 Section "!OBS RTSP Server"
 
 	SectionIn RO
