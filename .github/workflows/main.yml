@@ -109,7 +109,7 @@ jobs:
           7z a ".\release\${{ env.WIN_FILENAME }}.zip" ".\build-package\*"
       - name: 'Publish ${{ env.WIN_FILENAME }}.zip'
         if: success()
-        uses: actions/upload-artifact@v2-preview
+        uses: actions/upload-artifact@v2
         with:
           name: '${{ env.GIT_TAG }}-windows'
           path: ${{ github.workspace }}\release\*.zip
@@ -118,7 +118,7 @@ jobs:
         run: makensis /DVERSION=${{ env.GIT_TAG }} .\installer.nsi
       - name: 'Publish ${{ env.WIN_FILENAME }}-windows-installer.exe'
         if: success()
-        uses: actions/upload-artifact@v2-preview
+        uses: actions/upload-artifact@v2
         with:
           name: '${{ env.GIT_TAG }}-windows-installer'
           path: ${{ github.workspace }}\build-package\*.exe
@@ -221,7 +221,7 @@ jobs:
           tar zcvf "./release/${{ env.LINUX_FILENAME }}.tar.gz" -C "./build-package" .
       - name: 'Publish ${{ env.LINUX_FILENAME }}.tar.gz'
         if: success()
-        uses: actions/upload-artifact@v2-preview
+        uses: actions/upload-artifact@v2
         with:
           name: '${{ env.GIT_TAG }}-linux'
           path: ${{ github.workspace }}/release/*.tar.gz
@@ -310,7 +310,7 @@ jobs:
           zip -r "../release/${{ env.MACOS_FILENAME }}.zip" "./"
       - name: 'Publish ${{ env.MACOS_FILENAME }}.zip'
         if: success()
-        uses: actions/upload-artifact@v2-preview
+        uses: actions/upload-artifact@v2
         with:
           name: '${{ env.GIT_TAG }}-macos'
           path: ${{ github.workspace }}/release/*.zip
@@ -321,7 +321,7 @@ jobs:
             mv ./build/obs-rtspserver.pkg ./build/${{ env.MACOS_FILENAME }}.pkg
       - name: 'Publish ${{ env.MACOS_FILENAME }}.pkg'
         if: success()
-        uses: actions/upload-artifact@v2-preview
+        uses: actions/upload-artifact@v2
         with:
           name: '${{ env.GIT_TAG }}-macos-pkg'
           path: ${{ github.workspace }}/pkg/build/*.pkg
