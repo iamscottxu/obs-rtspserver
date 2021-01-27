@@ -124,6 +124,6 @@ FunctionEnd
 VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "OBS Studio"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "OBS RTSP Server Plugin Installer"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "OriginalFilename" "obs-rtspserver-v${SHORTVERSION}-windows-installer.exe"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductVersion" "${SHORTVERSION}"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductVersion" "${APPVERSION}"
 
 VIProductVersion "${APPVERSION}"
