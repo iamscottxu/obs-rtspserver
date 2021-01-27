@@ -521,7 +521,7 @@
 				<key>USE_HFS+_COMPRESSION</key>
 				<false/>
 				<key>VERSION</key>
-				<string>1.0</string>
+				<string>%{VERSION}</string>
 			</dict>
 			<key>TYPE</key>
 			<integer>0</integer>
@@ -693,12 +693,6 @@
 					</dict>
 					<dict>
 						<key>LANGUAGE</key>
-						<string>German</string>
-						<key>VALUE</key>
-						<string>OBS RTSP Server Plugin</string>
-					</dict>
-					<dict>
-						<key>LANGUAGE</key>
 						<string>Dutch</string>
 						<key>VALUE</key>
 						<string>OBS RTSP Server Plugin</string>
@@ -711,15 +705,21 @@
 					</dict>
 					<dict>
 						<key>LANGUAGE</key>
+						<string>Traditional Chinese</string>
+						<key>VALUE</key>
+						<string>OBS RTSP 伺服器外掛程式</string>
+					</dict>
+					<dict>
+						<key>LANGUAGE</key>
 						<string>Spanish</string>
 						<key>VALUE</key>
 						<string>Complemento servidor RTSP para OBS</string>
 					</dict>
 					<dict>
 						<key>LANGUAGE</key>
-						<string>Traditional Chinese</string>
+						<string>German</string>
 						<key>VALUE</key>
-						<string>OBS RTSP 伺服器外掛程式</string>
+						<string>OBS RTSP Server Plugin</string>
 					</dict>
 				</array>
 			</dict>
