@@ -280,7 +280,7 @@ jobs:
         run: |
           mkdir ./build64
           cd ./build64
-          cmake -DQTDIR="/usr/local/opt/qt" ..
+          cmake -DQTDIR="/usr/local/opt/qt" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.13" -DDISABLE_PYTHON="ON" ..
       - name: 'Build obs-rtspserver 64-bit'
         working-directory: ${{ github.workspace }}/obs-studio/build64/plugins/obs-rtspserver/
         run: |
@@ -319,7 +319,7 @@ jobs:
         working-directory: ${{ github.workspace }}/pkg
         run: |
             sed -i "" 's/%{VERSION}/${{ env.TAG_VERSION }}/g' ./obs-rtspserver.pkgproj
-            packagesbuild ./obs-rtspserver.pkgproj
+            packagesbuild -v --package-version "${{ env.TAG_VERSION }}" ./obs-rtspserver.pkgproj
             mv ./build/obs-rtspserver.pkg ./build/${{ env.MACOS_FILENAME }}.pkg
       - name: 'Publish ${{ env.MACOS_FILENAME }}.pkg'
         if: success()
