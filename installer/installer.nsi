@@ -27,6 +27,9 @@ SetCompressor LZMA
 ; Include library for dll stuff
 !include Library.nsh
 
+; Include uninstall Previous function
+!include .\function\unprevious.nsi
+
 !define MUI_ICON "obs.ico"
 !define MUI_UNICON "obs.ico"
 ;!define MUI_HEADERIMAGE
@@ -56,6 +59,12 @@ SetCompressor LZMA
 !include .\locale.nsi
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
+
+Section -SecUninstallPrevious
+
+    Call UninstallPrevious
+	
+SectionEnd
 
 Section "!OBS RTSP Server"
 
