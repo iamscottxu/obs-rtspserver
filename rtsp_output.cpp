@@ -15,6 +15,8 @@
 #define ERROR_START_RTSP_SERVER 3
 #define ERROR_ENCODE OBS_OUTPUT_ENCODE_ERROR
 
+#define AUDIO_TRACK_COUNT 6
+
 struct queue_frame {
 	struct xop::AVFrame av_frame;
 	xop::MediaChannelId channe_id;
@@ -68,10 +70,13 @@ static void *rtsp_output_create(obs_data_t *settings, obs_output_t *output)
 		(rtsp_out_data *)bzalloc(sizeof(struct rtsp_out_data));
 
 	data->output = output;
-	rtsp_output_update(data, settings);
 
 	data->event_loop = std::make_unique<xop::EventLoop>();
+        data->audio_timestamp_clocks = std::map<size_t, uint32_t>();
+        data->channel_ids = std::map<size_t, xop::MediaChannelId>();
 	data->server = xop::RtspServer::Create(data->event_loop.get());
+
+        rtsp_output_update(data, settings);
 
 	UNUSED_PARAMETER(settings);
 	return data;
@@ -133,6 +138,10 @@ static bool rtsp_output_add_video_channel(void *data, xop::MediaSession *session
 {
         auto *out_data = (rtsp_out_data *)data;
         auto video_encoder = obs_output_get_video_encoder(out_data->output);
+        if (video_encoder == nullptr) {
+                set_output_error(out_data, ERROR_INIT_ENCODERS);
+                return false;
+        }
 	auto video = obs_encoder_video(video_encoder);
         auto video_frame_rate = video_output_get_frame_rate(video);
         session->AddSource(xop::channel_0, xop::H264Source::CreateNew(
@@ -144,6 +153,10 @@ static bool rtsp_output_add_audio_channel(void *data, xop::MediaSession *session
 {
         auto *out_data = (rtsp_out_data *)data;
         auto audio_encoder = obs_output_get_audio_encoder(out_data->output, idx);
+	if (audio_encoder == nullptr) {
+                set_output_error(out_data, ERROR_INIT_ENCODERS);
+                return false;
+	}
         auto audio = obs_encoder_audio(audio_encoder);
         auto audio_info = audio_output_get_info(audio);
         auto audio_channels = get_audio_channels(audio_info->speakers);
@@ -151,7 +164,6 @@ static bool rtsp_output_add_audio_channel(void *data, xop::MediaSession *session
         session->AddSource(channel_id,
                            xop::AACSource::CreateNew(audio_sample_rate,
                                                      audio_channels, false));
-	out_data->channel_ids[idx] = channel_id;
         out_data->audio_timestamp_clocks[idx] = audio_sample_rate;
         return true;
 }
@@ -160,12 +172,13 @@ static bool rtsp_output_start(void *data)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)data;
 
-	if (!obs_output_can_begin_data_capture(out_data->output, 0)) {
+	auto av_flags = out_data->channel_ids.size() > 0 ?  0 : OBS_OUTPUT_AUDIO;
+	if (!obs_output_can_begin_data_capture(out_data->output, av_flags)) {
 		set_output_error(out_data, ERROR_BEGIN_DATA_CAPTURE);
 		return false;
 	}
 
-	if (!obs_output_initialize_encoders(out_data->output, 0)) {
+	if (!obs_output_initialize_encoders(out_data->output, av_flags)) {
 		set_output_error(out_data, ERROR_INIT_ENCODERS);
 		return false;
 	}
@@ -182,23 +195,15 @@ static bool rtsp_output_start(void *data)
 
         xop::MediaSession *session = xop::MediaSession::CreateNew("live", 4);
 
-        out_data->channel_ids = std::map<size_t, xop::MediaChannelId>();
-        out_data->audio_timestamp_clocks = std::map<size_t, uint32_t>();
-	if (!rtsp_output_add_video_channel(data, session)) {
-                return false;
-	}
-
-        if (!rtsp_output_add_audio_channel(data, session, 0, xop::channel_1)) {
-                return false;
-	}
-
-        if (!rtsp_output_add_audio_channel(data, session, 1, xop::channel_2)) {
+        out_data->audio_timestamp_clocks.clear();
+        if (!rtsp_output_add_video_channel(data, session)) {
                 return false;
         }
-
-        if (!rtsp_output_add_audio_channel(data, session, 2, xop::channel_3)) {
-                return false;
-        }
+	for (auto iter : out_data->channel_ids) {
+                if (!rtsp_output_add_audio_channel(data, session, iter.first, iter.second)) {
+                        return false;
+                }
+	}
 
 	out_data->frame_queue =
 		std::make_unique<threadsafe_queue<queue_frame>>();
@@ -383,12 +388,26 @@ static void rtsp_output_data(void *data, struct encoder_packet *packet)
 static void rtsp_output_defaults(obs_data_t *defaults)
 {
 	obs_data_set_default_int(defaults, "port", 554);
+        for (size_t index = 0; index < AUDIO_TRACK_COUNT; index++)
+        {
+                auto name = string("audio_track").append(to_string(index + 1));
+                obs_data_set_default_bool(defaults, name.c_str(), index == 0);
+        }
 }
 
 static void rtsp_output_update(void *data, obs_data_t *settings)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)data;
 	out_data->port = obs_data_get_int(settings, "port");
+
+	out_data->channel_ids.clear();
+	size_t channel_index = 1;
+        for (size_t index = 0; index < AUDIO_TRACK_COUNT; index++)
+        {
+                auto name = string("audio_track").append(to_string(index + 1));
+                if (obs_data_get_bool(settings, name.c_str()))
+			out_data->channel_ids[index] = (xop::MediaChannelId)channel_index++;
+	}
 }
 
 obs_properties_t *rtsp_output_properties(void *data)
@@ -400,6 +419,17 @@ obs_properties_t *rtsp_output_properties(void *data)
 
 	obs_properties_add_int(props, "port",
 			       obs_module_text("RtspOutput.Port"), 1, 65535, 1);
+
+        obs_properties_t *audio_tracks_props = obs_properties_create();
+	for (size_t index = 0; index < AUDIO_TRACK_COUNT; index++)
+        {
+		auto name = string("audio_track").append(to_string(index + 1));
+                auto lookup_string = string("RtspOutput.AudioTrack").append(to_string(index + 1));
+                obs_properties_add_bool(audio_tracks_props, name.c_str(),
+                                        obs_module_text(lookup_string.c_str()));
+	}
+	obs_properties_add_group(props, "audio_tracks",
+				 obs_module_text("RtspOutput.AudioTracks"), OBS_GROUP_NORMAL, audio_tracks_props);
 	return props;
 }
 
