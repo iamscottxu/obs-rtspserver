@@ -38,34 +38,36 @@ bool SocketUtil::Bind(SOCKET sockfd, std::string ip, uint16_t port, bool ipv6)
 
 void SocketUtil::SetNonBlock(SOCKET fd)
 {
-#if defined(WIN32) || defined(_WIN32)
-        unsigned long on = 1;
-	ioctlsocket(fd, FIONBIO, &on);
+#if defined(__linux) || defined(__linux__)
+	int flags = fcntl(fd, F_GETFL, 0);
+	fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 #else
-        int flags = fcntl(fd, F_GETFL, 0);
-        fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+	unsigned long on = 1;
+	ioctlsocket(fd, FIONBIO, &on);
 #endif
 }
 
 void SocketUtil::SetBlock(SOCKET fd, int writeTimeout)
 {
-#if defined(WIN32) || defined(_WIN32)
+#if defined(__linux) || defined(__linux__)
+	int flags = fcntl(fd, F_GETFL, 0);
+	fcntl(fd, F_SETFL, flags & (~O_NONBLOCK));
+#elif defined(WIN32) || defined(_WIN32)
 	unsigned long on = 0;
 	ioctlsocket(fd, FIONBIO, &on);
 #else
-        int flags = fcntl(fd, F_GETFL, 0);
-        fcntl(fd, F_SETFL, flags & (~O_NONBLOCK));
 #endif
 	if (writeTimeout > 0) {
 #ifdef SO_SNDTIMEO
-#if defined(WIN32) || defined(_WIN32)
+#if defined(__linux) || defined(__linux__)
+		struct timeval tv = {writeTimeout / 1000,
+				     (writeTimeout % 1000) * 1000};
+		setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv, sizeof tv);
+#elif defined(WIN32) || defined(_WIN32)
 		unsigned long ms = (unsigned long)writeTimeout;
 		setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&ms,
 			   sizeof(unsigned long));
 #else
-                struct timeval tv = {writeTimeout / 1000,
-                                     (writeTimeout % 1000) * 1000};
-                setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv, sizeof tv);
 #endif
 #endif
 	}
@@ -192,10 +194,10 @@ int SocketUtil::GetSocketAddr6(SOCKET sockfd, struct sockaddr_in6 *addr)
 
 void SocketUtil::Close(SOCKET sockfd)
 {
-#if defined(WIN32) || defined(_WIN32)
+#if defined(__linux) || defined(__linux__)
+	::close(sockfd);
+#elif defined(WIN32) || defined(_WIN32)
 	::closesocket(sockfd);
-#else
-        ::close(sockfd);
 #endif
 }
 

@@ -116,11 +116,11 @@ int BufferWriter::Send(SOCKET sockfd, int timeout)
 			}
 		}
 		else if (ret < 0) {
-#if defined(WIN32) || defined(_WIN32)
+#if defined(__linux) || defined(__linux__)
+		if (errno == EINTR || errno == EAGAIN) 
+#elif defined(WIN32) || defined(_WIN32)
 			int error = WSAGetLastError();
 			if (error == WSAEWOULDBLOCK || error == WSAEINPROGRESS || error == 0)
-#else
-                        if (errno == EINTR || errno == EAGAIN)
 #endif
 			{
 				ret = 0;

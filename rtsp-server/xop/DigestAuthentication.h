@@ -6,7 +6,6 @@
 
 #include <cstdint>
 #include <string>
-#include "Md5.h"
 
 namespace xop
 {
@@ -30,11 +29,10 @@ public:
 	std::string GetResponse(std::string nonce, std::string cmd, std::string url);
 
 private:
-
 	std::string m_realm;
 	std::string m_username;
 	std::string m_password;
-	Md5* md5;
+
 };
 
 }
