@@ -12,8 +12,7 @@
 #include <thread>
 #include <mutex>
 
-#include "SelectTaskScheduler.h"
-#include "EpollTaskScheduler.h"
+#include "TaskScheduler.h"
 #include "Pipe.h"
 #include "Timer.h"
 #include "RingBuffer.h"

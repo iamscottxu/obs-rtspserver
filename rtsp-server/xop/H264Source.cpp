@@ -10,7 +10,9 @@
 #include "H264Source.h"
 #include <cstdio>
 #include <chrono>
-#if defined(__linux) || defined(__linux__)
+#if defined(WIN32) || defined(_WIN32)
+
+#else
 #include <sys/time.h>
 #endif
 

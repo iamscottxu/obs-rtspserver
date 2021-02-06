@@ -1,5 +1,7 @@
 #include "TaskScheduler.h"
-#if defined(__linux) || defined(__linux__) 
+#if defined(WIN32) || defined(_WIN32)
+
+#else
 #include <signal.h>
 #endif
 
@@ -35,7 +37,9 @@ TaskScheduler::~TaskScheduler()
 
 void TaskScheduler::Start()
 {
-#if defined(__linux) || defined(__linux__) 
+#if defined(WIN32) || defined(_WIN32)
+
+#else
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGQUIT, SIG_IGN);
 	signal(SIGUSR1, SIG_IGN);

@@ -9,7 +9,8 @@
 #include <mutex>
 #include <unordered_map>
 
-#if defined(__linux) || defined(__linux__) 
+#if defined(WIN32) || defined(_WIN32)
+#else
 #include <sys/select.h>
 #include <sys/time.h>
 #include <sys/types.h>

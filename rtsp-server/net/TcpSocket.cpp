@@ -85,12 +85,10 @@ bool TcpSocket::Connect(std::string ip, uint16_t port, int timeout)
 
 void TcpSocket::Close()
 {
-#if defined(__linux) || defined(__linux__) 
-    ::close(sockfd_);
-#elif defined(WIN32) || defined(_WIN32)
-    closesocket(sockfd_);
+#if defined(WIN32) || defined(_WIN32)
+        closesocket(sockfd_);
 #else
-	
+	::close(sockfd_);
 #endif
 	sockfd_ = 0;
 }
