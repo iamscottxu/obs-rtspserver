@@ -158,7 +158,8 @@ bool SelectTaskScheduler::HandleEvent(int timeout)
 	struct timeval tv = { timeout/1000, timeout%1000*1000 };
 	int ret = select((int)maxfd_+1, &fd_read, &fd_write, &fd_exp, &tv); 	
 	if (ret < 0) {
-#if defined(__linux) || defined(__linux__) 
+#if defined(WIN32) || defined(_WIN32)
+#else
 	if(errno == EINTR) {
 		return true;
 	}					
