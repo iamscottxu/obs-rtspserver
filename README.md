@@ -10,7 +10,7 @@
 
 This is a plugin for obs-studio, encoding the output and publish rtsp stream.
 
-**Supported Platforms** : Windows 7 , Windows 8 , Windows 10 and Linux
+**Supported Platforms** : Windows 7 , Windows 8 , Windows 10, Linux and macOS
 
 **Supported OBS Studio version** : 24.0.0+
 
