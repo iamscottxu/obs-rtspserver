@@ -4,7 +4,7 @@
 
 Dit is een plug-in voor obs-studio die de uitvoer codeert en een RTSP-stream publiceert.
 
-**Ondersteunde besturingssystemen** : Windows 7 , Windows 8 , Windows 10 en Linux
+**Ondersteunde besturingssystemen** : Windows 7 , Windows 8 , Windows 10, Linux en macOS
 
 **Ondersteunde OBS Studio-versies** : 24.0.0+
 
