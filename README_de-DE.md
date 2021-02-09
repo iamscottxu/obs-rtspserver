@@ -4,7 +4,7 @@
 
 Dies ist ein Plugin für obs-studio, das die Ausgabe codiert und ein RTSP-Stream veröffentlicht.
 
-**Unterstützte Betriebssysteme** : Windows 7 , Windows 8 , Windows 10 und Linux
+**Unterstützte Betriebssysteme** : Windows 7 , Windows 8 , Windows 10, Linux und macOS
 
 **Unterstützte OBS Studio Versionen** : 24.0.0+
 
