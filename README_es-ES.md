@@ -4,7 +4,7 @@
 
 Este es un complemento para obs-studio que codificará la salida y publicará un flujo RTSP.
 
-**Sistemas operativos compatibles** : Windows 7 , Windows 8 , Windows 10 y Linux
+**Sistemas operativos compatibles** : Windows 7 , Windows 8 , Windows 10 , Linux y macOS
 
 **Versiones de OBS Studio compatibles** : 24.0.0+
 
