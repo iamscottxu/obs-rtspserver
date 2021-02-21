@@ -14,12 +14,13 @@ class RtspOutputHelper {
 public:
 	RtspOutputHelper(std::string outputName);
 	~RtspOutputHelper();
-	static RtspOutputHelper *CreateRtspOutput(obs_data_t *settings);
+	static RtspOutputHelper *RtspOutputHelper::CreateRtspOutput(obs_data_t *settings, obs_data_t *hotkey);
 	void UpdateSettings(obs_data_t *settings);
 	void UpdateEncoder();
 	bool Start();
 	void Stop();
 	std::string GetLastError();
+	obs_data_t *RtspOutputHelper::HotkeysSave();
 	void SignalConnect(const char *signal, signal_callback_t callback,
 			   void *data);
 	void SignalDisconnect(const char *signal, signal_callback_t callback,
