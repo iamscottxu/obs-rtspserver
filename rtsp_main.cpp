@@ -83,10 +83,8 @@ void rtsp_output_auto_start(RtspOutputHelper *rtspOutputHelper)
 			config_get_bool(config, CONFIG_SECTIION, "AutoStart");
 		config_close(config);
 	}
-	if (!autoStart)
-		return;
-	rtspOutputHelper->UpdateEncoder();
-	rtspOutputHelper->Start();
+	if (autoStart)
+		rtspOutputHelper->Start();
 }
 
 void rtsp_output_stop(RtspOutputHelper *rtspOutputHelper)

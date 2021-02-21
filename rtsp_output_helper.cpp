@@ -28,10 +28,11 @@ RtspOutputHelper::~RtspOutputHelper()
 RtspOutputHelper *RtspOutputHelper::CreateRtspOutput(obs_data_t* settings)
 {
 	auto rtspOutput =
-		new RtspOutputHelper(obs_output_create("rtsp_output", "RtspOutput",
-						   settings, NULL));
+		new RtspOutputHelper(obs_output_create("rtsp_output",
+			obs_module_text("RtspOutput"),settings, NULL));
 	rtspOutput->audioEncoder = nullptr;
 	rtspOutput->videoEncoder = nullptr;
+	rtspOutput->SignalConnect("pre_start", RtspOutputHelper::OnPreStartSignal, rtspOutput);
 	return rtspOutput;
 }
 
@@ -152,3 +153,8 @@ void RtspOutputHelper::GetBaseConfig()
 	}
 }
 
+void RtspOutputHelper::OnPreStartSignal(void *data, calldata_t *cd)
+{
+	auto helper = (RtspOutputHelper *)data;
+	helper->UpdateEncoder();
+}
