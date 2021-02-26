@@ -12,7 +12,7 @@ Este es un complemento para obs-studio que codificará la salida y publicará un
 ## Windows
 Puede utilizar el instalador para instalar. Puede encontrar el programa de instalación aquí [Página de lanzamiento](https://github.com/iamscottxu/obs-rtspserver/releases).
 
-Si desea utilizar un archivo comprimido para la instalación manual, puede descomprimirlo (por ejemplo, obs-rtspserver-v1.3.0-windows.zip) y guardarlo en su carpeta de instalación obs-studio.
+Si desea utilizar un archivo comprimido para la instalación manual, puede descomprimirlo (por ejemplo, obs-rtspserver-v1.4.0-windows.zip) y guardarlo en su carpeta de instalación obs-studio.
 
 ## macOS
 Puede utilizar el instalador .pkg para instalar. Puede encontrar el programa de instalación aquí [Página de lanzamiento](https://github.com/iamscottxu/obs-rtspserver/releases).
@@ -20,7 +20,7 @@ Puede utilizar el instalador .pkg para instalar. Puede encontrar el programa de 
 ## Linux (solamente x64)
 * Descarge la última versión: [Página de lanzamiento](https://github.com/iamscottxu/obs-rtspserver/releases).
 * mkdir -p $HOME/.config/obs-studio/plugins
-* Untar, por Ej.: tar -xzvf obs-rtspserver-v1.3.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
+* Untar, por Ej.: tar -xzvf obs-rtspserver-v1.4.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
 
 [![Estado de empaque](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
