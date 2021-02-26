@@ -36,10 +36,8 @@ RtspProperties::RtspProperties(std::string rtspOutputName, QWidget *parent)
 	onEnableOptions(!rtspOutputHelper->IsActive(),
 			rtspOutputHelper->IsActive());
 
-	rtspOutputHelper->SignalConnect("stop", OnStopSignal, this);
-	rtspOutputHelper->SignalConnect("starting", OnStartSignal, this);
 	rtspOutputHelper->SignalConnect("start", OnStartSignal, this);
-	rtspOutputHelper->SignalConnect("stoping", OnStartSignal, this);
+	rtspOutputHelper->SignalConnect("stop", OnStopSignal, this);
 }
 
 RtspProperties::~RtspProperties()
@@ -77,14 +75,13 @@ void RtspProperties::onButtonAddressCopy()
 void RtspProperties::onStart()
 {
 	UpdateParameter();
-	rtspOutputHelper->UpdateEncoder();
 	showWarning(!rtspOutputHelper->Start());
 }
 
 void RtspProperties::onStop()
 {
-	enableOptions(false, false);
 	rtspOutputHelper->Stop();
+	enableOptions(false, false);
 }
 
 void RtspProperties::OnStartSignal(void *data, calldata_t *cd)
@@ -114,6 +111,7 @@ void RtspProperties::showEvent(QShowEvent *event) {}
 
 void RtspProperties::closeEvent(QCloseEvent *event)
 {
+	UpdateParameter();
 	SaveSetting();
 }
 

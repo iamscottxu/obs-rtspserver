@@ -36,6 +36,8 @@ struct rtsp_out_data {
 	xop::MediaSessionId session_id = NULL;
 	std::unique_ptr<threadsafe_queue<queue_frame>> frame_queue;
 	std::unique_ptr<std::thread> frame_push_thread;
+
+	obs_hotkey_pair_id start_stop_hotkey;
 };
 
 static const char *rtsp_output_getname(void *unused)
@@ -54,6 +56,52 @@ static inline bool active(rtsp_out_data *out_data)
 	return os_atomic_load_bool(&out_data->active);
 }
 
+static void add_prestart_signal(rtsp_out_data *out_data)
+{
+	auto handler = obs_output_get_signal_handler(out_data->output);
+	signal_handler_add(handler, "void pre_start()");
+}
+
+static void send_prestart_signal(rtsp_out_data *out_data)
+{
+	auto handler = obs_output_get_signal_handler(out_data->output);
+	signal_handler_signal(handler, "pre_start", nullptr);
+}
+
+static bool rtsp_output_start_hotkey(void *data, obs_hotkey_pair_id id,
+	obs_hotkey_t *hotkey, bool pressed)
+{
+	UNUSED_PARAMETER(id);
+	UNUSED_PARAMETER(hotkey);
+
+	rtsp_out_data *out_data = (rtsp_out_data *)data;
+
+	if (!pressed)
+		return false;
+	if (!stopping(out_data) && active(out_data))
+		return false;
+
+	return obs_output_start(out_data->output);
+}
+
+static bool rtsp_output_stop_hotkey(void *data, obs_hotkey_pair_id id,
+	obs_hotkey_t *hotkey, bool pressed)
+{
+	UNUSED_PARAMETER(id);
+	UNUSED_PARAMETER(hotkey);
+
+	rtsp_out_data *out_data = (rtsp_out_data *)data;
+
+	if (!pressed)
+		return false;
+	if (stopping(out_data) && active(out_data))
+		return false;
+
+	obs_output_stop(out_data->output);
+
+	return true;
+}
+
 static void rtsp_output_destroy(void *data)
 {
 	bfree(data);
@@ -70,6 +118,14 @@ static void *rtsp_output_create(obs_data_t *settings, obs_output_t *output)
 
 	data->event_loop = std::make_unique<xop::EventLoop>();
 	data->server = xop::RtspServer::Create(data->event_loop.get());
+
+	add_prestart_signal(data);
+
+	data->start_stop_hotkey = obs_hotkey_pair_register_output(
+		output,
+		"RtspOutput.Start", obs_module_text("StartOutput"),
+		"RtspOutput.Stop", obs_module_text("StopOutput"),
+		rtsp_output_start_hotkey, rtsp_output_stop_hotkey, data, data);
 
 	UNUSED_PARAMETER(settings);
 	return data;
@@ -129,6 +185,8 @@ static void set_output_error(rtsp_out_data *out_data, char code, ...)
 static bool rtsp_output_start(void *data)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)data;
+
+	send_prestart_signal(out_data);
 
 	if (!obs_output_can_begin_data_capture(out_data->output, 0)) {
 		set_output_error(out_data, ERROR_BEGIN_DATA_CAPTURE);

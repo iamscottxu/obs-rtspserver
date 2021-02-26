@@ -25,13 +25,14 @@ RtspOutputHelper::~RtspOutputHelper()
 	obs_encoder_release(audioEncoder);
 }
 
-RtspOutputHelper *RtspOutputHelper::CreateRtspOutput(obs_data_t* settings)
+RtspOutputHelper *RtspOutputHelper::CreateRtspOutput(obs_data_t *settings, obs_data_t *hotkey)
 {
 	auto rtspOutput =
-		new RtspOutputHelper(obs_output_create("rtsp_output", "RtspOutput",
-						   settings, NULL));
+		new RtspOutputHelper(obs_output_create("rtsp_output",
+			obs_module_text("RtspOutput"),settings, hotkey));
 	rtspOutput->audioEncoder = nullptr;
 	rtspOutput->videoEncoder = nullptr;
+	rtspOutput->SignalConnect("pre_start", RtspOutputHelper::OnPreStartSignal, rtspOutput);
 	return rtspOutput;
 }
 
@@ -60,6 +61,11 @@ void RtspOutputHelper::Stop()
 string RtspOutputHelper::GetLastError()
 {
 	return string(obs_output_get_last_error(obsOutput));
+}
+
+obs_data_t *RtspOutputHelper::HotkeysSave()
+{
+	return obs_hotkeys_save_output(obsOutput);
 }
 
 void RtspOutputHelper::SignalConnect(const char *signal, signal_callback_t callback,
@@ -152,3 +158,8 @@ void RtspOutputHelper::GetBaseConfig()
 	}
 }
 
+void RtspOutputHelper::OnPreStartSignal(void *data, calldata_t *cd)
+{
+	auto helper = (RtspOutputHelper *)data;
+	helper->UpdateEncoder();
+}
