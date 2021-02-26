@@ -47,7 +47,17 @@ string H264Source::GetMediaDescription(uint16_t port)
 
 string H264Source::GetAttribute()
 {
-    return string("a=rtpmap:96 H264/90000");
+        char buf[500] = { 0 };
+        sprintf(buf, "a=rtpmap:96 H264/90000");
+
+        sprintf(buf+strlen(buf),
+                "a=fmtp:96 profile-level-id=1;"
+                "mode=AAC-hbr;"
+                "sizelength=13;indexlength=3;indexdeltalength=3;"
+                "config=%04u");
+
+        return string(buf);
+	//return string("a=rtpmap:96 H264/90000");
 }
 
 bool H264Source::HandleFrame(MediaChannelId channel_id, AVFrame frame)

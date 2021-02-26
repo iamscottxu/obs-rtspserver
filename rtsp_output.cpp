@@ -331,8 +331,15 @@ static void rtsp_output_video(void *param, struct encoder_packet *packet)
 	rtsp_out_data *out_data = (rtsp_out_data *)param;
 	xop::AVFrame videoFrame = {0};
 	videoFrame.timestamp = get_timestamp(90000, packet);
+
+        if (packet->pts == packet->dts)
+                videoFrame.type = xop::VIDEO_FRAME_I;
+        else if (packet->pts > packet->dts)
+                videoFrame.type = xop::VIDEO_FRAME_P;
+        else
+                videoFrame.type = xop::VIDEO_FRAME_B;
+
 	if (packet->keyframe) {
-		videoFrame.type = xop::VIDEO_FRAME_I;
 		uint8_t *header;
 		size_t header_size = get_video_header(
 			obs_output_get_video_encoder(out_data->output),
@@ -343,15 +350,9 @@ static void rtsp_output_video(void *param, struct encoder_packet *packet)
 		memcpy(videoFrame.buffer.get() + header_size, packet->data,
 		       packet->size);
 	} else {
-		if (packet->pts == packet->dts)
-			videoFrame.type = xop::VIDEO_FRAME_I;
-		else if (packet->pts > packet->dts)
-			videoFrame.type = xop::VIDEO_FRAME_P;
-		else
-			videoFrame.type = xop::VIDEO_FRAME_B;
-		videoFrame.size = packet->size;
-		videoFrame.buffer.reset(new uint8_t[videoFrame.size]);
-		memcpy(videoFrame.buffer.get(), packet->data, packet->size);
+                videoFrame.size = packet->size;
+                videoFrame.buffer.reset(new uint8_t[videoFrame.size]);
+                memcpy(videoFrame.buffer.get(), packet->data, packet->size);
 	}
 
 	struct queue_frame queue_frame;
