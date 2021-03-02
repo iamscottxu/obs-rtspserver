@@ -6,6 +6,7 @@
 
 #include "MediaSource.h"
 #include "rtp.h"
+#include <vector>
 
 namespace xop
 { 
