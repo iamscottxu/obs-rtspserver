@@ -8,6 +8,8 @@
 #endif
 
 #include "H264Source.h"
+#include <memory>
+#include <vector>
 #include <cstdio>
 #include <chrono>
 #if defined(WIN32) || defined(_WIN32)
@@ -15,21 +17,32 @@
 #else
 #include <sys/time.h>
 #endif
+extern "C" {
+#include "libb64/include/b64/cencode.h"
+}
 
 using namespace xop;
 using namespace std;
 
-H264Source::H264Source(uint32_t framerate)
-	: framerate_(framerate)
+H264Source::H264Source(const vector<uint8_t> sps, const vector<uint8_t> pps,
+		       uint32_t framerate)
+	: framerate_(framerate),
+	  sps_(sps), pps_(pps)
 {
     payload_    = 96; 
     media_type_ = H264;
     clock_rate_ = 90000;
 }
 
-H264Source* H264Source::CreateNew(uint32_t framerate)
+H264Source *H264Source::CreateNew(uint32_t framerate)
 {
-    return new H264Source(framerate);
+	return new H264Source(vector<uint8_t>(), vector<uint8_t>(), framerate);
+}
+
+H264Source *H264Source::CreateNew(const vector<uint8_t> sps,
+				  const vector<uint8_t> pps, uint32_t framerate)
+{
+	return new H264Source(sps, pps, framerate);
 }
 
 H264Source::~H264Source()
@@ -47,17 +60,30 @@ string H264Source::GetMediaDescription(uint16_t port)
 
 string H264Source::GetAttribute()
 {
-        char buf[500] = { 0 };
-        sprintf(buf, "a=rtpmap:96 H264/90000");
+	auto rtpmap = string("a=rtpmap:96 H264/90000\r\n");
 
-        sprintf(buf+strlen(buf),
-                "a=fmtp:96 profile-level-id=1;"
-                "mode=AAC-hbr;"
-                "sizelength=13;indexlength=3;indexdeltalength=3;"
-                "config=%04u");
+	if (!sps_.empty() && !pps_.empty()) {
+		char const *fmtp = "a=fmtp:96 packetization-mode=1;"
+				   "profile-level-id=%06X;"
+				   "sprop-parameter-sets=%s,%s";
 
-        return string(buf);
-	//return string("a=rtpmap:96 H264/90000");
+		auto pps_base64 = Base64Encode(pps_.data(), pps_.size());
+		auto sps_base64 = Base64Encode(sps_.data(), sps_.size());
+
+		uint32_t profile_level_id = (sps_.at(1) << 16) |
+					    (sps_.at(2) << 8) | sps_.at(3);
+
+		size_t buf_size = 1 + strlen(fmtp) + 6 + sps_base64.length() +
+				  pps_base64.length();
+		auto buf = vector<char>(buf_size);
+
+		sprintf(buf.data(), fmtp, profile_level_id, sps_base64.c_str(),
+			pps_base64.c_str());
+
+		rtpmap.append(buf.data());
+	}
+
+        return rtpmap;
 }
 
 bool H264Source::HandleFrame(MediaChannelId channel_id, AVFrame frame)
@@ -149,4 +175,18 @@ uint32_t H264Source::GetTimestamp()
 	return (uint32_t)((time_point.time_since_epoch().count() + 500) / 1000 * 90 );
 //#endif
 }
- 
+
+std::string H264Source::Base64Encode(const void *input, size_t size)
+{
+	std::vector<char> buffer(size / 3 * 4 + (size % 3 > 0 ? 4 : 0) + 1);
+	base64_encodestate b64encoder;
+	base64_init_encodestate(&b64encoder);
+
+	auto length = base64_encode_block(
+		reinterpret_cast<const char *>(input),
+				      int(size), buffer.data(), &b64encoder);
+	base64_encode_blockend(buffer.data() + length, &b64encoder);
+
+	return std::string(buffer.cbegin(), buffer.cend() - 1);
+}
+

@@ -4,8 +4,10 @@
 #include <obs-module.h>
 #include <util/threading.h>
 #include <xop/RtspServer.h>
+#include <xop/H264Parser.h>
 #include "threadsafe_queue.h"
 #include "rtsp_output.h"
+#include "helper.h"
 
 #define USEC_IN_SEC 1000000
 
@@ -69,7 +71,7 @@ static void send_prestart_signal(rtsp_out_data *out_data)
 }
 
 static bool rtsp_output_start_hotkey(void *data, obs_hotkey_pair_id id,
-	obs_hotkey_t *hotkey, bool pressed)
+				     obs_hotkey_t *hotkey, bool pressed)
 {
 	UNUSED_PARAMETER(id);
 	UNUSED_PARAMETER(hotkey);
@@ -85,7 +87,7 @@ static bool rtsp_output_start_hotkey(void *data, obs_hotkey_pair_id id,
 }
 
 static bool rtsp_output_stop_hotkey(void *data, obs_hotkey_pair_id id,
-	obs_hotkey_t *hotkey, bool pressed)
+				    obs_hotkey_t *hotkey, bool pressed)
 {
 	UNUSED_PARAMETER(id);
 	UNUSED_PARAMETER(hotkey);
@@ -122,8 +124,7 @@ static void *rtsp_output_create(obs_data_t *settings, obs_output_t *output)
 	add_prestart_signal(data);
 
 	data->start_stop_hotkey = obs_hotkey_pair_register_output(
-		output,
-		"RtspOutput.Start", obs_module_text("StartOutput"),
+		output, "RtspOutput.Start", obs_module_text("StartOutput"),
 		"RtspOutput.Stop", obs_module_text("StopOutput"),
 		rtsp_output_start_hotkey, rtsp_output_stop_hotkey, data, data);
 
@@ -136,8 +137,7 @@ static void set_output_error(rtsp_out_data *out_data, char code, ...)
 {
 	char *message;
 	char *lookup_string;
-	switch (code)
-	{
+	switch (code) {
 	case ERROR_BEGIN_DATA_CAPTURE:
 		message = "can't begin data capture";
 		lookup_string = "ErrorBeginDataCapture";
@@ -167,8 +167,8 @@ static void set_output_error(rtsp_out_data *out_data, char code, ...)
 #if defined(WIN32) || defined(_WIN32)
 		vsprintf_s(buffer, obs_module_text(lookup_string), args);
 #else
-		vsnprintf(buffer, sizeof(buffer), obs_module_text(lookup_string),
-			 args);
+		vsnprintf(buffer, sizeof(buffer),
+			  obs_module_text(lookup_string), args);
 #endif
 		va_end(args);
 		obs_output_set_last_error(out_data->output, buffer);
@@ -216,14 +216,36 @@ static bool rtsp_output_start(void *data)
 	uint32_t audio_sample_rate = obs_encoder_get_sample_rate(
 		obs_output_get_audio_encoder(out_data->output, 0));
 	double video_frame_rate = video_output_get_frame_rate(video);
+	const uint8_t *sps = nullptr;
+	size_t sps_size = 0;
+	const uint8_t *pps = nullptr;
+	size_t pps_size = 0;
+	{
+		uint8_t *extra_data = nullptr;
+		size_t extra_data_size = 0;
+		if (obs_encoder_get_extra_data(
+			    obs_output_get_video_encoder(out_data->output),
+			    &extra_data, &extra_data_size)) {
+			rtsp_output_avc_get_sps_pps(extra_data, extra_data_size,
+						    &sps, &sps_size, &pps,
+						    &pps_size);
+		}
+	}
+
 	out_data->audio_timestamp_clock = audio_sample_rate;
 
 	out_data->frame_queue =
 		std::make_unique<threadsafe_queue<queue_frame>>();
 
 	xop::MediaSession *session = xop::MediaSession::CreateNew("live");
-	session->AddSource(xop::channel_0, xop::H264Source::CreateNew(
-						   (uint32_t)video_frame_rate));
+
+	session->AddSource(
+		xop::channel_0,
+		xop::H264Source::CreateNew(
+			xop::H264Parser::RemoveEmulationBytes(
+				vector<uint8_t>(sps, sps + sps_size)),
+			vector<uint8_t>(pps, pps + pps_size),
+			(uint32_t)video_frame_rate));
 	session->AddSource(xop::channel_1,
 			   xop::AACSource::CreateNew(audio_sample_rate,
 						     audio_channels, false));
@@ -332,13 +354,6 @@ static void rtsp_output_video(void *param, struct encoder_packet *packet)
 	xop::AVFrame videoFrame = {0};
 	videoFrame.timestamp = get_timestamp(90000, packet);
 
-        if (packet->pts == packet->dts)
-                videoFrame.type = xop::VIDEO_FRAME_I;
-        else if (packet->pts > packet->dts)
-                videoFrame.type = xop::VIDEO_FRAME_P;
-        else
-                videoFrame.type = xop::VIDEO_FRAME_B;
-
 	if (packet->keyframe) {
 		uint8_t *header;
 		size_t header_size = get_video_header(
@@ -349,10 +364,12 @@ static void rtsp_output_video(void *param, struct encoder_packet *packet)
 		memcpy(videoFrame.buffer.get(), header, header_size);
 		memcpy(videoFrame.buffer.get() + header_size, packet->data,
 		       packet->size);
+		videoFrame.type = xop::VIDEO_FRAME_I;
 	} else {
-                videoFrame.size = packet->size;
-                videoFrame.buffer.reset(new uint8_t[videoFrame.size]);
-                memcpy(videoFrame.buffer.get(), packet->data, packet->size);
+		videoFrame.size = packet->size;
+		videoFrame.buffer.reset(new uint8_t[videoFrame.size]);
+		memcpy(videoFrame.buffer.get(), packet->data, packet->size);
+		videoFrame.type = xop::VIDEO_FRAME_P;
 	}
 
 	struct queue_frame queue_frame;

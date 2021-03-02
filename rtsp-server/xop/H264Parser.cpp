@@ -1,7 +1,8 @@
-﻿#include "H264Parser.h"
+#include "H264Parser.h"
 #include <cstring>
 
 using namespace xop;
+using namespace std;
 
 Nal H264Parser::findNal(const uint8_t *data, uint32_t size)
 {
@@ -69,4 +70,22 @@ Nal H264Parser::findNal(const uint8_t *data, uint32_t size)
     return nal;
 }
 
+vector<uint8_t> H264Parser::RemoveEmulationBytes(vector<uint8_t> const from)
+{
+	size_t i = 0;
+	vector<uint8_t> to(from.size());
+	auto toiter = to.begin();
+	while (i < from.size() && toiter + 1 < to.end()) {
+		if (i + 2 < from.size() && from[i] == 0 && from[i + 1] == 0 &&
+		    from[i + 2] == 3) {
+			*toiter++ = *toiter++ = 0;
+			i += 3;
+		} else {
+			*toiter++ = from[i];
+			i += 1;
+		}
+	}
+	to.resize(toiter - to.begin());
+	return to;
+}
 
