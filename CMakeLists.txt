@@ -31,7 +31,7 @@ if(WIN32)
 	set(OBS_RTSPSERVER_VERSION_MAJOR 1)
 	set(OBS_RTSPSERVER_VERSION_MINOR 4)
 	set(OBS_RTSPSERVER_VERSION_PATCH 0)
-	set(OBS_RTSPSERVER_VERSION_STRING "1.4.0")
+	set(OBS_RTSPSERVER_VERSION_STRING "1.4.1")
 	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/rtspoutput.rc.in ${CMAKE_CURRENT_SOURCE_DIR}/rtspoutput.rc)
 endif()
 
@@ -51,11 +51,6 @@ include_directories(
 	"rtsp-server")
 
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/UI/obs-frontend-api")
-
-include_directories(../live/BasicUsageEnvironment/include)
-include_directories(../live/groupsock/include)
-include_directories(../live/liveMedia/include)
-include_directories(../live/UsageEnvironment/include)
 		
 target_link_libraries(obs-rtspserver
 	${FFMPEG_LIBRARIES}
@@ -75,7 +70,7 @@ else()
 	set_target_properties(obs-rtspserver
 			PROPERTIES
 			FOLDER "plugins"
-			VERSION "1.4.0"
+			VERSION "1.4.1"
 			PRODUCTNAME "OBS RTSP Server Plugin")
 endif()
 
