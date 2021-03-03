@@ -35,7 +35,7 @@ yay -S obs-rtspserver-bin
 * 安装 cmake 、 visual studio （仅 Windows ）和 qt ；
 * 下载并配置 OBS Studio 的源代码；
 * 将源代码复制到 (OBS Studio 源代码目录)/plugins/obs-rtspserver/ 中；
-* 添加 `add_subdirectory(obs-rtspserver)` 到 (OBS Studio 源代码目录)/plugins/obs-rtspserver/CMakeLists.txt 中；
+* 添加 `add_subdirectory(obs-rtspserver)` 到 (OBS Studio 源代码目录)/plugins/CMakeLists.txt 中；
 * 生成 obs-rtspserver 。
 
 # 我在菜单中找不到插件

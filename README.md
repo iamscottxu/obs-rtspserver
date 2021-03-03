@@ -42,7 +42,7 @@ yay -S obs-rtspserver-bin
 * Install cmake, visual studio(only windows) and qt.
 * Download and configure the source code of obs-studio.
 * Copy source code to (obs-studio source code)/plugins/obs-rtspserver/
-* Add `add_subdirectory(obs-rtspserver)` to (obs-studio source code)/plugins/obs-rtspserver/CMakeLists.txt
+* Add `add_subdirectory(obs-rtspserver)` to (obs-studio source code)/plugins/CMakeLists.txt
 * Build obs-rtspserver.
 
 # Can't found the plugin in menu
