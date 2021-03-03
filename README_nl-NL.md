@@ -36,7 +36,7 @@ yay -S obs-rtspserver-bin
 * Installeer cmake, visual studio (alleen voor Windows) en qt.
 * Download en configureer de broncode van obs-studio.
 * Kopieer de broncode naar (obs-studio source code) / plugins / obs-rtspserver /
-* Voeg 'add_subdirectory (obs-rtspserver)' toe aan (obs-studio source code) /plugins/obs-rtspserver/CMakeLists.txt.
+* Voeg 'add_subdirectory (obs-rtspserver)' toe aan (obs-studio source code)/plugins/CMakeLists.txt.
 * Start de obs-rtspserver Build.
 
 # De plugin werd niet gevonden in het menu
