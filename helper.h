@@ -1,4 +1,6 @@
 #include <queue>
+#include <vector>
+#include <string>
 #include <obs-module.h>
 #include <util/config-file.h>
 #include <util/platform.h>
@@ -17,18 +19,12 @@ static bool make_config_dir()
 	return ret == MKDIR_SUCCESS || ret == MKDIR_EXISTS;
 }
 
-static obs_data_t *rtsp_output_read_data(bool create = false)
+static obs_data_t *rtsp_output_read_data()
 {
 	obs_data_t *data;
-	if (create) {
-		data = obs_output_defaults("rtsp_output");
-	}  else {
-		auto path = obs_module_config_path("rtsp_output.json");
-		data = obs_data_create_from_json_file_safe(path, "bak");
-		bfree(path);
-		if (data == nullptr)
-			data = rtsp_output_read_data(true);
-	}
+	auto path = obs_module_config_path("rtsp_output.json");
+	data = obs_data_create_from_json_file_safe(path, "bak");
+	bfree(path);
 	return data;
 }
 
@@ -84,4 +80,40 @@ static void rtsp_output_avc_get_sps_pps(const uint8_t *data, size_t size,
 		nal_start = nal_end;
 	}
 }
+
+static std::string string_format(std::string format, ...)
+{
+	va_list argp;
+	va_start(argp, format);
+	auto size = (size_t)vsnprintf(nullptr, 0, format.c_str(), argp) + 1;
+	va_end(argp);
+	auto buf = std::vector<char>(size);
+	va_start(argp, format);
+	vsnprintf(buf.data(), size, format.c_str(), argp);
+	va_end(argp);
+	return std::string(buf.data(), buf.data() + size - 1);
+}
+
+static std::string rtsp_properties_get_data_volume_display(uint64_t total_bytes) {
+	const uint64_t kb = 1024;
+	const uint64_t mb = kb * 1024;
+	const uint64_t gb = mb * 1024;
+	const uint64_t tb = gb * 1024;
+	if (total_bytes == 0)
+		return "0.0 MB";
+	if (total_bytes < kb) {
+		return string_format("%lu bytes", total_bytes);
+	}
+	if (total_bytes < mb) {
+		return string_format("%.1f KB", double(total_bytes) / kb);
+	}
+	if (total_bytes < gb) {
+		return string_format("%.1f MB", double(total_bytes) / mb);
+	}
+	if (total_bytes < tb) {
+		return string_format("%.1f GB", double(total_bytes) / gb);
+	}
+	return string_format("%.1f TB", double(total_bytes) / tb);
+}
+
 #endif // RTSP_HELPER_H

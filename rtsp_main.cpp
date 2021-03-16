@@ -26,7 +26,7 @@ const char *obs_module_name(void)
 
 const char *obs_module_description(void)
 {
-	return obs_module_text("RstpServerDescription");
+	return obs_module_text("RstpServer.Description");
 }
 
 bool obs_module_load(void)
