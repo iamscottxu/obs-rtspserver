@@ -12,7 +12,7 @@
 ## Windows
 如果你使用的是 Windows 操作系统，您可以使用安装程序进行安装，安装程序可以在[发布页面](https://github.com/iamscottxu/obs-rtspserver/releases)中找到。
 
-如果要使用压缩文件手动安装，可以解压缩压缩文件（例如： obs-rtspserver-v1.3.0-windows.zip）把它放到你的 OBS Studio 安装文件夹里。
+如果要使用压缩文件手动安装，可以解压缩压缩文件（例如： obs-rtspserver-v1.4.0-windows.zip）把它放到你的 OBS Studio 安装文件夹里。
 
 ## macOS
 如果你使用的是 macOS 操作系统，您可以使用安装程序进行安装，安装程序 .pkg 可以在发布页面中找到。
@@ -20,7 +20,7 @@
 ## Linux (仅 x64)
 * 从[发布页面](https://github.com/iamscottxu/obs-rtspserver/releases)下载最新发布版本。
 * mkdir -p $HOME/.config/obs-studio/plugins
-* 解压压缩包。例如：tar -xzvf obs-rtspserver-v1.3.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
+* 解压压缩包。例如：tar -xzvf obs-rtspserver-v1.4.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
@@ -35,7 +35,7 @@ yay -S obs-rtspserver-bin
 * 安装 cmake 、 visual studio （仅 Windows ）和 qt ；
 * 下载并配置 OBS Studio 的源代码；
 * 将源代码复制到 (OBS Studio 源代码目录)/plugins/obs-rtspserver/ 中；
-* 添加 `add_subdirectory(obs-rtspserver)` 到 (OBS Studio 源代码目录)/plugins/obs-rtspserver/CMakeLists.txt 中；
+* 添加 `add_subdirectory(obs-rtspserver)` 到 (OBS Studio 源代码目录)/plugins/CMakeLists.txt 中；
 * 生成 obs-rtspserver 。
 
 # 我在菜单中找不到插件
