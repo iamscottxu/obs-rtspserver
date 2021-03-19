@@ -10,7 +10,7 @@
 
 This is a plugin for obs-studio, encoding the output and publish rtsp stream.
 
-**Supported Platforms** : Windows 7 , Windows 8 , Windows 10 and Linux
+**Supported Platforms** : Windows 7 , Windows 8 , Windows 10, Linux and macOS
 
 **Supported OBS Studio version** : 24.0.0+
 
@@ -18,12 +18,15 @@ This is a plugin for obs-studio, encoding the output and publish rtsp stream.
 ## Windows
 You can use installer to install and the installer can be found in [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases) if use windows.
 
-If you want to use compressed file to install manually, you can unzip it (e.g.: obs-rtspserver-v1.2.0-windows.zip) and put it to your obs-studio install folder.
+If you want to use compressed file to install manually, you can unzip it (e.g.: obs-rtspserver-v1.4.0-windows.zip) and put it to your obs-studio install folder.
+
+## macOS
+You can use the .pkg installer to install and the installer can be found in [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases) if use macOS.
 
 ## Linux (Only x64)
 * Download the latest release from the [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases).
 * mkdir -p $HOME/.config/obs-studio/plugins
-* Untar, e.g.: tar -xzvf obs-rtspserver-v1.2.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
+* Untar, e.g.: tar -xzvf obs-rtspserver-v1.4.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
@@ -39,7 +42,7 @@ yay -S obs-rtspserver-bin
 * Install cmake, visual studio(only windows) and qt.
 * Download and configure the source code of obs-studio.
 * Copy source code to (obs-studio source code)/plugins/obs-rtspserver/
-* Add `add_subdirectory(obs-rtspserver)` to (obs-studio source code)/plugins/obs-rtspserver/CMakeLists.txt
+* Add `add_subdirectory(obs-rtspserver)` to (obs-studio source code)/plugins/CMakeLists.txt
 * Build obs-rtspserver.
 
 # Can't found the plugin in menu

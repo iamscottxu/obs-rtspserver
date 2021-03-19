@@ -1,9 +1,9 @@
 #ifndef RTSP_PROPERTIES_H
 #define RTSP_PROPERTIES_H
 
-#include <memory>
 #include <QDialog>
 #include <obs-module.h>
+#include <util/config-file.h>
 #include "rtsp_output_helper.h"
 
 namespace Ui {
@@ -18,26 +18,39 @@ public:
 	~RtspProperties();
 
 private Q_SLOTS:
-	void onButtonAddressCopy();
-	void onStart();
-	void onStop();
+	void onPushButtonAddressCopyClicked();
+	void onPushButtonStartClicked();
+	void onPushButtonStopClicked();
+	void onStatusTimerTimeout();
 	void onEnableOptions(bool startEnable, bool stopRnable);
 	void onShowWarning(bool show);
+	void onChangeStatusTimerStatus(bool start);
 
 Q_SIGNALS:
 	void enableOptions(bool startEnable, bool stopRnable);
 	void showWarning(bool show);
+	void changeStatusTimerStatus(bool start);
 
 private:
 	Ui::RtspProperties *ui;
+	QTimer *statusTimer;
+
 	signal_handler_t *signalHandler;
 	RtspOutputHelper *rtspOutputHelper;
-	void UpdateParameter();
-	void SaveSetting();
-	static void OnStartSignal(void *data, calldata_t *cd);
-	static void OnStopSignal(void *data, calldata_t *cd);
+
+	uint64_t lastTotalBytes;
+
 	void showEvent(QShowEvent *event);
 	void closeEvent(QCloseEvent *event);
+
+	static void OnOutputStart(void *data, calldata_t *cd);
+	static void OnOutputStop(void *data, calldata_t *cd);
+
+	void LoadSetting(obs_data_t *setting);
+	void UpdateParameter(obs_data_t *setting);
+
+	void LoadConfig(config_t *config);
+	void SaveConfig(config_t *config);
 };
 
 #endif // RTSP_PROPERTIES_H

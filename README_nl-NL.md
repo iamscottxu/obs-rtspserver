@@ -4,20 +4,23 @@
 
 Dit is een plug-in voor obs-studio die de uitvoer codeert en een RTSP-stream publiceert.
 
-**Ondersteunde besturingssystemen** : Windows 7 , Windows 8 , Windows 10 en Linux
+**Ondersteunde besturingssystemen** : Windows 7 , Windows 8 , Windows 10, Linux en macOS
 
 **Ondersteunde OBS Studio-versies** : 24.0.0+
 
 # Installatie
 ## Windows
-U kunt het installatieprogramma gebruiken om het te installeren. Je vindt het installatieprogramma hier [release-pagina] (https://github.com/iamscottxu/obs-rtspserver/releases).
+U kunt het installatieprogramma gebruiken om het te installeren. Je vindt het installatieprogramma hier [release-pagina](https://github.com/iamscottxu/obs-rtspserver/releases).
 
-Als je een gecomprimeerd bestand wilt gebruiken voor handmatige installatie, kun je het uitpakken (bijv. obs-rtspserver-v1.2.0-windows.zip) en het in je obs-studio installatiemap plaatsen.
+Als je een gecomprimeerd bestand wilt gebruiken voor handmatige installatie, kun je het uitpakken (bijv. obs-rtspserver-v1.4.0-windows.zip) en het in je obs-studio installatiemap plaatsen.
+
+## macOS
+U kunt het .pkg installatieprogramma gebruiken om het te installeren. Je vindt het installatieprogramma hier [release-pagina](https://github.com/iamscottxu/obs-rtspserver/releases).
 
 ## Linux (alleen x64)
 * Download de laatste versie: [Release Page] (https://github.com/iamscottxu/obs-rtspserver/releases).
 * mkdir -p $HOME/.config/obs-studio/plugins
-* Untar, bijv.: tar -xzvf obs-rtspserver-v1.2.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
+* Untar, bijv.: tar -xzvf obs-rtspserver-v1.4.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
 
 [![Verpakkingsstatus](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
@@ -33,7 +36,7 @@ yay -S obs-rtspserver-bin
 * Installeer cmake, visual studio (alleen voor Windows) en qt.
 * Download en configureer de broncode van obs-studio.
 * Kopieer de broncode naar (obs-studio source code) / plugins / obs-rtspserver /
-* Voeg 'add_subdirectory (obs-rtspserver)' toe aan (obs-studio source code) /plugins/obs-rtspserver/CMakeLists.txt.
+* Voeg 'add_subdirectory (obs-rtspserver)' toe aan (obs-studio source code)/plugins/CMakeLists.txt.
 * Start de obs-rtspserver Build.
 
 # De plugin werd niet gevonden in het menu

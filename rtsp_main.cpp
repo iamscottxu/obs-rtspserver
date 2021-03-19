@@ -16,6 +16,7 @@ OBS_MODULE_USE_DEFAULT_LOCALE("obs-rtspserver", "en-US")
 void obs_frontend_event(enum obs_frontend_event event, void *ptr);
 void rtsp_output_auto_start(RtspOutputHelper *rtspOutputHelper);
 void rtsp_output_stop(RtspOutputHelper *rtspOutputHelper);
+void rtsp_output_save_hotkey_settings(RtspOutputHelper *rtspOutputHelper);
 void server_log_write_callback(xop::Priority priority, std::string info);
 
 const char *obs_module_name(void)
@@ -25,7 +26,7 @@ const char *obs_module_name(void)
 
 const char *obs_module_description(void)
 {
-	return obs_module_text("RstpServerDescription");
+	return obs_module_text("RstpServer.Description");
 }
 
 bool obs_module_load(void)
@@ -36,7 +37,14 @@ bool obs_module_load(void)
 	RtspOutputHelper *rtspOutputHelper;
 	{
 		auto *data = rtsp_output_read_data();
-		rtspOutputHelper = RtspOutputHelper::CreateRtspOutput(data);
+		auto *config = rtsp_properties_open_config();
+		const char *str = nullptr;
+		str = config_get_string(config, HOTKEY_CONFIG_SECTIION,
+					"RtspOutput");
+		obs_data_t *hotkey = obs_data_create_from_json(str);
+		rtspOutputHelper = RtspOutputHelper::CreateRtspOutput(data, hotkey);
+		obs_data_release(hotkey);
+		config_close(config);
 		obs_data_release(data);
 	}
 
@@ -69,6 +77,7 @@ void obs_frontend_event(enum obs_frontend_event event, void *ptr)
 		break;
 	case OBS_FRONTEND_EVENT_EXIT:
 		rtsp_output_stop(rtspOutputHelper);
+		rtsp_output_save_hotkey_settings(rtspOutputHelper);
 		delete rtspOutputHelper;
 		break;
 	}
@@ -83,15 +92,23 @@ void rtsp_output_auto_start(RtspOutputHelper *rtspOutputHelper)
 			config_get_bool(config, CONFIG_SECTIION, "AutoStart");
 		config_close(config);
 	}
-	if (!autoStart)
-		return;
-	rtspOutputHelper->UpdateEncoder();
-	rtspOutputHelper->Start();
+	if (autoStart)
+		rtspOutputHelper->Start();
 }
 
 void rtsp_output_stop(RtspOutputHelper *rtspOutputHelper)
 {
 	rtspOutputHelper->Stop();
+}
+
+void rtsp_output_save_hotkey_settings(RtspOutputHelper *rtspOutputHelper)
+{
+	auto *data = rtspOutputHelper->HotkeysSave();
+	auto *str = obs_data_get_json(data);
+	auto *config = rtsp_properties_open_config();
+	config_set_string(config, HOTKEY_CONFIG_SECTIION, "RtspOutput", str);
+	config_save(config);
+	config_close(config);
 }
 
 void server_log_write_callback(xop::Priority priority, std::string info)
