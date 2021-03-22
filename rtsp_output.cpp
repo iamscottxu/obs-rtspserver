@@ -205,20 +205,16 @@ static bool rtsp_output_add_video_channel(void *data,
 	}
 	auto video = obs_encoder_video(video_encoder);
 	auto video_frame_rate = video_output_get_frame_rate(video);
-	const uint8_t *sps = nullptr;
-	size_t sps_size = 0;
-	const uint8_t *pps = nullptr;
-	size_t pps_size = 0;
+	const uint8_t *sps = nullptr, *pps = nullptr;
+	size_t sps_size = 0, pps_size = 0;
 	{
 		uint8_t *extra_data = nullptr;
 		size_t extra_data_size = 0;
-		if (obs_encoder_get_extra_data(
-			    obs_output_get_video_encoder(out_data->output),
-			    &extra_data, &extra_data_size)) {
+		if (obs_encoder_get_extra_data(video_encoder, &extra_data,
+					       &extra_data_size))
 			rtsp_output_avc_get_sps_pps(extra_data, extra_data_size,
 						    &sps, &sps_size, &pps,
 						    &pps_size);
-		}
 	}
 	session->AddSource(
 		xop::channel_0,
@@ -243,9 +239,14 @@ static bool rtsp_output_add_audio_channel(void *data,
 		return false;
 	}
 	auto audio = obs_encoder_audio(audio_encoder);
-	auto audio_info = audio_output_get_info(audio);
-	auto audio_channels = get_audio_channels(audio_info->speakers);
+	auto audio_channels = audio_output_get_channels(audio);
 	auto audio_sample_rate = obs_encoder_get_sample_rate(audio_encoder);
+	uint8_t *extra_data = nullptr;
+	size_t extra_data_size = 0;
+	if (obs_encoder_get_extra_data(audio_encoder, &extra_data,
+				       &extra_data_size)) {
+		
+	}
 	session->AddSource(channel_id,
 			   xop::AACSource::CreateNew(audio_sample_rate,
 						     audio_channels, false));
