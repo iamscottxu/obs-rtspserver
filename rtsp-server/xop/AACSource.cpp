@@ -22,7 +22,7 @@
 using namespace xop;
 using namespace std;
 
-AACSource::AACSource(uint32_t samplerate, uint32_t channels, bool has_adts)
+AACSource::AACSource(uint32_t samplerate, uint8_t channels, bool has_adts)
 	: samplerate_(samplerate), channels_(channels), has_adts_(has_adts)
 {
 	payload_ = 97;
@@ -30,7 +30,7 @@ AACSource::AACSource(uint32_t samplerate, uint32_t channels, bool has_adts)
 	clock_rate_ = samplerate;
 }
 
-AACSource *AACSource::CreateNew(uint32_t samplerate, uint32_t channels,
+AACSource *AACSource::CreateNew(uint32_t samplerate, uint8_t channels,
 				bool has_adts)
 {
 	return new AACSource(samplerate, channels, has_adts);
@@ -78,8 +78,9 @@ string AACSource::GetAttribute() // RFC 3640
 		sprintf(buf.data(), rtpmap_fmt, samplerate_, channels_);
 
 	const array<uint8_t, 2> audioSpecificConfig = {
-		(uint8_t)((profile + 1) << 3) | (samplingFrequencyIndex >> 1),
-		(uint8_t)((samplingFrequencyIndex << 7) | (channels_ << 3))};
+		((profile + 1) << 3) | (samplingFrequencyIndex >> 1),
+		(samplingFrequencyIndex << 7) | (channels_ << 3)
+	};
 	sprintf(buf.data() + rtpmap_format_size, fmtp_fmt,
 		audioSpecificConfig[0], audioSpecificConfig[1]);
 

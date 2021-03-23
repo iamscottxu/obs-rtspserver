@@ -249,7 +249,7 @@ static bool rtsp_output_add_audio_channel(void *data,
 	}
 	session->AddSource(channel_id,
 			   xop::AACSource::CreateNew(audio_sample_rate,
-						     audio_channels, false));
+					       (uint8_t)audio_channels, false));
 	out_data->audio_timestamp_clocks[idx] = audio_sample_rate;
 	return true;
 }
