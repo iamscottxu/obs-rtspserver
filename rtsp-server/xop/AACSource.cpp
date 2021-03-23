@@ -78,8 +78,8 @@ string AACSource::GetAttribute() // RFC 3640
 		sprintf(buf.data(), rtpmap_fmt, samplerate_, channels_);
 
 	const array<uint8_t, 2> audioSpecificConfig = {
-		((profile + 1) << 3) | (samplingFrequencyIndex >> 1),
-		(samplingFrequencyIndex << 7) | (channels_ << 3)
+		(uint8_t)(((profile + 1) << 3) | (samplingFrequencyIndex >> 1)),
+		(uint8_t)((samplingFrequencyIndex << 7) | (channels_ << 3))
 	};
 	sprintf(buf.data() + rtpmap_format_size, fmtp_fmt,
 		audioSpecificConfig[0], audioSpecificConfig[1]);
