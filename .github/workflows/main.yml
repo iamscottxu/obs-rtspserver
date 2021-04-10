@@ -78,7 +78,7 @@ jobs:
         run: |
           mkdir .\build32
           cd .\build32
-          cmake -G "${{ env.CMAKE_GENERATOR }}" -A Win32 -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DQTDIR="${{ github.workspace }}\cmbuild\QT\${{ env.QT_VERSION }}\msvc2017" -DDepsPath="${{ github.workspace }}\cmbuild\deps\win32" -DBUILD_CAPTIONS=YES -DCOPIED_DEPENDENCIES=NO -DCOPY_DEPENDENCIES=YES -DDISABLE_PYTHON="ON" ..
+          cmake -G "${{ env.CMAKE_GENERATOR }}" -A Win32 -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DQTDIR="${{ github.workspace }}\cmbuild\QT\${{ env.QT_VERSION }}\msvc2019" -DDepsPath="${{ github.workspace }}\cmbuild\deps\win32" -DBUILD_CAPTIONS=YES -DCOPIED_DEPENDENCIES=NO -DCOPY_DEPENDENCIES=YES -DDISABLE_PYTHON="ON" ..
       - name: 'Build obs-rtspserver 32-bit'
         working-directory: ${{ github.workspace }}/obs-studio
         run: |
@@ -88,7 +88,7 @@ jobs:
         run: |
           mkdir .\build64
           cd .\build64
-          cmake -G "${{ env.CMAKE_GENERATOR }}" -A x64 -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DQTDIR="${{ github.workspace }}\cmbuild\QT\${{ env.QT_VERSION }}\msvc2017_64" -DDepsPath="${{ github.workspace }}\cmbuild\deps\win64" -DBUILD_CAPTIONS=YES -DCOPIED_DEPENDENCIES=NO -DCOPY_DEPENDENCIES=YES -DDISABLE_PYTHON="ON" ..
+          cmake -G "${{ env.CMAKE_GENERATOR }}" -A x64 -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DQTDIR="${{ github.workspace }}\cmbuild\QT\${{ env.QT_VERSION }}\msvc2019_64" -DDepsPath="${{ github.workspace }}\cmbuild\deps\win64" -DBUILD_CAPTIONS=YES -DCOPIED_DEPENDENCIES=NO -DCOPY_DEPENDENCIES=YES -DDISABLE_PYTHON="ON" ..
       - name: 'Build obs-rtspserver 64-bit'
         working-directory: ${{ github.workspace }}/obs-studio
         run: |
@@ -136,7 +136,8 @@ jobs:
            libqt5x11extras5-dev libspeexdsp-dev libswresample-dev libswscale-dev libudev-dev libv4l-dev \
            libvlc-dev libx11-dev libx264-dev libxcb-shm0-dev libxcb-xinerama0-dev libxcomposite-dev \
            libxinerama-dev pkg-config python3-dev qtbase5-dev libqt5svg5-dev swig libxcb-randr0-dev \
-           libx11-xcb-dev libxcb-xfixes0-dev libwayland-dev
+           libx11-xcb-dev libxcb-xfixes0-dev \
+           libwayland-dev libpipewire-0.3-dev
 #           libxcb-xfixes0-dev libx11-xcb-dev libxcb1-dev \
 #           libx32gcc-4.8-dev libc6-dev-i386 lib32stdc++6 g++-multilib gcc-multilib \
 #           libmbedtls-dev:i386 libasound2-dev:i386 libavcodec-dev:i386 libavdevice-dev:i386 \
