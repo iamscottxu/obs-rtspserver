@@ -137,7 +137,7 @@ jobs:
            libvlc-dev libx11-dev libx264-dev libxcb-shm0-dev libxcb-xinerama0-dev libxcomposite-dev \
            libxinerama-dev pkg-config python3-dev qtbase5-dev libqt5svg5-dev swig libxcb-randr0-dev \
            libx11-xcb-dev libxcb-xfixes0-dev \
-           libwayland-dev libpipewire-0.2-dev libpipewire-0.2-1
+           libwayland-dev libpipewire-0.2-dev pipewire-audio-client-libraries
 #           libxcb-xfixes0-dev libx11-xcb-dev libxcb1-dev \
 #           libx32gcc-4.8-dev libc6-dev-i386 lib32stdc++6 g++-multilib gcc-multilib \
 #           libmbedtls-dev:i386 libasound2-dev:i386 libavcodec-dev:i386 libavdevice-dev:i386 \
