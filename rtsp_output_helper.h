@@ -16,6 +16,7 @@ public:
 	~RtspOutputHelper();
 	static RtspOutputHelper *CreateRtspOutput(obs_data_t *settings, obs_data_t *hotkey);
 	void UpdateSettings(obs_data_t *settings);
+	obs_data_t *GetSettings();
 	void UpdateEncoder();
 	bool Start();
 	void Stop();
@@ -26,6 +27,7 @@ public:
 	void SignalDisconnect(const char *signal, signal_callback_t callback,
 			      void *data);
 	std::string GetOutputName();
+	uint64_t GetTotalBytes();
 	bool IsActive();
 
 private:

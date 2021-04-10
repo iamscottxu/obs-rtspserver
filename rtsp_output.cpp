@@ -25,6 +25,10 @@ struct rtsp_out_data {
 	obs_output_t *output = nullptr;
 
 	uint16_t port = 0;
+	bool auth_enabled = false;
+	string auth_realm;
+	string auth_username;
+	string auth_password;
 
 	volatile bool active;
 	volatile bool stopping;
@@ -32,6 +36,7 @@ struct rtsp_out_data {
 
 	uint32_t num_clients = 0;
 	uint32_t audio_timestamp_clock = 0;
+	uint64_t total_bytes_sent = 0;
 
 	std::unique_ptr<xop::EventLoop> event_loop;
 	std::shared_ptr<xop::RtspServer> server;
@@ -116,16 +121,17 @@ static void *rtsp_output_create(obs_data_t *settings, obs_output_t *output)
 		(rtsp_out_data *)bzalloc(sizeof(struct rtsp_out_data));
 
 	data->output = output;
-	rtsp_output_update(data, settings);
-
+	
 	data->event_loop = std::make_unique<xop::EventLoop>();
 	data->server = xop::RtspServer::Create(data->event_loop.get());
+
+	rtsp_output_update(data, settings);
 
 	add_prestart_signal(data);
 
 	data->start_stop_hotkey = obs_hotkey_pair_register_output(
-		output, "RtspOutput.Start", obs_module_text("StartOutput"),
-		"RtspOutput.Stop", obs_module_text("StopOutput"),
+		output, "RtspOutput.Start", obs_module_text("RtspOutput.Hotkey.StartOutput"),
+		"RtspOutput.Stop", obs_module_text("RtspOutput.Hotkey.StopOutput"),
 		rtsp_output_start_hotkey, rtsp_output_stop_hotkey, data, data);
 
 	UNUSED_PARAMETER(settings);
@@ -140,23 +146,23 @@ static void set_output_error(rtsp_out_data *out_data, char code, ...)
 	switch (code) {
 	case ERROR_BEGIN_DATA_CAPTURE:
 		message = "can't begin data capture";
-		lookup_string = "ErrorBeginDataCapture";
+		lookup_string = "RtspOutput.Error.BeginDataCapture";
 		break;
 	case ERROR_INIT_ENCODERS:
 		message = "initialize encoders error";
-		lookup_string = "ErrorInitEncoders";
+		lookup_string = "RtspOutput.Error.InitEncoders";
 		break;
 	case ERROR_START_RTSP_SERVER:
 		message = "starting RTSP server failed on port '%d'";
-		lookup_string = "ErrorStartRtspServer";
+		lookup_string = "RtspOutput.Error.StartRtspServer";
 		break;
 	case ERROR_ENCODE:
 		message = "encode error";
-		lookup_string = "ErrorEncode";
+		lookup_string = "RtspOutput.Error.Encode";
 		break;
 	default:
 		message = "unknown error";
-		lookup_string = "ErrorUnknown";
+		lookup_string = "RtspOutput.Error.Unknown";
 		break;
 	}
 
@@ -264,6 +270,8 @@ static bool rtsp_output_start(void *data)
 	out_data->frame_push_thread =
 		std::make_unique<std::thread>(rtsp_push_frame, out_data);
 
+	out_data->total_bytes_sent = 0;
+
 	os_atomic_set_bool(&out_data->active, true);
 	obs_output_begin_data_capture(out_data->output, 0);
 
@@ -341,6 +349,7 @@ static void rtsp_push_frame(void *param)
 			out_data->frame_queue->wait_and_pop();
 		if (queue_frame == nullptr)
 			break;
+		out_data->total_bytes_sent += queue_frame->av_frame.size;
 		out_data->server->PushFrame(out_data->session_id,
 					    queue_frame->channe_id,
 					    queue_frame->av_frame);
@@ -425,16 +434,37 @@ static void rtsp_output_data(void *data, struct encoder_packet *packet)
 
 static void rtsp_output_defaults(obs_data_t *defaults)
 {
+#if defined(__APPLE__) || defined(__MACH__)
+	// On osx the application will run using a non-priviliged user.
+	// Opening ports below 1024 is not possible.
+	obs_data_set_default_int(defaults, "port", 8554);
+#else
 	obs_data_set_default_int(defaults, "port", 554);
+#endif
+	obs_data_set_default_bool(defaults, "authentication", false);
+	obs_data_set_default_string(defaults, "authentication_realm", "");
+	obs_data_set_default_string(defaults, "authentication_username", "");
+	obs_data_set_default_string(defaults, "authentication_password", "");
 }
 
 static void rtsp_output_update(void *data, obs_data_t *settings)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)data;
 	out_data->port = obs_data_get_int(settings, "port");
+	out_data->auth_enabled = obs_data_get_bool(settings, "authentication");
+	out_data->auth_realm = obs_data_get_string(settings, "authentication_realm");
+	out_data->auth_username = obs_data_get_string(settings, "authentication_username");
+	out_data->auth_password = obs_data_get_string(settings, "authentication_password");
+
+	if (out_data->auth_enabled)
+		out_data->server->SetAuthConfig(out_data->auth_realm,
+						out_data->auth_username,
+						out_data->auth_password);
+	else
+		out_data->server->SetAuthConfig("", "", "");
 }
 
-obs_properties_t *rtsp_output_properties(void *data)
+static obs_properties_t *rtsp_output_properties(void *data)
 {
 	UNUSED_PARAMETER(data);
 
@@ -442,9 +472,29 @@ obs_properties_t *rtsp_output_properties(void *data)
 	obs_properties_set_flags(props, OBS_PROPERTIES_DEFER_UPDATE);
 
 	obs_properties_add_int(props, "port",
-			       obs_module_text("RtspOutput.Port"), 1, 65535, 1);
+			       obs_module_text("RtspOutput.Properties.Port"), 1, 65535, 1);
+
+	obs_properties_t *auth_group = obs_properties_create();
+	obs_properties_add_text(auth_group, "authentication_realm",
+				obs_module_text("RtspOutput.Properties.Authentication.Realm"),
+				OBS_TEXT_DEFAULT);
+	obs_properties_add_text(auth_group, "authentication_username",
+				obs_module_text("RtspOutput.Properties.Authentication.Username"),
+				OBS_TEXT_DEFAULT);
+	obs_properties_add_text(auth_group, "authentication_password",
+				obs_module_text("RtspOutput.Properties.Authentication.Password"),
+				OBS_TEXT_PASSWORD);
+	obs_properties_add_group(props, "authentication",
+				 obs_module_text("RtspOutput.Properties.Authentication"),
+				 OBS_GROUP_CHECKABLE, auth_group);
 
 	return props;
+}
+
+static uint64_t rtsp_output_total_bytes_sent(void *data)
+{
+	rtsp_out_data *out_data = (rtsp_out_data *)data;
+	return out_data->total_bytes_sent;
 }
 
 void rtsp_output_register()
@@ -464,6 +514,7 @@ void rtsp_output_register()
 	output_info.get_defaults = rtsp_output_defaults;
 	output_info.update = rtsp_output_update;
 	output_info.get_properties = rtsp_output_properties;
+	output_info.get_total_bytes = rtsp_output_total_bytes_sent;
 
 	obs_register_output(&output_info);
 }

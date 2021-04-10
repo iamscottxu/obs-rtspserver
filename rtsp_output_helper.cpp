@@ -41,6 +41,11 @@ void RtspOutputHelper::UpdateSettings(obs_data_t *settings)
 	obs_output_update(obsOutput, settings);
 }
 
+obs_data_t *RtspOutputHelper::GetSettings()
+{
+	return obs_output_get_settings(obsOutput);
+}
+
 void RtspOutputHelper::UpdateEncoder()
 {
 	GetBaseConfig();
@@ -85,6 +90,11 @@ void RtspOutputHelper::SignalDisconnect(const char *signal,
 string RtspOutputHelper::GetOutputName()
 {
 	return string(obs_output_get_name(obsOutput));
+}
+
+uint64_t RtspOutputHelper::GetTotalBytes()
+{
+	return obs_output_get_total_bytes(obsOutput);
 }
 
 bool RtspOutputHelper::IsActive()
