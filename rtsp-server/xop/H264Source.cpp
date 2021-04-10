@@ -60,31 +60,30 @@ string H264Source::GetMediaDescription(uint16_t port)
 
 string H264Source::GetAttribute()
 {
-	auto sdp = string("a=rtpmap:96 H264/90000\r\n");
+	auto rtpmap = string("a=rtpmap:96 H264/90000\r\n");
 
 	if (!sps_.empty() && !pps_.empty()) {
 		char const *fmtp = "a=fmtp:96 packetization-mode=1;"
 				   "profile-level-id=%06X;"
 				   "sprop-parameter-sets=%s,%s";
 
-		const auto pps_base64 = Base64Encode(pps_.data(), pps_.size());
-		const auto sps_base64 = Base64Encode(sps_.data(), sps_.size());
+		auto pps_base64 = Base64Encode(pps_.data(), pps_.size());
+		auto sps_base64 = Base64Encode(sps_.data(), sps_.size());
 
-		const uint32_t profile_level_id = (sps_.at(1) << 16) |
+		uint32_t profile_level_id = (sps_.at(1) << 16) |
 					    (sps_.at(2) << 8) | sps_.at(3);
 
-		const size_t buf_size = 1 + strlen(fmtp) + 6 +
-				       sps_base64.length() +
+		size_t buf_size = 1 + strlen(fmtp) + 6 + sps_base64.length() +
 				  pps_base64.length();
 		auto buf = vector<char>(buf_size);
 
 		sprintf(buf.data(), fmtp, profile_level_id, sps_base64.c_str(),
 			pps_base64.c_str());
 
-		sdp.append(buf.data());
+		rtpmap.append(buf.data());
 	}
 
-        return sdp;
+        return rtpmap;
 }
 
 bool H264Source::HandleFrame(MediaChannelId channel_id, AVFrame frame)

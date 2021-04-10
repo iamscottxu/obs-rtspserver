@@ -33,7 +33,7 @@ class MediaSession
 public:
     typedef std::function<void (MediaSessionId sessionId, uint32_t numClients)> NotifyCallback;
 
-    static MediaSession* CreateNew(std::string url_suffxx="live", uint32_t max_channel_count =2);
+    static MediaSession* CreateNew(std::string url_suffxx="live");
     ~MediaSession();
 
     bool AddSource(MediaChannelId channel_id, MediaSource* source);
@@ -65,9 +65,6 @@ public:
     uint32_t GetNumClient() const
     { return (uint32_t)clients_.size(); }
 
-    uint32_t GetMaxChannelCount() const
-    { return max_channel_count_; }
-
     bool IsMulticast() const
     { return is_multicast_; }
 
@@ -76,7 +73,7 @@ public:
 
     uint16_t GetMulticastPort(MediaChannelId channel_id) const
     {
-		if (channel_id >= multicast_port_.size()) {
+		if (channel_id >= MAX_MEDIA_CHANNEL) {
 			return 0;
 		}         
         return multicast_port_[channel_id];
@@ -85,9 +82,7 @@ public:
 private:
     friend class MediaSource;
     friend class RtspServer;
-    MediaSession(std::string url_suffxx, uint32_t max_channel_count);
-
-    uint32_t max_channel_count_ = 0;
+    MediaSession(std::string url_suffxx);
 
     MediaSessionId session_id_ = 0;
     std::string suffix_;
@@ -101,7 +96,7 @@ private:
     std::map<SOCKET, std::weak_ptr<RtpConnection>> clients_;
 
     bool is_multicast_ = false;
-    std::vector<uint16_t> multicast_port_;
+    uint16_t multicast_port_[MAX_MEDIA_CHANNEL];
     std::string multicast_ip_;
     std::atomic_bool has_new_client_;
 

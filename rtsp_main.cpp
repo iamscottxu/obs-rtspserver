@@ -39,8 +39,7 @@ bool obs_module_load(void)
 		auto *data = rtsp_output_read_data();
 		auto *config = rtsp_properties_open_config();
 		const char *str = nullptr;
-		str = config_get_string(config, HOTKEY_CONFIG_SECTIION,
-					"RtspOutput");
+		str = config_get_string(config, "Hotkeys", "RtspOutput");
 		obs_data_t *hotkey = obs_data_create_from_json(str);
 		rtspOutputHelper = RtspOutputHelper::CreateRtspOutput(data, hotkey);
 		obs_data_release(hotkey);
@@ -106,7 +105,7 @@ void rtsp_output_save_hotkey_settings(RtspOutputHelper *rtspOutputHelper)
 	auto *data = rtspOutputHelper->HotkeysSave();
 	auto *str = obs_data_get_json(data);
 	auto *config = rtsp_properties_open_config();
-	config_set_string(config, HOTKEY_CONFIG_SECTIION, "RtspOutput", str);
+	config_set_string(config, "Hotkeys", "RtspOutput", str);
 	config_save(config);
 	config_close(config);
 }

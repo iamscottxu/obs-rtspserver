@@ -2,7 +2,6 @@
 #define RTSP_OUTPUT_HELPER_H
 
 #include <mutex>
-#include <vector>
 #include <obs-module.h>
 
 struct rtsp_output_settings {
@@ -40,7 +39,7 @@ private:
 	obs_output_t *obsOutput;
 	struct rtsp_output_settings outputSettings;
 	obs_encoder_t *videoEncoder = nullptr;
-	std::vector<obs_encoder_t *> audioEncoders;
+	obs_encoder_t *audioEncoder = nullptr;
 };
 
 #endif // RTSP_OUTPUT_HELPER_H

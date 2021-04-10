@@ -28,8 +28,6 @@ RtspProperties::RtspProperties(std::string rtspOutputName, QWidget *parent)
 		&RtspProperties::onEnableOptions);
 	connect(this, &RtspProperties::showWarning, this,
 		&RtspProperties::onShowWarning);
-	connect(this, &RtspProperties::changeStatusTimerStatus, this,
-		&RtspProperties::onChangeStatusTimerStatus);
 
 	rtspOutputHelper = new RtspOutputHelper(rtspOutputName);
 	onEnableOptions(!rtspOutputHelper->IsActive(),
@@ -79,12 +77,6 @@ void RtspProperties::closeEvent(QCloseEvent *event)
 void RtspProperties::onEnableOptions(bool startEnable, bool stopRnable)
 {
 	ui->spinBoxPort->setEnabled(startEnable);
-	ui->checkBoxAudioTrack1->setEnabled(startEnable);
-	ui->checkBoxAudioTrack2->setEnabled(startEnable);
-	ui->checkBoxAudioTrack3->setEnabled(startEnable);
-	ui->checkBoxAudioTrack4->setEnabled(startEnable);
-	ui->checkBoxAudioTrack5->setEnabled(startEnable);
-	ui->checkBoxAudioTrack6->setEnabled(startEnable);
 	ui->pushButtonStart->setEnabled(startEnable);
 	ui->pushButtonStop->setEnabled(stopRnable);
 }
@@ -96,18 +88,6 @@ void RtspProperties::onShowWarning(bool show)
 			QString(rtspOutputHelper->GetLastError().c_str()));
 	else
 		ui->labelMessage->setText("");
-}
-
-void RtspProperties::onChangeStatusTimerStatus(bool start)
-{
-	if (start) {
-		lastTotalBytes = 0;
-		statusTimer->start(1000);
-	} else {
-		statusTimer->stop();
-		ui->labelTotalData->setText("0.0 MB");
-		ui->labelBitrate->setText("0 kb/s");
-	}
 }
 
 void RtspProperties::onStatusTimerTimeout()
@@ -135,17 +115,7 @@ void RtspProperties::onPushButtonAddressCopyClicked()
 void RtspProperties::onPushButtonStartClicked()
 {
 	auto data = rtspOutputHelper->GetSettings();
-	{
-		auto config = rtsp_properties_open_config();
-		SaveConfig(config);
-		config_close(config);
-	}
-	{
-		auto setting = rtspOutputHelper->GetSettings();
-		UpdateParameter(setting);
-		rtsp_output_save_data(setting);
-		obs_data_release(setting);
-	}
+	UpdateParameter(data);
 	obs_data_release(data);
 	showWarning(!rtspOutputHelper->Start());
 }
@@ -160,7 +130,8 @@ void RtspProperties::OnOutputStart(void *data, calldata_t *cd)
 {
 	auto page = (RtspProperties *)data;
 	page->enableOptions(false, true);
-	page->changeStatusTimerStatus(true);
+	page->lastTotalBytes = 0;
+	page->statusTimer->start(1000);
 }
 
 void RtspProperties::OnOutputStop(void *data, calldata_t *cd)
@@ -170,7 +141,9 @@ void RtspProperties::OnOutputStop(void *data, calldata_t *cd)
 	if (code != OBS_OUTPUT_SUCCESS)
 		page->showWarning(true);
 	page->enableOptions(true, false);
-	page->changeStatusTimerStatus(false);
+	page->statusTimer->stop();
+	page->ui->labelTotalData->setText("0.0 MB");
+	page->ui->labelBitrate->setText("0 kb/s");
 }
 
 void RtspProperties::LoadSetting(obs_data_t *setting)
@@ -221,20 +194,8 @@ void RtspProperties::UpdateParameter(obs_data_t *setting)
 
 void RtspProperties::LoadConfig(config_t *config)
 {
-	ui->checkBoxAuto->setChecked(
-		config_get_bool(config, CONFIG_SECTIION, "AutoStart"));
-	ui->checkBoxAudioTrack1->setChecked(
-		config_get_bool(config, CONFIG_SECTIION, "AudioTrack1"));
-	ui->checkBoxAudioTrack2->setChecked(
-		config_get_bool(config, CONFIG_SECTIION, "AudioTrack2"));
-	ui->checkBoxAudioTrack3->setChecked(
-		config_get_bool(config, CONFIG_SECTIION, "AudioTrack3"));
-	ui->checkBoxAudioTrack4->setChecked(
-		config_get_bool(config, CONFIG_SECTIION, "AudioTrack4"));
-	ui->checkBoxAudioTrack5->setChecked(
-		config_get_bool(config, CONFIG_SECTIION, "AudioTrack5"));
-	ui->checkBoxAudioTrack6->setChecked(
-		config_get_bool(config, CONFIG_SECTIION, "AudioTrack6"));
+	auto autoStart = config_get_bool(config, CONFIG_SECTIION, "AutoStart");
+	ui->checkBoxAuto->setChecked(autoStart);
 }
 
 void RtspProperties::SaveConfig(config_t *config)
@@ -242,19 +203,7 @@ void RtspProperties::SaveConfig(config_t *config)
 	if (!config)
 		return;
 
-	config_set_bool(config, CONFIG_SECTIION, "AutoStart",
-			ui->checkBoxAuto->isChecked());
-	config_set_bool(config, CONFIG_SECTIION, "AudioTrack1",
-			ui->checkBoxAudioTrack1->isChecked());
-	config_set_bool(config, CONFIG_SECTIION, "AudioTrack2",
-			ui->checkBoxAudioTrack2->isChecked());
-	config_set_bool(config, CONFIG_SECTIION, "AudioTrack3",
-			ui->checkBoxAudioTrack3->isChecked());
-	config_set_bool(config, CONFIG_SECTIION, "AudioTrack4",
-			ui->checkBoxAudioTrack4->isChecked());
-	config_set_bool(config, CONFIG_SECTIION, "AudioTrack5",
-			ui->checkBoxAudioTrack5->isChecked());
-	config_set_bool(config, CONFIG_SECTIION, "AudioTrack6",
-			ui->checkBoxAudioTrack6->isChecked());
+	auto autoStart = ui->checkBoxAuto->isChecked();
+	config_set_bool(config, CONFIG_SECTIION, "AutoStart", autoStart);
 	config_save(config);
 }

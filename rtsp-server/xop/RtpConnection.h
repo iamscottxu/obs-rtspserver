@@ -24,7 +24,7 @@ class RtspConnection;
 class RtpConnection
 {
 public:
-    RtpConnection(std::weak_ptr<TcpConnection> rtsp_connection, uint32_t max_channel_count);
+    RtpConnection(std::weak_ptr<TcpConnection> rtsp_connection);
     virtual ~RtpConnection();
 
     void SetClockRate(MediaChannelId channel_id, uint32_t clock_rate)
@@ -80,8 +80,6 @@ private:
     int  SendRtpOverTcp(MediaChannelId channel_id, RtpPacket pkt);
     int  SendRtpOverUdp(MediaChannelId channel_id, RtpPacket pkt);
 
-   uint32_t max_channel_count_ = 0;
-
 	std::weak_ptr<TcpConnection> rtsp_connection_;
 
     TransportMode transport_mode_;
@@ -91,15 +89,15 @@ private:
 	bool has_key_frame_ = false;
 
     uint8_t  frame_type_ = 0;
-    std::vector<uint16_t> local_rtp_port_;
-    std::vector<uint16_t> local_rtcp_port_;
-        std::vector<SOCKET> rtpfd_;
-        std::vector<SOCKET> rtcpfd_;
+    uint16_t local_rtp_port_[MAX_MEDIA_CHANNEL];
+    uint16_t local_rtcp_port_[MAX_MEDIA_CHANNEL];
+	SOCKET rtpfd_[MAX_MEDIA_CHANNEL];
+	SOCKET rtcpfd_[MAX_MEDIA_CHANNEL];
 
     struct sockaddr_in6 peer_addr_;
-    std::vector<struct sockaddr_in6> peer_rtp_addr_;
-    std::vector<struct sockaddr_in6> peer_rtcp_sddr_;
-    std::vector<MediaChannelInfo> media_channel_info_;
+    struct sockaddr_in6 peer_rtp_addr_[MAX_MEDIA_CHANNEL];
+    struct sockaddr_in6 peer_rtcp_sddr_[MAX_MEDIA_CHANNEL];
+    MediaChannelInfo media_channel_info_[MAX_MEDIA_CHANNEL];
 
     bool ipv6_;
 };

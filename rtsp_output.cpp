@@ -1,6 +1,5 @@
 #include <thread>
 #include <memory>
-#include <array>
 #include <iostream>
 #include <obs-module.h>
 #include <util/threading.h>
@@ -36,9 +35,7 @@ struct rtsp_out_data {
 	uint64_t stop_ts;
 
 	uint32_t num_clients = 0;
-	std::array<uint32_t, OBS_OUTPUT_MULTI_TRACK> audio_timestamp_clocks;
-	std::array<bool, OBS_OUTPUT_MULTI_TRACK> enabled_channels;
-	std::array<xop::MediaChannelId, OBS_OUTPUT_MULTI_TRACK> channel_ids;
+	uint32_t audio_timestamp_clock = 0;
 	uint64_t total_bytes_sent = 0;
 
 	std::unique_ptr<xop::EventLoop> event_loop;
@@ -114,7 +111,6 @@ static bool rtsp_output_stop_hotkey(void *data, obs_hotkey_pair_id id,
 
 static void rtsp_output_destroy(void *data)
 {
-	//rtsp_out_data *out_data = (rtsp_out_data *)data;
 	bfree(data);
 }
 
@@ -125,7 +121,7 @@ static void *rtsp_output_create(obs_data_t *settings, obs_output_t *output)
 		(rtsp_out_data *)bzalloc(sizeof(struct rtsp_out_data));
 
 	data->output = output;
-
+	
 	data->event_loop = std::make_unique<xop::EventLoop>();
 	data->server = xop::RtspServer::Create(data->event_loop.get());
 
@@ -134,10 +130,8 @@ static void *rtsp_output_create(obs_data_t *settings, obs_output_t *output)
 	add_prestart_signal(data);
 
 	data->start_stop_hotkey = obs_hotkey_pair_register_output(
-		output, "RtspOutput.Start",
-		obs_module_text("RtspOutput.Hotkey.StartOutput"),
-		"RtspOutput.Stop",
-		obs_module_text("RtspOutput.Hotkey.StopOutput"),
+		output, "RtspOutput.Start", obs_module_text("RtspOutput.Hotkey.StartOutput"),
+		"RtspOutput.Stop", obs_module_text("RtspOutput.Hotkey.StopOutput"),
 		rtsp_output_start_hotkey, rtsp_output_stop_hotkey, data, data);
 
 	UNUSED_PARAMETER(settings);
@@ -194,92 +188,18 @@ static void set_output_error(rtsp_out_data *out_data, char code, ...)
 	}
 }
 
-static bool rtsp_output_add_video_channel(void *data,
-					  xop::MediaSession *session)
-{
-	auto *out_data = (rtsp_out_data *)data;
-	auto video_encoder = obs_output_get_video_encoder(out_data->output);
-	if (video_encoder == nullptr) {
-		set_output_error(out_data, ERROR_INIT_ENCODERS);
-		return false;
-	}
-	auto video = obs_encoder_video(video_encoder);
-	auto video_frame_rate = video_output_get_frame_rate(video);
-	const uint8_t *sps = nullptr, *pps = nullptr;
-	size_t sps_size = 0, pps_size = 0;
-	{
-		uint8_t *extra_data = nullptr;
-		size_t extra_data_size = 0;
-		if (obs_encoder_get_extra_data(video_encoder, &extra_data,
-					       &extra_data_size))
-			rtsp_output_avc_get_sps_pps(extra_data, extra_data_size,
-						    &sps, &sps_size, &pps,
-						    &pps_size);
-	}
-	session->AddSource(
-		xop::channel_0,
-		xop::H264Source::CreateNew(
-			xop::H264Parser::RemoveEmulationBytes(
-				vector<uint8_t>(sps, sps + sps_size)),
-			vector<uint8_t>(pps, pps + pps_size),
-			(uint32_t)video_frame_rate));
-
-	return true;
-}
-
-static bool rtsp_output_add_audio_channel(void *data,
-					  xop::MediaSession *session,
-					  size_t idx,
-					  xop::MediaChannelId channel_id)
-{
-	auto *out_data = (rtsp_out_data *)data;
-	auto audio_encoder =
-		obs_output_get_audio_encoder(out_data->output, idx);
-	if (audio_encoder == nullptr) {
-		return false;
-	}
-	auto audio = obs_encoder_audio(audio_encoder);
-	auto audio_channels = audio_output_get_channels(audio);
-	auto audio_sample_rate = obs_encoder_get_sample_rate(audio_encoder);
-	uint8_t *extra_data = nullptr;
-	size_t extra_data_size = 0;
-	if (obs_encoder_get_extra_data(audio_encoder, &extra_data,
-				       &extra_data_size)) {
-		
-	}
-	session->AddSource(channel_id,
-			   xop::AACSource::CreateNew(audio_sample_rate,
-					       (uint8_t)audio_channels, false));
-	out_data->audio_timestamp_clocks[idx] = audio_sample_rate;
-	return true;
-}
-
 static bool rtsp_output_start(void *data)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)data;
 
 	send_prestart_signal(out_data);
 
-	auto enabled_channels_count = 0;
-	for (auto index = 0; index < out_data->enabled_channels.size();
-	     index++) {
-		if (obs_output_get_audio_encoder(out_data->output, index) ==
-		    nullptr) {
-			out_data->enabled_channels[index] = false;
-			continue;
-		}
-		out_data->enabled_channels[index] = true;
-		out_data->channel_ids[index] =
-			(xop::MediaChannelId)++enabled_channels_count;
-	}
-
-	auto av_flags = enabled_channels_count > 0 ? 0 : OBS_OUTPUT_VIDEO;
-	if (!obs_output_can_begin_data_capture(out_data->output, av_flags)) {
+	if (!obs_output_can_begin_data_capture(out_data->output, 0)) {
 		set_output_error(out_data, ERROR_BEGIN_DATA_CAPTURE);
 		return false;
 	}
 
-	if (!obs_output_initialize_encoders(out_data->output, av_flags)) {
+	if (!obs_output_initialize_encoders(out_data->output, 0)) {
 		set_output_error(out_data, ERROR_INIT_ENCODERS);
 		return false;
 	}
@@ -294,26 +214,47 @@ static bool rtsp_output_start(void *data)
 
 	os_atomic_set_bool(&out_data->stopping, false);
 
-	xop::MediaSession *session = xop::MediaSession::CreateNew(
-		"live", enabled_channels_count + 1);
-
-	if (!rtsp_output_add_video_channel(data, session)) {
-		return false;
-	}
-
-	for (auto index = 0; index < out_data->enabled_channels.size();
-	     index++) {
-		if (!out_data->enabled_channels[index])
-			continue;
-		if (!rtsp_output_add_audio_channel(
-			    data, session, index,
-			    out_data->channel_ids[index])) {
-			return false;
+	video_t *video = obs_output_video(out_data->output);
+	audio_t *audio = obs_output_audio(out_data->output);
+	const struct audio_output_info *audio_info =
+		audio_output_get_info(audio);
+	uint32_t audio_channels = get_audio_channels(audio_info->speakers);
+	uint32_t audio_sample_rate = obs_encoder_get_sample_rate(
+		obs_output_get_audio_encoder(out_data->output, 0));
+	double video_frame_rate = video_output_get_frame_rate(video);
+	const uint8_t *sps = nullptr;
+	size_t sps_size = 0;
+	const uint8_t *pps = nullptr;
+	size_t pps_size = 0;
+	{
+		uint8_t *extra_data = nullptr;
+		size_t extra_data_size = 0;
+		if (obs_encoder_get_extra_data(
+			    obs_output_get_video_encoder(out_data->output),
+			    &extra_data, &extra_data_size)) {
+			rtsp_output_avc_get_sps_pps(extra_data, extra_data_size,
+						    &sps, &sps_size, &pps,
+						    &pps_size);
 		}
 	}
 
+	out_data->audio_timestamp_clock = audio_sample_rate;
+
 	out_data->frame_queue =
 		std::make_unique<threadsafe_queue<queue_frame>>();
+
+	xop::MediaSession *session = xop::MediaSession::CreateNew("live");
+
+	session->AddSource(
+		xop::channel_0,
+		xop::H264Source::CreateNew(
+			xop::H264Parser::RemoveEmulationBytes(
+				vector<uint8_t>(sps, sps + sps_size)),
+			vector<uint8_t>(pps, pps + pps_size),
+			(uint32_t)video_frame_rate));
+	session->AddSource(xop::channel_1,
+			   xop::AACSource::CreateNew(audio_sample_rate,
+						     audio_channels, false));
 
 	session->SetNotifyCallback([out_data](xop::MediaSessionId session_id,
 					      uint32_t num_clients) {
@@ -332,7 +273,7 @@ static bool rtsp_output_start(void *data)
 	out_data->total_bytes_sent = 0;
 
 	os_atomic_set_bool(&out_data->active, true);
-	obs_output_begin_data_capture(out_data->output, av_flags);
+	obs_output_begin_data_capture(out_data->output, 0);
 
 	blog(LOG_INFO, "starting rstp server on port '%d'", out_data->port);
 
@@ -450,17 +391,16 @@ static void rtsp_output_audio(void *param, struct encoder_packet *packet)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)param;
 	xop::AVFrame audioFrame = {0};
-
 	audioFrame.type = xop::AUDIO_FRAME;
 	audioFrame.size = packet->size;
-	audioFrame.timestamp = get_timestamp(
-		out_data->audio_timestamp_clocks[packet->track_idx], packet);
+	audioFrame.timestamp =
+		get_timestamp(out_data->audio_timestamp_clock, packet);
 	audioFrame.buffer.reset(new uint8_t[audioFrame.size]);
 	memcpy(audioFrame.buffer.get(), packet->data, packet->size);
 
 	struct queue_frame queue_frame;
 	queue_frame.av_frame = audioFrame;
-	queue_frame.channe_id = out_data->channel_ids[packet->track_idx];
+	queue_frame.channe_id = xop::channel_1;
 	out_data->frame_queue->push(queue_frame);
 }
 
@@ -512,12 +452,9 @@ static void rtsp_output_update(void *data, obs_data_t *settings)
 	rtsp_out_data *out_data = (rtsp_out_data *)data;
 	out_data->port = obs_data_get_int(settings, "port");
 	out_data->auth_enabled = obs_data_get_bool(settings, "authentication");
-	out_data->auth_realm =
-		obs_data_get_string(settings, "authentication_realm");
-	out_data->auth_username =
-		obs_data_get_string(settings, "authentication_username");
-	out_data->auth_password =
-		obs_data_get_string(settings, "authentication_password");
+	out_data->auth_realm = obs_data_get_string(settings, "authentication_realm");
+	out_data->auth_username = obs_data_get_string(settings, "authentication_username");
+	out_data->auth_password = obs_data_get_string(settings, "authentication_password");
 
 	if (out_data->auth_enabled)
 		out_data->server->SetAuthConfig(out_data->auth_realm,
@@ -535,28 +472,22 @@ static obs_properties_t *rtsp_output_properties(void *data)
 	obs_properties_set_flags(props, OBS_PROPERTIES_DEFER_UPDATE);
 
 	obs_properties_add_int(props, "port",
-			       obs_module_text("RtspOutput.Properties.Port"), 1,
-			       65535, 1);
+			       obs_module_text("RtspOutput.Properties.Port"), 1, 65535, 1);
 
 	obs_properties_t *auth_group = obs_properties_create();
-	obs_properties_add_text(
-		auth_group, "authentication_realm",
-		obs_module_text("RtspOutput.Properties.Authentication.Realm"),
-		OBS_TEXT_DEFAULT);
-	obs_properties_add_text(
-		auth_group, "authentication_username",
-		obs_module_text(
-			"RtspOutput.Properties.Authentication.Username"),
-		OBS_TEXT_DEFAULT);
-	obs_properties_add_text(
-		auth_group, "authentication_password",
-		obs_module_text(
-			"RtspOutput.Properties.Authentication.Password"),
-		OBS_TEXT_PASSWORD);
-	obs_properties_add_group(
-		props, "authentication",
-		obs_module_text("RtspOutput.Properties.Authentication"),
-		OBS_GROUP_CHECKABLE, auth_group);
+	obs_properties_add_text(auth_group, "authentication_realm",
+				obs_module_text("RtspOutput.Properties.Authentication.Realm"),
+				OBS_TEXT_DEFAULT);
+	obs_properties_add_text(auth_group, "authentication_username",
+				obs_module_text("RtspOutput.Properties.Authentication.Username"),
+				OBS_TEXT_DEFAULT);
+	obs_properties_add_text(auth_group, "authentication_password",
+				obs_module_text("RtspOutput.Properties.Authentication.Password"),
+				OBS_TEXT_PASSWORD);
+	obs_properties_add_group(props, "authentication",
+				 obs_module_text("RtspOutput.Properties.Authentication"),
+				 OBS_GROUP_CHECKABLE, auth_group);
+
 	return props;
 }
 
@@ -571,7 +502,7 @@ void rtsp_output_register()
 	struct obs_output_info output_info = {};
 	output_info.id = "rtsp_output";
 	output_info.flags = OBS_OUTPUT_AV | OBS_OUTPUT_ENCODED |
-			    OBS_OUTPUT_CAN_PAUSE | OBS_OUTPUT_MULTI_TRACK;
+			    OBS_OUTPUT_CAN_PAUSE;
 	output_info.encoded_video_codecs = "h264";
 	output_info.encoded_audio_codecs = "aac";
 	output_info.get_name = rtsp_output_getname;

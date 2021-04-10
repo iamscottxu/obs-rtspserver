@@ -39,6 +39,10 @@ RtspConnection::RtspConnection(std::shared_ptr<Rtsp> rtsp, TaskScheduler *task_s
 	rtp_channel_->SetCloseCallback([this]() { this->HandleClose(); });
 	rtp_channel_->SetErrorCallback([this]() { this->HandleError(); });
 
+	for(int chn=0; chn<MAX_MEDIA_CHANNEL; chn++) {
+		rtcp_channels_[chn] = nullptr;
+	}
+
 	has_auth_ = true;
 	if (rtsp->has_auth_info_) {
 		has_auth_ = false;
@@ -90,12 +94,10 @@ void RtspConnection::OnClose()
 		}	
 	}
 
-        for(auto iter = rtcp_channels_.begin();iter != rtcp_channels_.end();) {
-                auto channel = iter->second;
-		if(!channel->IsNoneEvent()) {
-                        task_scheduler_->RemoveChannel(channel);
-                        rtcp_channels_.erase(iter++);
-		} else iter++;
+	for(int chn=0; chn<MAX_MEDIA_CHANNEL; chn++) {
+		if(rtcp_channels_[chn] && !rtcp_channels_[chn]->IsNoneEvent()) {
+			task_scheduler_->RemoveChannel(rtcp_channels_[chn]);
+		}
 	}
 }
 
@@ -235,6 +237,10 @@ void RtspConnection::HandleCmdDescribe()
 		return;
 	}
 
+	if (rtp_conn_ == nullptr) {
+		rtp_conn_.reset(new RtpConnection(shared_from_this()));
+	}
+
 	int size = 0;
 	std::shared_ptr<char> res(new char[4096]);
 	MediaSessionPtr media_session = nullptr;
@@ -243,10 +249,6 @@ void RtspConnection::HandleCmdDescribe()
 	if (rtsp) {
 		media_session = rtsp->LookMediaSession(rtsp_request_->GetRtspUrlSuffix());
 	}
-
-        if (rtp_conn_ == nullptr) {
-                rtp_conn_.reset(new RtpConnection(shared_from_this(), media_session->GetMaxChannelCount()));
-        }
 	
 	if(!rtsp || !media_session) {
 		size = rtsp_request_->BuildNotFoundRes(res.get(), 4096);
@@ -255,7 +257,7 @@ void RtspConnection::HandleCmdDescribe()
 		session_id_ = media_session->GetMediaSessionId();
 		media_session->AddClient(this->GetSocket(), rtp_conn_);
 
-		for(int chn=0; chn<media_session->GetMaxChannelCount(); chn++) {
+		for(int chn=0; chn<MAX_MEDIA_CHANNEL; chn++) {
 			MediaSource* source = media_session->GetMediaSource((MediaChannelId)chn);
 			if(source != nullptr) {
 				rtp_conn_->SetClockRate((MediaChannelId)chn, source->GetClockRate());
@@ -327,11 +329,10 @@ void RtspConnection::HandleCmdSetup()
 
 			if(rtp_conn_->SetupRtpOverUdp(channel_id, cliRtpPort, cliRtcpPort)) {                
 				SOCKET rtcpfd = rtp_conn_->GetRtcpfd(channel_id);
-				auto channel = make_shared<Channel>(rtcpfd);
-                                channel->SetReadCallback([rtcpfd, this]() { this->HandleRtcp(rtcpfd); });
-                                channel->EnableReading();
-                                task_scheduler_->UpdateChannel(channel);
-				rtcp_channels_[channel_id] = channel;
+				rtcp_channels_[channel_id].reset(new Channel(rtcpfd));
+				rtcp_channels_[channel_id]->SetReadCallback([rtcpfd, this]() { this->HandleRtcp(rtcpfd); });
+				rtcp_channels_[channel_id]->EnableReading();
+				task_scheduler_->UpdateChannel(rtcp_channels_[channel_id]);
 			}
 			else {
 				goto server_error;
@@ -434,17 +435,15 @@ bool RtspConnection::HandleAuthentication()
 
 void RtspConnection::SendOptions(ConnectionMode mode)
 {
+	if (rtp_conn_ == nullptr) {
+		rtp_conn_.reset(new RtpConnection(shared_from_this()));
+	}
+
 	auto rtsp = rtsp_.lock();
 	if (!rtsp) {
 		HandleClose();
 		return;
-	}
-
-	auto media_session = rtsp->LookMediaSession(1);
-
-        if (rtp_conn_ == nullptr) {
-                rtp_conn_.reset(new RtpConnection(shared_from_this(), media_session->GetMaxChannelCount()));
-        }
+	}	
 
 	conn_mode_ = mode;
 	rtsp_response_->SetUserAgent(USER_AGENT);
@@ -472,7 +471,7 @@ void RtspConnection::SendAnnounce()
 		session_id_ = media_session->GetMediaSessionId();
 		media_session->AddClient(this->GetSocket(), rtp_conn_);
 
-		for (int chn = 0; chn<media_session->GetMaxChannelCount(); chn++) {
+		for (int chn = 0; chn<2; chn++) {
 			MediaSource* source = media_session->GetMediaSource((MediaChannelId)chn);
 			if (source != nullptr) {
 				rtp_conn_->SetClockRate((MediaChannelId)chn, source->GetClockRate());
