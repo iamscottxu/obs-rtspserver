@@ -10,6 +10,7 @@
 #define RTSP_HELPER_H
 
 #define CONFIG_SECTIION "RstpOutput"
+#define HOTKEY_CONFIG_SECTIION "Hotkeys"
 
 static bool make_config_dir()
 {
@@ -47,6 +48,12 @@ static config_t *rtsp_properties_open_config()
 	auto ret = config_open(&config, path, CONFIG_OPEN_ALWAYS);
 	bfree(path);
 	config_set_default_bool(config, CONFIG_SECTIION, "AutoStart", false);
+	config_set_default_bool(config, CONFIG_SECTIION, "AudioTrack1", true);
+	config_set_default_bool(config, CONFIG_SECTIION, "AudioTrack2", false);
+	config_set_default_bool(config, CONFIG_SECTIION, "AudioTrack3", false);
+	config_set_default_bool(config, CONFIG_SECTIION, "AudioTrack4", false);
+	config_set_default_bool(config, CONFIG_SECTIION, "AudioTrack5", false);
+	config_set_default_bool(config, CONFIG_SECTIION, "AudioTrack6", false);
 	return config;
 }
 

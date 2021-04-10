@@ -24,10 +24,12 @@ private Q_SLOTS:
 	void onStatusTimerTimeout();
 	void onEnableOptions(bool startEnable, bool stopRnable);
 	void onShowWarning(bool show);
+	void onChangeStatusTimerStatus(bool start);
 
 Q_SIGNALS:
 	void enableOptions(bool startEnable, bool stopRnable);
 	void showWarning(bool show);
+	void changeStatusTimerStatus(bool start);
 
 private:
 	Ui::RtspProperties *ui;

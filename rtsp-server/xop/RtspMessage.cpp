@@ -154,8 +154,7 @@ bool RtspRequest::ParseHeadersLine(const char* begin, const char* end)
 	}
 
 	if(method_ == SETUP) {
-		if(ParseTransport(message)) {
-			ParseMediaChannel(message);
+		if(ParseTransport(message) && ParseMediaChannel(message)) {
 			state_ = kGotAll;
 		}
 
@@ -265,17 +264,20 @@ bool RtspRequest::ParseSessionId(std::string& message)
 
 bool RtspRequest::ParseMediaChannel(std::string& message)
 {
-	channel_id_ = channel_0;
-
 	auto iter = request_line_param_.find("url");
 	if(iter != request_line_param_.end()) {
-		std::size_t pos = iter->second.first.find("track1");
+		std::string url = iter->second.first;
+		std::size_t pos = url.rfind("/track");
 		if (pos != std::string::npos) {
-			channel_id_ = channel_1;
+			int channel_index;
+                        if (sscanf(url.c_str() + pos, "/track%d", &channel_index) != 1) {
+                                return false;
+                        }
+                        channel_id_ = (MediaChannelId)channel_index;
+                        return true;
 		}       
 	}
-
-	return true;
+	return false;
 }
 
 bool RtspRequest::ParseAuthorization(std::string& message)
