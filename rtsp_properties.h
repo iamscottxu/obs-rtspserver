@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include <obs-module.h>
-#include <util/config-file.h>
+#include <obs-frontend-api.h>
 #include "rtsp_output_helper.h"
 
 namespace Ui {

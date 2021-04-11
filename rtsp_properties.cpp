@@ -5,7 +5,7 @@
 #include <QString>
 #include <QTimer>
 #include <QCloseEvent>
-#include "rtsp_output.h"
+#include <utility>
 #include "rtsp_properties.h"
 #include "ui_rtsp_properties.h"
 #include "helper.h"
@@ -31,14 +31,14 @@ RtspProperties::RtspProperties(std::string rtspOutputName, QWidget *parent)
 	connect(this, &RtspProperties::changeStatusTimerStatus, this,
 		&RtspProperties::onChangeStatusTimerStatus);
 
-	rtspOutputHelper = new RtspOutputHelper(rtspOutputName);
+	rtspOutputHelper = new RtspOutputHelper(std::move(rtspOutputName));
 	onEnableOptions(!rtspOutputHelper->IsActive(),
 			rtspOutputHelper->IsActive());
 	rtspOutputHelper->SignalConnect("start", OnOutputStart, this);
 	rtspOutputHelper->SignalConnect("stop", OnOutputStop, this);
 
 	{
-		auto config = rtsp_properties_open_config();
+		const auto config = rtsp_properties_open_config();
 		LoadConfig(config);
 		config_close(config);
 	}
@@ -54,7 +54,7 @@ RtspProperties::~RtspProperties()
 
 void RtspProperties::showEvent(QShowEvent *event)
 {
-	auto setting = rtspOutputHelper->GetSettings();
+	const auto setting = rtspOutputHelper->GetSettings();
 	LoadSetting(setting);
 	obs_data_release(setting);
 }
@@ -64,12 +64,12 @@ void RtspProperties::closeEvent(QCloseEvent *event)
 	if (this->isHidden())
 		return;
 	{
-		auto config = rtsp_properties_open_config();
+		const auto config = rtsp_properties_open_config();
 		SaveConfig(config);
 		config_close(config);
 	}
 	{
-		auto setting = rtspOutputHelper->GetSettings();
+		const auto setting = rtspOutputHelper->GetSettings();
 		UpdateParameter(setting);
 		rtsp_output_save_data(setting);
 		obs_data_release(setting);
@@ -112,8 +112,8 @@ void RtspProperties::onChangeStatusTimerStatus(bool start)
 
 void RtspProperties::onStatusTimerTimeout()
 {
-	auto totalBytes = rtspOutputHelper->GetTotalBytes();
-	auto bitps = (totalBytes - lastTotalBytes) * 8;
+	const auto totalBytes = rtspOutputHelper->GetTotalBytes();
+	const auto bitps = (totalBytes - lastTotalBytes) * 8;
 	lastTotalBytes = totalBytes;
 	if (bitps < 0)
 		return;
@@ -134,14 +134,14 @@ void RtspProperties::onPushButtonAddressCopyClicked()
 
 void RtspProperties::onPushButtonStartClicked()
 {
-	auto data = rtspOutputHelper->GetSettings();
+	const auto data = rtspOutputHelper->GetSettings();
 	{
-		auto config = rtsp_properties_open_config();
+		const auto config = rtsp_properties_open_config();
 		SaveConfig(config);
 		config_close(config);
 	}
 	{
-		auto setting = rtspOutputHelper->GetSettings();
+		const auto setting = rtspOutputHelper->GetSettings();
 		UpdateParameter(setting);
 		rtsp_output_save_data(setting);
 		obs_data_release(setting);
@@ -158,16 +158,15 @@ void RtspProperties::onPushButtonStopClicked()
 
 void RtspProperties::OnOutputStart(void *data, calldata_t *cd)
 {
-	auto page = (RtspProperties *)data;
+	auto page = static_cast<RtspProperties *>(data);
 	page->enableOptions(false, true);
 	page->changeStatusTimerStatus(true);
 }
 
 void RtspProperties::OnOutputStop(void *data, calldata_t *cd)
 {
-	auto page = (RtspProperties *)data;
-	auto code = calldata_int(cd, "code");
-	if (code != OBS_OUTPUT_SUCCESS)
+	auto page = static_cast<RtspProperties *>(data);
+	if (const auto code = calldata_int(cd, "code"); code != OBS_OUTPUT_SUCCESS)
 		page->showWarning(true);
 	page->enableOptions(true, false);
 	page->changeStatusTimerStatus(false);
@@ -176,11 +175,11 @@ void RtspProperties::OnOutputStop(void *data, calldata_t *cd)
 void RtspProperties::LoadSetting(obs_data_t *setting)
 {
 	ui->spinBoxPort->setValue(obs_data_get_int(setting, "port"));
-	auto username = std::string(
+	const auto username = std::string(
 		obs_data_get_string(setting, "authentication_username"));
-	auto realm = std::string(
+	const auto realm = std::string(
 		obs_data_get_string(setting, "authentication_realm"));
-	auto password = std::string(
+	const auto password = std::string(
 		obs_data_get_string(setting, "authentication_password"));
 	auto enbledAuth = false;
 	if (!username.empty() && !realm.empty())

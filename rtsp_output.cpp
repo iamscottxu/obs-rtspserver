@@ -1,7 +1,7 @@
 #include <thread>
 #include <memory>
 #include <array>
-#include <iostream>
+#include <string>
 #include <obs-module.h>
 #include <util/threading.h>
 #include <xop/RtspServer.h>
@@ -27,9 +27,9 @@ struct rtsp_out_data {
 
 	uint16_t port = 0;
 	bool auth_enabled = false;
-	string auth_realm;
-	string auth_username;
-	string auth_password;
+        const char* auth_realm;
+        const char* auth_username;
+        const char* auth_password;
 
 	volatile bool active;
 	volatile bool stopping;
@@ -198,13 +198,13 @@ static bool rtsp_output_add_video_channel(void *data,
 					  xop::MediaSession *session)
 {
 	auto *out_data = (rtsp_out_data *)data;
-	auto video_encoder = obs_output_get_video_encoder(out_data->output);
+	const auto video_encoder = obs_output_get_video_encoder(out_data->output);
 	if (video_encoder == nullptr) {
 		set_output_error(out_data, ERROR_INIT_ENCODERS);
 		return false;
 	}
-	auto video = obs_encoder_video(video_encoder);
-	auto video_frame_rate = video_output_get_frame_rate(video);
+	const auto video = obs_encoder_video(video_encoder);
+	const auto video_frame_rate = video_output_get_frame_rate(video);
 	const uint8_t *sps = nullptr, *pps = nullptr;
 	size_t sps_size = 0, pps_size = 0;
 	{
@@ -220,27 +220,27 @@ static bool rtsp_output_add_video_channel(void *data,
 		xop::channel_0,
 		xop::H264Source::CreateNew(
 			xop::H264Parser::RemoveEmulationBytes(
-				vector<uint8_t>(sps, sps + sps_size)),
-			vector<uint8_t>(pps, pps + pps_size),
-			(uint32_t)video_frame_rate));
+				vector(sps, sps + sps_size)),
+			vector(pps, pps + pps_size),
+			static_cast<uint32_t>(video_frame_rate)));
 
 	return true;
 }
 
 static bool rtsp_output_add_audio_channel(void *data,
 					  xop::MediaSession *session,
-					  size_t idx,
-					  xop::MediaChannelId channel_id)
+					  const size_t idx,
+					  const xop::MediaChannelId channel_id)
 {
 	auto *out_data = (rtsp_out_data *)data;
-	auto audio_encoder =
+	const auto audio_encoder =
 		obs_output_get_audio_encoder(out_data->output, idx);
 	if (audio_encoder == nullptr) {
 		return false;
 	}
-	auto audio = obs_encoder_audio(audio_encoder);
-	auto audio_channels = audio_output_get_channels(audio);
-	auto audio_sample_rate = obs_encoder_get_sample_rate(audio_encoder);
+	const auto audio = obs_encoder_audio(audio_encoder);
+	const auto audio_channels = audio_output_get_channels(audio);
+	const auto audio_sample_rate = obs_encoder_get_sample_rate(audio_encoder);
 	uint8_t *extra_data = nullptr;
 	size_t extra_data_size = 0;
 	if (obs_encoder_get_extra_data(audio_encoder, &extra_data,
@@ -249,7 +249,7 @@ static bool rtsp_output_add_audio_channel(void *data,
 	}
 	session->AddSource(channel_id,
 			   xop::AACSource::CreateNew(audio_sample_rate,
-					       (uint8_t)audio_channels, false));
+					       static_cast<uint8_t>(audio_channels), false));
 	out_data->audio_timestamp_clocks[idx] = audio_sample_rate;
 	return true;
 }
@@ -270,10 +270,10 @@ static bool rtsp_output_start(void *data)
 		}
 		out_data->enabled_channels[index] = true;
 		out_data->channel_ids[index] =
-			(xop::MediaChannelId)++enabled_channels_count;
+			static_cast<xop::MediaChannelId>(++enabled_channels_count);
 	}
 
-	auto av_flags = enabled_channels_count > 0 ? 0 : OBS_OUTPUT_VIDEO;
+	const auto av_flags = enabled_channels_count > 0 ? 0 : OBS_OUTPUT_VIDEO;
 	if (!obs_output_can_begin_data_capture(out_data->output, av_flags)) {
 		set_output_error(out_data, ERROR_BEGIN_DATA_CAPTURE);
 		return false;
@@ -316,7 +316,7 @@ static bool rtsp_output_start(void *data)
 		std::make_unique<threadsafe_queue<queue_frame>>();
 
 	session->SetNotifyCallback([out_data](xop::MediaSessionId session_id,
-					      uint32_t num_clients) {
+	                                      const uint32_t num_clients) {
 		if (num_clients > 0 && out_data->num_clients == 0) {
 			obs_output_pause(out_data->output, false);
 		}
@@ -347,7 +347,7 @@ static void rtsp_output_stop(void *data, uint64_t ts)
 	os_atomic_set_bool(&out_data->stopping, true);
 }
 
-static void rtsp_output_actual_stop(rtsp_out_data *out_data, int code)
+static void rtsp_output_actual_stop(rtsp_out_data *out_data, const int code)
 {
 	os_atomic_set_bool(&out_data->active, false);
 
@@ -394,8 +394,8 @@ static uint32_t get_timestamp(uint64_t timestamp_clock,
 	// Convert the incoming dts time to the correct clock time for the timestamp.
 	// We use a int64 to ensure the roll over is handled correctly.
 	// We do the [USEC_IN_SEC / 2] trick to make sure the result of the division rounds to the nearest int.
-	uint64_t timestamp = packet->dts_usec * timestamp_clock;
-	return (uint32_t)((timestamp + USEC_IN_SEC / 2) / USEC_IN_SEC);
+	const uint64_t timestamp = packet->dts_usec * timestamp_clock;
+	return static_cast<uint32_t>((timestamp + USEC_IN_SEC / 2) / USEC_IN_SEC);
 }
 
 static void rtsp_push_frame(void *param)
@@ -419,29 +419,29 @@ static void rtsp_push_frame(void *param)
 static void rtsp_output_video(void *param, struct encoder_packet *packet)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)param;
-	xop::AVFrame videoFrame = {0};
-	videoFrame.timestamp = get_timestamp(90000, packet);
+	xop::AVFrame video_frame = {0};
+	video_frame.timestamp = get_timestamp(90000, packet);
 
 	if (packet->keyframe) {
 		uint8_t *header;
-		size_t header_size = get_video_header(
+		const size_t header_size = get_video_header(
 			obs_output_get_video_encoder(out_data->output),
 			&header);
-		videoFrame.size = packet->size + header_size;
-		videoFrame.buffer.reset(new uint8_t[videoFrame.size]);
-		memcpy(videoFrame.buffer.get(), header, header_size);
-		memcpy(videoFrame.buffer.get() + header_size, packet->data,
+		video_frame.size = packet->size + header_size;
+		video_frame.buffer.reset(new uint8_t[video_frame.size]);
+		memcpy(video_frame.buffer.get(), header, header_size);
+		memcpy(video_frame.buffer.get() + header_size, packet->data,
 		       packet->size);
-		videoFrame.type = xop::VIDEO_FRAME_I;
+		video_frame.type = xop::VIDEO_FRAME_I;
 	} else {
-		videoFrame.size = packet->size;
-		videoFrame.buffer.reset(new uint8_t[videoFrame.size]);
-		memcpy(videoFrame.buffer.get(), packet->data, packet->size);
-		videoFrame.type = xop::VIDEO_FRAME_P;
+		video_frame.size = packet->size;
+		video_frame.buffer.reset(new uint8_t[video_frame.size]);
+		memcpy(video_frame.buffer.get(), packet->data, packet->size);
+		video_frame.type = xop::VIDEO_FRAME_P;
 	}
 
 	struct queue_frame queue_frame;
-	queue_frame.av_frame = videoFrame;
+	queue_frame.av_frame = video_frame;
 	queue_frame.channe_id = xop::channel_0;
 	out_data->frame_queue->push(queue_frame);
 }
@@ -449,17 +449,17 @@ static void rtsp_output_video(void *param, struct encoder_packet *packet)
 static void rtsp_output_audio(void *param, struct encoder_packet *packet)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)param;
-	xop::AVFrame audioFrame = {0};
+	xop::AVFrame audio_frame = {0};
 
-	audioFrame.type = xop::AUDIO_FRAME;
-	audioFrame.size = packet->size;
-	audioFrame.timestamp = get_timestamp(
+	audio_frame.type = xop::AUDIO_FRAME;
+	audio_frame.size = packet->size;
+	audio_frame.timestamp = get_timestamp(
 		out_data->audio_timestamp_clocks[packet->track_idx], packet);
-	audioFrame.buffer.reset(new uint8_t[audioFrame.size]);
-	memcpy(audioFrame.buffer.get(), packet->data, packet->size);
+	audio_frame.buffer.reset(new uint8_t[audio_frame.size]);
+	memcpy(audio_frame.buffer.get(), packet->data, packet->size);
 
 	struct queue_frame queue_frame;
-	queue_frame.av_frame = audioFrame;
+	queue_frame.av_frame = audio_frame;
 	queue_frame.channe_id = out_data->channel_ids[packet->track_idx];
 	out_data->frame_queue->push(queue_frame);
 }
@@ -477,7 +477,7 @@ static void rtsp_output_data(void *data, struct encoder_packet *packet)
 	}
 
 	if (stopping(out_data) &&
-	    packet->sys_dts_usec >= (int64_t)out_data->stop_ts) {
+	    packet->sys_dts_usec >= static_cast<int64_t>(out_data->stop_ts)) {
 		rtsp_output_actual_stop(out_data, OBS_OUTPUT_SUCCESS);
 		return;
 	}

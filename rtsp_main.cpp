@@ -41,22 +41,23 @@ bool obs_module_load(void)
 		const char *str = nullptr;
 		str = config_get_string(config, HOTKEY_CONFIG_SECTIION,
 					"RtspOutput");
-		obs_data_t *hotkey = obs_data_create_from_json(str);
+		obs_data_t *hotkey = nullptr;
+		if (str) hotkey = obs_data_create_from_json(str);
 		rtspOutputHelper = RtspOutputHelper::CreateRtspOutput(data, hotkey);
 		obs_data_release(hotkey);
 		config_close(config);
 		obs_data_release(data);
 	}
 
-	auto mainWindow = (QMainWindow *)obs_frontend_get_main_window();
-	auto action = (QAction *)obs_frontend_add_tools_menu_qaction(
-		obs_module_text("RtspServer"));
+	const auto mainWindow = static_cast<QMainWindow *>(obs_frontend_get_main_window());
+	const auto action = static_cast<QAction *>(obs_frontend_add_tools_menu_qaction(
+		obs_module_text("RtspServer")));
 
 	obs_frontend_push_ui_translation(obs_module_get_string);
-	auto rtspProperties = new RtspProperties(rtspOutputHelper->GetOutputName(), mainWindow);
+	const auto rtspProperties = new RtspProperties(rtspOutputHelper->GetOutputName(), mainWindow);
 	obs_frontend_pop_ui_translation();
 
-	action->connect(action, &QAction::triggered, rtspProperties, &QDialog::exec);
+	QAction::connect(action, &QAction::triggered, rtspProperties, &QDialog::exec);
 
 	obs_frontend_add_event_callback(obs_frontend_event, rtspOutputHelper);
 
@@ -70,7 +71,7 @@ void obs_module_unload(void)
 
 void obs_frontend_event(enum obs_frontend_event event, void *ptr)
 {
-	auto rtspOutputHelper = (RtspOutputHelper *)ptr;
+	const auto rtspOutputHelper = static_cast<RtspOutputHelper *>(ptr);
 	switch (event) {
 	case OBS_FRONTEND_EVENT_FINISHED_LOADING:
 		rtsp_output_auto_start(rtspOutputHelper);
@@ -80,6 +81,7 @@ void obs_frontend_event(enum obs_frontend_event event, void *ptr)
 		rtsp_output_save_hotkey_settings(rtspOutputHelper);
 		delete rtspOutputHelper;
 		break;
+	default: ;
 	}
 }
 
@@ -129,7 +131,6 @@ void server_log_write_callback(xop::Priority priority, std::string info)
 	case xop::LOG_ERROR:
 		blog(LOG_ERROR, "[rtsp-server] %s", info.c_str());
 		break;
-	default:
-		break;
+	default: ;
 	}
 }
