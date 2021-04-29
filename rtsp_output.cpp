@@ -211,7 +211,7 @@ static bool rtsp_output_add_video_channel(void *data,
 		uint8_t *extra_data = nullptr;
 		size_t extra_data_size = 0;
 		if (obs_encoder_get_extra_data(video_encoder, &extra_data,
-					       &extra_data_size))
+					       &extra_data_size) && extra_data != nullptr)
 			rtsp_output_avc_get_sps_pps(extra_data, extra_data_size,
 						    &sps, &sps_size, &pps,
 						    &pps_size);
