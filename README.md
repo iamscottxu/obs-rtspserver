@@ -8,7 +8,7 @@
 
 # OBS-RTSPServer
 
-This is a plugin for obs-studio, encoding the output and publish rtsp stream.
+This is a plugin for obs-studio, encode and publish to a RTSP stream.
 
 **Supported Platforms** : Windows 7 , Windows 8 , Windows 10, Linux and macOS
 
