@@ -78,7 +78,7 @@ jobs:
         run: |
           mkdir .\build32
           cd .\build32
-          cmake -G "${{ env.CMAKE_GENERATOR }}" -A Win32 -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DQTDIR="${{ github.workspace }}\cmbuild\QT\${{ env.QT_VERSION }}\msvc2019" -DDepsPath="${{ github.workspace }}\cmbuild\deps\win32" -DBUILD_CAPTIONS=YES -DCOPIED_DEPENDENCIES=NO -DCOPY_DEPENDENCIES=YES -DDISABLE_PYTHON="ON" ..
+          cmake -G "${{ env.CMAKE_GENERATOR }}" -A Win32 -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DQTDIR="${{ github.workspace }}\cmbuild\QT\${{ env.QT_VERSION }}\msvc2019" -DDepsPath="${{ github.workspace }}\cmbuild\deps\win32" -DBUILD_CAPTIONS=YES -DCOPIED_DEPENDENCIES=NO -DCOPY_DEPENDENCIES=YES -DDISABLE_PYTHON="ON" -DBUILD_BROWSER=OFF ..
       - name: 'Build obs-rtspserver 32-bit'
         working-directory: ${{ github.workspace }}/obs-studio
         run: |
@@ -88,7 +88,7 @@ jobs:
         run: |
           mkdir .\build64
           cd .\build64
-          cmake -G "${{ env.CMAKE_GENERATOR }}" -A x64 -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DQTDIR="${{ github.workspace }}\cmbuild\QT\${{ env.QT_VERSION }}\msvc2019_64" -DDepsPath="${{ github.workspace }}\cmbuild\deps\win64" -DBUILD_CAPTIONS=YES -DCOPIED_DEPENDENCIES=NO -DCOPY_DEPENDENCIES=YES -DDISABLE_PYTHON="ON" ..
+          cmake -G "${{ env.CMAKE_GENERATOR }}" -A x64 -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DQTDIR="${{ github.workspace }}\cmbuild\QT\${{ env.QT_VERSION }}\msvc2019_64" -DDepsPath="${{ github.workspace }}\cmbuild\deps\win64" -DBUILD_CAPTIONS=YES -DCOPIED_DEPENDENCIES=NO -DCOPY_DEPENDENCIES=YES -DDISABLE_PYTHON="ON" -DBUILD_BROWSER=OFF ..
       - name: 'Build obs-rtspserver 64-bit'
         working-directory: ${{ github.workspace }}/obs-studio
         run: |
@@ -203,7 +203,7 @@ jobs:
         run: |
           mkdir ./build64
           cd ./build64
-          cmake -DENABLE_WAYLAND=OFF -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DDISABLE_PYTHON="ON" ..
+          cmake -DENABLE_WAYLAND=OFF -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DDISABLE_PYTHON="ON" -DBUILD_BROWSER=OFF ..
       - name: 'Build obs-rtspserver 64-bit'
         working-directory: ${{ github.workspace }}/obs-studio/build64/plugins/obs-rtspserver/
         run: |
@@ -284,7 +284,7 @@ jobs:
         run: |
           mkdir ./build64
           cd ./build64
-          cmake -DQTDIR="/usr/local/opt/qt@5" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.13" -DDISABLE_PYTHON="ON" ..
+          cmake -DQTDIR="/usr/local/opt/qt@5" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.13" -DDISABLE_PYTHON="ON" -DBUILD_BROWSER=OFF ..
       - name: 'Build obs-rtspserver 64-bit'
         working-directory: ${{ github.workspace }}/obs-studio/build64/plugins/obs-rtspserver/
         run: |

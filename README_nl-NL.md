@@ -12,7 +12,7 @@ Dit is een plug-in voor obs-studio die de uitvoer codeert en een RTSP-stream pub
 ## Windows
 U kunt het installatieprogramma gebruiken om het te installeren. Je vindt het installatieprogramma hier [release-pagina](https://github.com/iamscottxu/obs-rtspserver/releases).
 
-Als je een gecomprimeerd bestand wilt gebruiken voor handmatige installatie, kun je het uitpakken (bijv. obs-rtspserver-v1.4.0-windows.zip) en het in je obs-studio installatiemap plaatsen.
+Als je een gecomprimeerd bestand wilt gebruiken voor handmatige installatie, kun je het uitpakken (bijv. obs-rtspserver-v2.0.1-windows.zip) en het in je obs-studio installatiemap plaatsen.
 
 ## macOS
 U kunt het .pkg installatieprogramma gebruiken om het te installeren. Je vindt het installatieprogramma hier [release-pagina](https://github.com/iamscottxu/obs-rtspserver/releases).
@@ -20,7 +20,7 @@ U kunt het .pkg installatieprogramma gebruiken om het te installeren. Je vindt h
 ## Linux (alleen x64)
 * Download de laatste versie: [Release Page] (https://github.com/iamscottxu/obs-rtspserver/releases).
 * mkdir -p $HOME/.config/obs-studio/plugins
-* Untar, bijv.: tar -xzvf obs-rtspserver-v1.4.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
+* Untar, bijv.: tar -xzvf obs-rtspserver-v2.0.1-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
 
 [![Verpakkingsstatus](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 

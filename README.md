@@ -18,7 +18,7 @@ This is a plugin for obs-studio, encoding the output and publish rtsp stream.
 ## Windows
 You can use installer to install and the installer can be found in [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases) if use windows.
 
-If you want to use compressed file to install manually, you can unzip it (e.g.: obs-rtspserver-v1.4.0-windows.zip) and put it to your obs-studio install folder.
+If you want to use compressed file to install manually, you can unzip it (e.g.: obs-rtspserver-v2.0.1-windows.zip) and put it to your obs-studio install folder.
 
 ## macOS
 You can use the .pkg installer to install and the installer can be found in [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases) if use macOS.
@@ -26,7 +26,7 @@ You can use the .pkg installer to install and the installer can be found in [Rel
 ## Linux (Only x64)
 * Download the latest release from the [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases).
 * mkdir -p $HOME/.config/obs-studio/plugins
-* Untar, e.g.: tar -xzvf obs-rtspserver-v1.4.0-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
+* Untar, e.g.: tar -xzvf obs-rtspserver-v2.0.1-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
