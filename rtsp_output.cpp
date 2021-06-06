@@ -25,12 +25,6 @@ struct queue_frame {
 struct rtsp_out_data {
 	obs_output_t *output = nullptr;
 
-	uint16_t port = 0;
-	bool auth_enabled = false;
-        const char* auth_realm;
-        const char* auth_username;
-        const char* auth_password;
-
 	volatile bool active;
 	volatile bool stopping;
 	uint64_t stop_ts;
@@ -128,8 +122,6 @@ static void *rtsp_output_create(obs_data_t *settings, obs_output_t *output)
 
 	data->event_loop = std::make_unique<xop::EventLoop>();
 	data->server = xop::RtspServer::Create(data->event_loop.get());
-
-	rtsp_output_update(data, settings);
 
 	add_prestart_signal(data);
 
@@ -284,10 +276,13 @@ static bool rtsp_output_start(void *data)
 		return false;
 	}
 
-	if (!out_data->server->Start("0.0.0.0", out_data->port) ||
-	    !out_data->server->Start("::0", out_data->port)) {
-		set_output_error(out_data, ERROR_START_RTSP_SERVER,
-				 out_data->port);
+	const auto settings = obs_output_get_settings(out_data->output);
+	rtsp_output_update(data, settings);
+	const auto port = obs_data_get_int(settings, "port");
+	
+	if (!out_data->server->Start("0.0.0.0", port) ||
+	    !out_data->server->Start("::0", port)) {
+		set_output_error(out_data, ERROR_START_RTSP_SERVER, port);
 		out_data->server->Stop();
 		return false;
 	}
@@ -334,7 +329,7 @@ static bool rtsp_output_start(void *data)
 	os_atomic_set_bool(&out_data->active, true);
 	obs_output_begin_data_capture(out_data->output, av_flags);
 
-	blog(LOG_INFO, "starting rstp server on port '%d'", out_data->port);
+	blog(LOG_INFO, "starting rstp server on port '%d'", port);
 
 	return true;
 }
@@ -510,21 +505,26 @@ static void rtsp_output_defaults(obs_data_t *defaults)
 static void rtsp_output_update(void *data, obs_data_t *settings)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)data;
-	out_data->port = obs_data_get_int(settings, "port");
-	out_data->auth_enabled = obs_data_get_bool(settings, "authentication");
-	out_data->auth_realm =
+	const auto auth_enabled =
+		obs_data_get_bool(settings, "authentication");
+	const auto auth_realm =
 		obs_data_get_string(settings, "authentication_realm");
-	out_data->auth_username =
+	const auto auth_username =
 		obs_data_get_string(settings, "authentication_username");
-	out_data->auth_password =
+	const auto auth_password =
 		obs_data_get_string(settings, "authentication_password");
 
-	if (out_data->auth_enabled)
-		out_data->server->SetAuthConfig(out_data->auth_realm,
-						out_data->auth_username,
-						out_data->auth_password);
+	if (auth_enabled && auth_realm != '\0' && auth_username != '\0')
+		out_data->server->SetAuthConfig(
+			auth_realm,
+			auth_username,
+			auth_password
+		);
 	else
+	{
+		obs_data_set_bool(settings, "authentication", false);
 		out_data->server->SetAuthConfig("", "", "");
+	}
 }
 
 static obs_properties_t *rtsp_output_properties(void *data)
