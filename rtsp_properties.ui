@@ -630,7 +630,7 @@
  <connections>
   <connection>
    <sender>checkBoxEnableAuthentication</sender>
-   <signal>clicked(bool)</signal>
+   <signal>toggled(bool)</signal>
    <receiver>labelUsername</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
@@ -646,7 +646,7 @@
   </connection>
   <connection>
    <sender>checkBoxEnableAuthentication</sender>
-   <signal>clicked(bool)</signal>
+   <signal>toggled(bool)</signal>
    <receiver>labelPassword</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
@@ -662,7 +662,7 @@
   </connection>
   <connection>
    <sender>checkBoxEnableAuthentication</sender>
-   <signal>clicked(bool)</signal>
+   <signal>toggled(bool)</signal>
    <receiver>lineEditUsername</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
@@ -678,7 +678,7 @@
   </connection>
   <connection>
    <sender>checkBoxEnableAuthentication</sender>
-   <signal>clicked(bool)</signal>
+   <signal>toggled(bool)</signal>
    <receiver>lineEditPassword</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
@@ -694,7 +694,7 @@
   </connection>
   <connection>
    <sender>checkBoxEnableAuthentication</sender>
-   <signal>clicked(bool)</signal>
+   <signal>toggled(bool)</signal>
    <receiver>lineEditRealm</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
@@ -710,7 +710,7 @@
   </connection>
   <connection>
    <sender>checkBoxEnableAuthentication</sender>
-   <signal>clicked(bool)</signal>
+   <signal>toggled(bool)</signal>
    <receiver>labelRealm</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
