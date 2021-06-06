@@ -16,6 +16,7 @@ OBS_MODULE_USE_DEFAULT_LOCALE("obs-rtspserver", "en-US")
 void obs_frontend_event(enum obs_frontend_event event, void *ptr);
 void rtsp_output_auto_start(RtspOutputHelper *rtspOutputHelper);
 void rtsp_output_stop(RtspOutputHelper *rtspOutputHelper);
+void rtsp_output_save_settings(RtspOutputHelper *rtspOutputHelper);
 void rtsp_output_save_hotkey_settings(RtspOutputHelper *rtspOutputHelper);
 void server_log_write_callback(xop::Priority priority, std::string info);
 
@@ -36,17 +37,18 @@ bool obs_module_load(void)
 
 	RtspOutputHelper *rtspOutputHelper;
 	{
-		auto *data = rtsp_output_read_data();
+		auto *settings = rtsp_output_read_data();
 		auto *config = rtsp_properties_open_config();
 		const char *str = nullptr;
 		str = config_get_string(config, HOTKEY_CONFIG_SECTIION,
 					"RtspOutput");
 		obs_data_t *hotkey = nullptr;
 		if (str) hotkey = obs_data_create_from_json(str);
-		rtspOutputHelper = RtspOutputHelper::CreateRtspOutput(data, hotkey);
+		rtspOutputHelper =
+			RtspOutputHelper::CreateRtspOutput(settings, hotkey);
 		obs_data_release(hotkey);
 		config_close(config);
-		obs_data_release(data);
+		obs_data_release(settings);
 	}
 
 	const auto mainWindow = static_cast<QMainWindow *>(obs_frontend_get_main_window());
@@ -78,6 +80,7 @@ void obs_frontend_event(enum obs_frontend_event event, void *ptr)
 		break;
 	case OBS_FRONTEND_EVENT_EXIT:
 		rtsp_output_stop(rtspOutputHelper);
+		rtsp_output_save_settings(rtspOutputHelper);
 		rtsp_output_save_hotkey_settings(rtspOutputHelper);
 		delete rtspOutputHelper;
 		break;
@@ -111,6 +114,12 @@ void rtsp_output_save_hotkey_settings(RtspOutputHelper *rtspOutputHelper)
 	config_set_string(config, HOTKEY_CONFIG_SECTIION, "RtspOutput", str);
 	config_save(config);
 	config_close(config);
+}
+
+void rtsp_output_save_settings(RtspOutputHelper *rtspOutputHelper)
+{
+	auto *data = rtspOutputHelper->GetSettings();
+	rtsp_output_save_data(data);
 }
 
 void server_log_write_callback(xop::Priority priority, std::string info)
