@@ -13,7 +13,8 @@
 RtspProperties::RtspProperties(std::string rtspOutputName, QWidget *parent)
 	: QDialog(parent),
 	  ui(new Ui::RtspProperties),
-	  statusTimer(new QTimer(this))
+	  statusTimer(new QTimer(this)),
+	  rtspOutputHelper(new RtspOutputHelper(std::move(rtspOutputName)))
 {
 	ui->setupUi(this);
 
@@ -45,7 +46,6 @@ RtspProperties::RtspProperties(std::string rtspOutputName, QWidget *parent)
 	connect(this, &RtspProperties::setLabelMessageStatus, this,
 		&RtspProperties::onLabelMessageStatusChanging);
 
-	rtspOutputHelper = new RtspOutputHelper(std::move(rtspOutputName));
 	settings = rtspOutputHelper->GetSettings();
 	onButtonStatusChanging(!rtspOutputHelper->IsActive(),
 			       rtspOutputHelper->IsActive());
