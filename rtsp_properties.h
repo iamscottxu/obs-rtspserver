@@ -18,18 +18,25 @@ public:
 	~RtspProperties();
 
 private Q_SLOTS:
-	void onPushButtonAddressCopyClicked();
 	void onPushButtonStartClicked();
 	void onPushButtonStopClicked();
+	void onPushButtonAddressCopyClicked();
+	void onSpinBoxPortValueChanged(int value);
+	void onCheckBoxEnableAuthenticationClicked(bool checked);
+	void onLineEditRealmTextChanged(const QString value);
+	void onLineEditUsernameTextChanged(const QString value);
+	void onLineEditPasswordTextChanged(const QString value);
+
 	void onStatusTimerTimeout();
-	void onEnableOptions(bool startEnable, bool stopRnable);
-	void onShowWarning(bool show);
-	void onChangeStatusTimerStatus(bool start);
+
+	void onButtonStatusChanging(bool outputStarted, bool outputStopped);
+	void onStatusTimerStatusChanging(bool start);
+	void onLabelMessageStatusChanging(bool showError);
 
 Q_SIGNALS:
-	void enableOptions(bool startEnable, bool stopRnable);
-	void showWarning(bool show);
-	void changeStatusTimerStatus(bool start);
+	void setButtonStatus(bool outputStarted, bool outputStopped);
+	void setStatusTimerStatus(bool start);
+	void setLabelMessageStatus(bool showError);
 
 private:
 	Ui::RtspProperties *ui;
@@ -40,14 +47,13 @@ private:
 
 	uint64_t lastTotalBytes;
 
+	obs_data_t *settings;
+
 	void showEvent(QShowEvent *event);
 	void closeEvent(QCloseEvent *event);
 
 	static void OnOutputStart(void *data, calldata_t *cd);
 	static void OnOutputStop(void *data, calldata_t *cd);
-
-	void LoadSetting(obs_data_t *setting);
-	void UpdateParameter(obs_data_t *setting);
 
 	void LoadConfig(config_t *config);
 	void SaveConfig(config_t *config);

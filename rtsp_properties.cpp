@@ -16,24 +16,39 @@ RtspProperties::RtspProperties(std::string rtspOutputName, QWidget *parent)
 	  statusTimer(new QTimer(this))
 {
 	ui->setupUi(this);
+
 	connect(ui->pushButtonStart, &QPushButton::clicked, this,
 		&RtspProperties::onPushButtonStartClicked);
 	connect(ui->pushButtonStop, &QPushButton::clicked, this,
 		&RtspProperties::onPushButtonStopClicked);
 	connect(ui->pushButtonAddressCopy, &QPushButton::clicked, this,
 		&RtspProperties::onPushButtonAddressCopyClicked);
+	connect(ui->spinBoxPort,
+		static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+		this, &RtspProperties::onSpinBoxPortValueChanged);
+	connect(ui->checkBoxEnableAuthentication, &QCheckBox::clicked, this,
+		&RtspProperties::onCheckBoxEnableAuthenticationClicked);
+	connect(ui->lineEditRealm, &QLineEdit::textChanged, this,
+		&RtspProperties::onLineEditRealmTextChanged);
+	connect(ui->lineEditUsername, &QLineEdit::textChanged, this,
+		&RtspProperties::onLineEditUsernameTextChanged);
+	connect(ui->lineEditPassword, &QLineEdit::textChanged, this,
+		&RtspProperties::onLineEditPasswordTextChanged);
+
 	connect(statusTimer, &QTimer::timeout, this,
 		&RtspProperties::onStatusTimerTimeout);
-	connect(this, &RtspProperties::enableOptions, this,
-		&RtspProperties::onEnableOptions);
-	connect(this, &RtspProperties::showWarning, this,
-		&RtspProperties::onShowWarning);
-	connect(this, &RtspProperties::changeStatusTimerStatus, this,
-		&RtspProperties::onChangeStatusTimerStatus);
+
+	connect(this, &RtspProperties::setButtonStatus, this,
+		&RtspProperties::onButtonStatusChanging);
+	connect(this, &RtspProperties::setStatusTimerStatus, this,
+		&RtspProperties::onStatusTimerStatusChanging);
+	connect(this, &RtspProperties::setLabelMessageStatus, this,
+		&RtspProperties::onLabelMessageStatusChanging);
 
 	rtspOutputHelper = new RtspOutputHelper(std::move(rtspOutputName));
-	onEnableOptions(!rtspOutputHelper->IsActive(),
-			rtspOutputHelper->IsActive());
+	settings = rtspOutputHelper->GetSettings();
+	onButtonStatusChanging(!rtspOutputHelper->IsActive(),
+			       rtspOutputHelper->IsActive());
 	rtspOutputHelper->SignalConnect("start", OnOutputStart, this);
 	rtspOutputHelper->SignalConnect("stop", OnOutputStop, this);
 
@@ -48,57 +63,92 @@ RtspProperties::~RtspProperties()
 {
 	rtspOutputHelper->SignalDisconnect("start", OnOutputStart, this);
 	rtspOutputHelper->SignalDisconnect("stop", OnOutputStop, this);
+	obs_data_release(settings);
 	delete ui;
 	delete rtspOutputHelper;
 }
 
-void RtspProperties::showEvent(QShowEvent *event)
+void RtspProperties::onPushButtonStartClicked()
 {
-	const auto setting = rtspOutputHelper->GetSettings();
-	LoadSetting(setting);
-	obs_data_release(setting);
-}
-
-void RtspProperties::closeEvent(QCloseEvent *event)
-{
-	if (this->isHidden())
-		return;
 	{
 		const auto config = rtsp_properties_open_config();
 		SaveConfig(config);
 		config_close(config);
 	}
-	{
-		const auto setting = rtspOutputHelper->GetSettings();
-		UpdateParameter(setting);
-		rtsp_output_save_data(setting);
-		obs_data_release(setting);
+	setLabelMessageStatus(!rtspOutputHelper->Start());
+}
+
+void RtspProperties::onPushButtonStopClicked()
+{
+	rtspOutputHelper->Stop();
+	setButtonStatus(false, false);
+}
+
+void RtspProperties::onPushButtonAddressCopyClicked()
+{
+	QString url = "rtsp://localhost";
+	if (ui->spinBoxPort->value() != 554) {
+		url.append(":");
+		url.append(ui->spinBoxPort->text());
 	}
+	url.append("/live");
+	QApplication::clipboard()->setText(url);
 }
 
-void RtspProperties::onEnableOptions(bool startEnable, bool stopRnable)
+void RtspProperties::onSpinBoxPortValueChanged(int value)
 {
-	ui->spinBoxPort->setEnabled(startEnable);
-	ui->checkBoxAudioTrack1->setEnabled(startEnable);
-	ui->checkBoxAudioTrack2->setEnabled(startEnable);
-	ui->checkBoxAudioTrack3->setEnabled(startEnable);
-	ui->checkBoxAudioTrack4->setEnabled(startEnable);
-	ui->checkBoxAudioTrack5->setEnabled(startEnable);
-	ui->checkBoxAudioTrack6->setEnabled(startEnable);
-	ui->pushButtonStart->setEnabled(startEnable);
-	ui->pushButtonStop->setEnabled(stopRnable);
+	obs_data_set_int(settings, "port", value);
 }
 
-void RtspProperties::onShowWarning(bool show)
+void RtspProperties::onCheckBoxEnableAuthenticationClicked(bool checked)
 {
-	if (show)
-		ui->labelMessage->setText(
-			QString(rtspOutputHelper->GetLastError().c_str()));
-	else
-		ui->labelMessage->setText("");
+	obs_data_set_bool(settings, "authentication", checked);
 }
 
-void RtspProperties::onChangeStatusTimerStatus(bool start)
+void RtspProperties::onLineEditRealmTextChanged(const QString value)
+{
+	obs_data_set_string(settings, "authentication_realm",
+			    value.toStdString().c_str());
+}
+
+void RtspProperties::onLineEditUsernameTextChanged(const QString value)
+{
+	obs_data_set_string(settings, "authentication_username",
+			    value.toStdString().c_str());
+}
+
+void RtspProperties::onLineEditPasswordTextChanged(const QString value)
+{
+	obs_data_set_string(settings, "authentication_password",
+			    value.toStdString().c_str());
+}
+
+void RtspProperties::onStatusTimerTimeout()
+{
+	const auto totalBytes = rtspOutputHelper->GetTotalBytes();
+	const auto bitps = (totalBytes - lastTotalBytes) * 8;
+	lastTotalBytes = totalBytes;
+	ui->labelTotalData->setText(
+		rtsp_properties_get_data_volume_display(totalBytes).c_str());
+	ui->labelBitrate->setText(QString("%1 kb/s").arg(
+		bitps / 1000 + (bitps % 1000 >= 500 ? 1 : 0)));
+}
+
+void RtspProperties::onButtonStatusChanging(bool outputStarted,
+					    bool outputStopped)
+{
+	ui->spinBoxPort->setEnabled(outputStarted);
+	ui->checkBoxAudioTrack1->setEnabled(outputStarted);
+	ui->checkBoxAudioTrack2->setEnabled(outputStarted);
+	ui->checkBoxAudioTrack3->setEnabled(outputStarted);
+	ui->checkBoxAudioTrack4->setEnabled(outputStarted);
+	ui->checkBoxAudioTrack5->setEnabled(outputStarted);
+	ui->checkBoxAudioTrack6->setEnabled(outputStarted);
+	ui->pushButtonStart->setEnabled(outputStarted);
+	ui->pushButtonStop->setEnabled(outputStopped);
+}
+
+void RtspProperties::onStatusTimerStatusChanging(bool start)
 {
 	if (start) {
 		lastTotalBytes = 0;
@@ -110,112 +160,74 @@ void RtspProperties::onChangeStatusTimerStatus(bool start)
 	}
 }
 
-void RtspProperties::onStatusTimerTimeout()
+void RtspProperties::onLabelMessageStatusChanging(bool showError)
 {
-	const auto totalBytes = rtspOutputHelper->GetTotalBytes();
-	const auto bitps = (totalBytes - lastTotalBytes) * 8;
-	lastTotalBytes = totalBytes;
-	if (bitps < 0)
+	if (showError)
+		ui->labelMessage->setText(
+			QString(rtspOutputHelper->GetLastError().c_str()));
+	else
+		ui->labelMessage->setText("");
+}
+
+void RtspProperties::showEvent(QShowEvent *event)
+{
+	ui->spinBoxPort->blockSignals(true);
+	ui->spinBoxPort->setValue(obs_data_get_int(settings, "port"));
+	ui->spinBoxPort->blockSignals(false);
+
+	const auto realm = std::string(
+		obs_data_get_string(settings, "authentication_realm"));
+	const auto username = std::string(
+		obs_data_get_string(settings, "authentication_username"));
+	const auto password = std::string(
+		obs_data_get_string(settings, "authentication_password"));
+
+	auto enbledAuth = false;
+	if (!realm.empty() && !username.empty())
+		enbledAuth = obs_data_get_bool(settings, "authentication");
+
+	ui->checkBoxEnableAuthentication->setChecked(enbledAuth);
+
+	ui->lineEditRealm->blockSignals(true);
+	ui->lineEditRealm->setText(realm.c_str());
+	ui->lineEditRealm->blockSignals(false);
+
+	ui->lineEditUsername->blockSignals(true);
+	ui->lineEditUsername->setText(username.c_str());
+	ui->lineEditUsername->blockSignals(false);
+
+	ui->lineEditPassword->blockSignals(true);
+	ui->lineEditPassword->setText(password.c_str());
+	ui->lineEditPassword->blockSignals(false);
+}
+
+void RtspProperties::closeEvent(QCloseEvent *event)
+{
+	if (this->isHidden())
 		return;
-	ui->labelTotalData->setText(
-		rtsp_properties_get_data_volume_display(totalBytes).c_str());
-	ui->labelBitrate->setText(QString("%1 kb/s").arg(
-		bitps / 1000 + (bitps % 1000 >= 500 ? 1 : 0)));
-}
-
-void RtspProperties::onPushButtonAddressCopyClicked()
-{
-	QClipboard *clipboard = QApplication::clipboard();
-	QString url = "rtsp://localhost:";
-	url.append(ui->spinBoxPort->text());
-	url.append("/live");
-	clipboard->setText(url);
-}
-
-void RtspProperties::onPushButtonStartClicked()
-{
-	const auto data = rtspOutputHelper->GetSettings();
 	{
 		const auto config = rtsp_properties_open_config();
 		SaveConfig(config);
 		config_close(config);
 	}
-	{
-		const auto setting = rtspOutputHelper->GetSettings();
-		UpdateParameter(setting);
-		rtsp_output_save_data(setting);
-		obs_data_release(setting);
-	}
-	obs_data_release(data);
-	showWarning(!rtspOutputHelper->Start());
-}
-
-void RtspProperties::onPushButtonStopClicked()
-{
-	rtspOutputHelper->Stop();
-	enableOptions(false, false);
+	rtspOutputHelper->UpdateSettings(settings);
 }
 
 void RtspProperties::OnOutputStart(void *data, calldata_t *cd)
 {
 	auto page = static_cast<RtspProperties *>(data);
-	page->enableOptions(false, true);
-	page->changeStatusTimerStatus(true);
+	page->setButtonStatus(false, true);
+	page->setStatusTimerStatus(true);
 }
 
 void RtspProperties::OnOutputStop(void *data, calldata_t *cd)
 {
 	auto page = static_cast<RtspProperties *>(data);
-	if (const auto code = calldata_int(cd, "code"); code != OBS_OUTPUT_SUCCESS)
-		page->showWarning(true);
-	page->enableOptions(true, false);
-	page->changeStatusTimerStatus(false);
-}
-
-void RtspProperties::LoadSetting(obs_data_t *setting)
-{
-	ui->spinBoxPort->setValue(obs_data_get_int(setting, "port"));
-	const auto username = std::string(
-		obs_data_get_string(setting, "authentication_username"));
-	const auto realm = std::string(
-		obs_data_get_string(setting, "authentication_realm"));
-	const auto password = std::string(
-		obs_data_get_string(setting, "authentication_password"));
-	auto enbledAuth = false;
-	if (!username.empty() && !realm.empty())
-		enbledAuth = obs_data_get_bool(setting, "authentication");
-
-	ui->lineEditUsername->setText(username.c_str());
-	ui->lineEditRealm->setText(realm.c_str());
-	ui->lineEditPassword->setText(password.c_str());
-	ui->checkBoxEnableAuthentication->setChecked(enbledAuth);
-
-	ui->labelUsername->setEnabled(enbledAuth);
-	ui->labelRealm->setEnabled(enbledAuth);
-	ui->labelPassword->setEnabled(enbledAuth);
-	ui->lineEditUsername->setEnabled(enbledAuth);
-	ui->lineEditRealm->setEnabled(enbledAuth);
-	ui->lineEditPassword->setEnabled(enbledAuth);
-}
-
-void RtspProperties::UpdateParameter(obs_data_t *setting)
-{
-	obs_data_set_int(setting, "port", ui->spinBoxPort->value());
-	auto username = ui->lineEditUsername->text().toStdString();
-	auto realm = ui->lineEditRealm->text().toStdString();
-	auto password = ui->lineEditPassword->text().toStdString();
-	auto enbledAuth = false;
-	if (!username.empty() && !realm.empty())
-		enbledAuth = ui->checkBoxEnableAuthentication->isChecked();
-
-	obs_data_set_bool(setting, "authentication", enbledAuth);
-	obs_data_set_string(setting, "authentication_username",
-			    username.c_str());
-	obs_data_set_string(setting, "authentication_realm", realm.c_str());
-	obs_data_set_string(setting, "authentication_password",
-			    password.c_str());
-
-	rtspOutputHelper->UpdateSettings(setting);
+	if (const auto code = calldata_int(cd, "code");
+	    code != OBS_OUTPUT_SUCCESS)
+		page->setLabelMessageStatus(true);
+	page->setButtonStatus(true, false);
+	page->setStatusTimerStatus(false);
 }
 
 void RtspProperties::LoadConfig(config_t *config)
