@@ -516,7 +516,7 @@ static void rtsp_output_update(void *data, obs_data_t *settings)
 
 	if (auth_enabled &&
 		auth_realm && *auth_realm != '\0' &&
-		auth_username  && *auth_username != '\0')
+		auth_username && *auth_username != '\0')
 		out_data->server->SetAuthConfig(
 			auth_realm,
 			auth_username,
