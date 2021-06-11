@@ -36,7 +36,7 @@ obs-rtspserver is also available as an [AUR Package](https://aur.archlinux.org/p
 If you use [yay](https://github.com/Jguer/yay) just run this to install it:
 
 ```shell
-yay -S obs-rtspserver-bin
+yay -S obs-rtspserver
 ```
 
 # Build
