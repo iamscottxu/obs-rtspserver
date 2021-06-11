@@ -1,0 +1,7 @@
+﻿LangString LANGTEXT_DISPLAYNAME ${LANG_JAPANESE} "OBS RTSPサーバープラグイン"
+LangString LANGTEXT_HEADER_TEXT ${LANG_JAPANESE} "ライセンス情報"
+LangString LANGTEXT_HEADER_SUBTEXT ${LANG_JAPANESE} "${DISPLAYNAME} をインストールする前にライセンス条項を確認してください。"
+LangString LANGTEXT_LICENSEPAGE_TEXT_TOP ${LANG_JAPANESE} "「PageDown」を押すか、スクロールして残りのライセンスを表示します。"
+LangString LANGTEXT_LICENSEPAGE_BUTTON ${LANG_JAPANESE} "&次 >"
+LangString LANGTEXT_REMOVING_PREV ${LANG_JAPANESE} "以前のインストールを削除します..."
+LangString LANGTEXT_REMOVING_PREV_FAILED ${LANG_JAPANESE} "以前のインストールを削除できませんでした。"
