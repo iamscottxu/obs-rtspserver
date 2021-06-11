@@ -30,8 +30,8 @@ set(obs-rtspserver_HEADERS
 if(WIN32)
 	set(OBS_RTSPSERVER_VERSION_MAJOR 2)
 	set(OBS_RTSPSERVER_VERSION_MINOR 0)
-	set(OBS_RTSPSERVER_VERSION_PATCH 4)
-	set(OBS_RTSPSERVER_VERSION_STRING "2.0.4")
+	set(OBS_RTSPSERVER_VERSION_PATCH 5)
+	set(OBS_RTSPSERVER_VERSION_STRING "2.0.5")
 	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/rtspoutput.rc.in ${CMAKE_CURRENT_SOURCE_DIR}/rtspoutput.rc)
 endif()
 
@@ -70,7 +70,7 @@ else()
 	set_target_properties(obs-rtspserver
 			PROPERTIES
 			FOLDER "plugins"
-			VERSION "2.0.4"
+			VERSION "2.0.5"
 			PRODUCTNAME "OBS RTSP Server Plugin")
 endif()
 
