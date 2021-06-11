@@ -25,7 +25,7 @@ U kunt het .pkg installatieprogramma gebruiken om het te installeren. Je vindt h
 [![Verpakkingsstatus](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
 ### ArchLinux AUR Pakket
-obs-rtspserver is ook beschikbaar als een [AUR-Pakket] (https://aur.archlinux.org/packages/obs-rtspserver-bin/).
+obs-rtspserver is ook beschikbaar als een [AUR-Pakket] (https://aur.archlinux.org/packages/?O=0&K=obs-rtspserver).
 Als je [yay] (https://github.com/Jguer/yay) gebruikt, kun je het installeren met het volgende commando:
 
 ```shell

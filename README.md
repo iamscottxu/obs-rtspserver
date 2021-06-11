@@ -33,7 +33,7 @@ You can use the .pkg installer to install and the installer can be found in [Rel
 [![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
 ### ArchLinux AUR Package
-obs-rtspserver is also available as an [AUR Package](https://aur.archlinux.org/packages/obs-rtspserver-bin/)
+obs-rtspserver is also available as an [AUR Package](https://aur.archlinux.org/packages/?O=0&K=obs-rtspserver)
 If you use [yay](https://github.com/Jguer/yay) just run this to install it:
 
 ```shell
