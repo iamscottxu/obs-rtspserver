@@ -25,7 +25,7 @@
 [![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
 ### ArchLinux AUR 软件包
-obs-rtspserver也可以作为[AUR软件包](https://aur.archlinux.org/packages/obs-rtspserver-bin/)提供。如果您使用[yay](https://github.com/Jguer/yay)，请运行以下命令进行安装：
+obs-rtspserver也可以作为[AUR软件包](https://aur.archlinux.org/packages/?O=0&K=obs-rtspserver)提供。如果您使用[yay](https://github.com/Jguer/yay)，请运行以下命令进行安装：
 
 ```shell
 yay -S obs-rtspserver
