@@ -28,7 +28,7 @@
 obs-rtspserver也可以作为[AUR软件包](https://aur.archlinux.org/packages/obs-rtspserver-bin/)提供。如果您使用[yay](https://github.com/Jguer/yay)，请运行以下命令进行安装：
 
 ```shell
-yay -S obs-rtspserver-bin
+yay -S obs-rtspserver
 ```
 
 # 生成
