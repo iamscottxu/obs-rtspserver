@@ -17,6 +17,9 @@ public:
 	explicit RtspProperties(std::string rtspOutputName, QWidget *parent = 0);
 	~RtspProperties();
 
+public Q_SLOTS:
+	virtual int exec();
+
 private Q_SLOTS:
 	void onPushButtonStartClicked();
 	void onPushButtonStopClicked();

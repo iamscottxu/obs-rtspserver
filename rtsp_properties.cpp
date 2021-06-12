@@ -68,6 +68,15 @@ RtspProperties::~RtspProperties()
 	delete rtspOutputHelper;
 }
 
+int RtspProperties::exec()
+{
+	if (const auto host = this->parentWidget(); host) {
+		const auto hostRect = host->geometry();
+		this->move(hostRect.center() - this->rect().center());
+	}
+	return QDialog::exec();
+}
+
 void RtspProperties::onPushButtonStartClicked()
 {
 	{

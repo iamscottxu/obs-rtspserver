@@ -6,9 +6,6 @@
    <string>RtspServer.Properties</string>
   </property>
   <layout class="QVBoxLayout" name="rtspProperties_layout">
-   <property name="sizeConstraint">
-    <enum>QLayout::SetMinimumSize</enum>
-   </property>
    <item>
     <widget class="QGroupBox" name="groupBoxOption">
      <property name="sizePolicy">
