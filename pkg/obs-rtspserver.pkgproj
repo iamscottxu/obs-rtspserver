@@ -711,6 +711,12 @@
 					</dict>
 					<dict>
 						<key>LANGUAGE</key>
+						<string>Japanese</string>
+						<key>VALUE</key>
+						<string>OBS RTSPサーバープラグイン</string>
+					</dict>
+					<dict>
+						<key>LANGUAGE</key>
 						<string>Spanish</string>
 						<key>VALUE</key>
 						<string>Complemento servidor RTSP para OBS</string>
