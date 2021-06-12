@@ -727,6 +727,12 @@
 						<key>VALUE</key>
 						<string>OBS RTSP Server Plugin</string>
 					</dict>
+					<dict>
+						<key>LANGUAGE</key>
+						<string>French</string>
+						<key>VALUE</key>
+						<string>Module d'extension de serveur RTSP OBS</string>
+					</dict>
 				</array>
 			</dict>
 		</dict>
