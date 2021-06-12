@@ -25,11 +25,11 @@ Sie können das .pkg Installationsprogramm zum Installieren verwenden. Das Insta
 * Untar, z.B.: tar -xzvf obs-rtspserver-v2.0.1-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
 
 ### ArchLinux AUR Paket
-obs-rtspserver ist auch als [AUR Paket](https://aur.archlinux.org/packages/obs-rtspserver-bin/) verfügbar.
+obs-rtspserver ist auch als [AUR Paket](https://aur.archlinux.org/packages/?O=0&K=obs-rtspserver) verfügbar.
 Wenn Sie [yay](https://github.com/Jguer/yay) benutzen, können Sie es mit folgendem Befehl installieren:
 
 ```shell
-yay -S obs-rtspserver-bin
+yay -S obs-rtspserver
 ```
 
 # Build

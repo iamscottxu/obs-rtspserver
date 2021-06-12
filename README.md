@@ -1,7 +1,9 @@
 ![CI Release](https://github.com/iamscottxu/obs-rtspserver/workflows/CI%20Release/badge.svg)
 
 🇨🇳 [简体中文](//github.com/iamscottxu/obs-rtspserver/blob/master/README_zh-CN.md)
+🇯🇵 [日本語](//github.com/iamscottxu/obs-rtspserver/blob/master/README_ja-JP.md)
 🇪🇦 [Español](//github.com/iamscottxu/obs-rtspserver/blob/master/README_es-ES.md)
+🇫🇷 [Français](//github.com/iamscottxu/obs-rtspserver/blob/master/README_fr-FR.md)
 🇩🇪 [Deutsch](//github.com/iamscottxu/obs-rtspserver/blob/master/README_de-DE.md)
 🇳🇱 [Nederlands](//github.com/iamscottxu/obs-rtspserver/blob/master/README_nl-NL.md)
 
@@ -18,7 +20,7 @@ This is a plugin for obs-studio, encode and publish to a RTSP stream.
 ## Windows
 You can use installer to install and the installer can be found in [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases) if use windows.
 
-If you want to use compressed file to install manually, you can unzip it (e.g.: obs-rtspserver-v2.0.1-windows.zip) and put it to your obs-studio install folder.
+If you want to use compressed file to install manually, you can unzip it (e.g.: obs-rtspserver-v2.0.5-windows.zip) and put it to your obs-studio install folder.
 
 ## macOS
 You can use the .pkg installer to install and the installer can be found in [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases) if use macOS.
@@ -26,16 +28,16 @@ You can use the .pkg installer to install and the installer can be found in [Rel
 ## Linux (Only x64)
 * Download the latest release from the [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases).
 * mkdir -p $HOME/.config/obs-studio/plugins
-* Untar, e.g.: tar -xzvf obs-rtspserver-v2.0.1-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
+* Untar, e.g.: tar -xzvf obs-rtspserver-v2.0.5-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
 ### ArchLinux AUR Package
-obs-rtspserver is also available as an [AUR Package](https://aur.archlinux.org/packages/obs-rtspserver-bin/)
+obs-rtspserver is also available as an [AUR Package](https://aur.archlinux.org/packages/?O=0&K=obs-rtspserver)
 If you use [yay](https://github.com/Jguer/yay) just run this to install it:
 
 ```shell
-yay -S obs-rtspserver-bin
+yay -S obs-rtspserver
 ```
 
 # Build
@@ -45,7 +47,7 @@ yay -S obs-rtspserver-bin
 * Add `add_subdirectory(obs-rtspserver)` to (obs-studio source code)/plugins/CMakeLists.txt
 * Build obs-rtspserver.
 
-# Can't found the plugin in menu
+# Can't find the plugin in the menu
 See also [https://github.com/iamscottxu/obs-rtspserver/issues/1](https://github.com/iamscottxu/obs-rtspserver/issues/1).
 
 Please download and install the VC++ runtime. [https://www.microsoft.com/en-US/download/details.aspx?id=48145](https://www.microsoft.com/en-US/download/details.aspx?id=48145)

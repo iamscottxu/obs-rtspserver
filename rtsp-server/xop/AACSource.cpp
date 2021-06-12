@@ -72,7 +72,7 @@ string AACSource::GetAttribute() // RFC 3640
 			       "sizelength=13;indexlength=3;indexdeltalength=3;"
 			       "config=%02X%02X";
 	const size_t buf_size =
-		snprintf(nullptr, 0, rtpmap_fmt) + strlen(fmtp_fmt);
+		snprintf(nullptr, 0, rtpmap_fmt, samplerate_, channels_) + strlen(fmtp_fmt);
 	auto buf = vector<char>(buf_size);
 	const size_t rtpmap_format_size =
 		sprintf(buf.data(), rtpmap_fmt, samplerate_, channels_);

@@ -25,11 +25,11 @@ Puede utilizar el instalador .pkg para instalar. Puede encontrar el programa de 
 [![Estado de empaque](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
 ### ArchLinux Paquete AUR
-obs-rtspserver también está disponible como un [paquete AUR](https://aur.archlinux.org/packages/obs-rtspserver-bin/).
+obs-rtspserver también está disponible como un [paquete AUR](https://aur.archlinux.org/packages/?O=0&K=obs-rtspserver).
 Si está usando [yay] (https://github.com/Jguer/yay) puede instalarlo con el siguiente comando:
 
 ```shell
-yay -S obs-rtspserver-bin
+yay -S obs-rtspserver
 ```
 
 # Build
