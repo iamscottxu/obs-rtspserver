@@ -1,0 +1,7 @@
+LangString LANGTEXT_DISPLAYNAME ${LANG_ITALIAN} "OBS RTSP Server Plugin"
+LangString LANGTEXT_HEADER_TEXT ${LANG_ITALIAN} "License Information"
+LangString LANGTEXT_HEADER_SUBTEXT ${LANG_ITALIAN} "Please review the license terms before installing ${DISPLAYNAME}."
+LangString LANGTEXT_LICENSEPAGE_TEXT_TOP ${LANG_ITALIAN} "Press Page Down or scroll to see the rest of the license."
+LangString LANGTEXT_LICENSEPAGE_BUTTON ${LANG_ITALIAN} "&Next >"
+LangString LANGTEXT_REMOVING_PREV ${LANG_ITALIAN} "Removing previous installation..."
+LangString LANGTEXT_REMOVING_PREV_FAILED ${LANG_ITALIAN} "Failed to remove previous installation."
