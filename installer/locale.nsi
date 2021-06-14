@@ -7,6 +7,7 @@
 !insertmacro MUI_LANGUAGE "Dutch"
 !insertmacro MUI_LANGUAGE "French"
 !insertmacro MUI_LANGUAGE "Japanese"
+!insertmacro MUI_LANGUAGE "Italian"
 
 ; Locale List
 !include .\locale\en-US.nsi
@@ -17,3 +18,4 @@
 !include .\locale\nl-NL.nsi
 !include .\locale\fr-FR.nsi
 !include .\locale\ja-JP.nsi
+!include .\locale\it-IT.nsi
