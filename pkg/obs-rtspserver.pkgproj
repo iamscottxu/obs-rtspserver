@@ -733,6 +733,12 @@
 						<key>VALUE</key>
 						<string>Module d'extension de serveur RTSP OBS</string>
 					</dict>
+					<dict>
+						<key>LANGUAGE</key>
+						<string>Italian</string>
+						<key>VALUE</key>
+						<string>OBS RTSP Server Plugin</string>
+					</dict>
 				</array>
 			</dict>
 		</dict>
