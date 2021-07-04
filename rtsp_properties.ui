@@ -267,11 +267,20 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="labelAddressSuffix">
+          <widget class="QLabel" name="labelAddressSplit">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
-            <string>/live</string>
+            <string>/</string>
            </property>
           </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEditUrlSuffix"/>
          </item>
          <item>
           <widget class="QPushButton" name="pushButtonAddressCopy">
@@ -288,9 +297,10 @@
          </item>
         </layout>
         <zorder>pushButtonAddressCopy</zorder>
-        <zorder>labelAddressSuffix</zorder>
+        <zorder>labelAddressSplit</zorder>
         <zorder>spinBoxPort</zorder>
         <zorder>labelAddressPrefix</zorder>
+        <zorder>lineEditUrlSuffix</zorder>
        </widget>
       </item>
      </layout>
@@ -615,6 +625,7 @@
   <tabstop>checkBoxAudioTrack5</tabstop>
   <tabstop>checkBoxAudioTrack6</tabstop>
   <tabstop>spinBoxPort</tabstop>
+  <tabstop>lineEditUrlSuffix</tabstop>
   <tabstop>pushButtonAddressCopy</tabstop>
   <tabstop>checkBoxEnableAuthentication</tabstop>
   <tabstop>lineEditRealm</tabstop>
@@ -632,12 +643,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>257</x>
-     <y>266</y>
+     <x>552</x>
+     <y>207</y>
     </hint>
     <hint type="destinationlabel">
-     <x>74</x>
-     <y>294</y>
+     <x>93</x>
+     <y>263</y>
     </hint>
    </hints>
   </connection>
@@ -648,12 +659,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>257</x>
-     <y>266</y>
+     <x>552</x>
+     <y>207</y>
     </hint>
     <hint type="destinationlabel">
-     <x>86</x>
-     <y>323</y>
+     <x>105</x>
+     <y>294</y>
     </hint>
    </hints>
   </connection>
@@ -664,12 +675,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>257</x>
-     <y>266</y>
+     <x>552</x>
+     <y>207</y>
     </hint>
     <hint type="destinationlabel">
-     <x>257</x>
-     <y>294</y>
+     <x>552</x>
+     <y>263</y>
     </hint>
    </hints>
   </connection>
@@ -680,12 +691,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>257</x>
-     <y>266</y>
+     <x>552</x>
+     <y>207</y>
     </hint>
     <hint type="destinationlabel">
-     <x>257</x>
-     <y>323</y>
+     <x>552</x>
+     <y>294</y>
     </hint>
    </hints>
   </connection>
@@ -696,12 +707,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>225</x>
-     <y>266</y>
+     <x>520</x>
+     <y>207</y>
     </hint>
     <hint type="destinationlabel">
-     <x>365</x>
-     <y>294</y>
+     <x>660</x>
+     <y>232</y>
     </hint>
    </hints>
   </connection>
@@ -712,12 +723,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>225</x>
-     <y>266</y>
+     <x>520</x>
+     <y>207</y>
     </hint>
     <hint type="destinationlabel">
-     <x>75</x>
-     <y>294</y>
+     <x>112</x>
+     <y>232</y>
     </hint>
    </hints>
   </connection>

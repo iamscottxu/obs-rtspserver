@@ -25,6 +25,7 @@ private Q_SLOTS:
 	void onPushButtonStopClicked();
 	void onPushButtonAddressCopyClicked();
 	void onSpinBoxPortValueChanged(int value);
+	void onLineEditUrlSuffixValueChanged(const QString value);
 	void onCheckBoxEnableAuthenticationClicked(bool checked);
 	void onLineEditRealmTextChanged(const QString value);
 	void onLineEditUsernameTextChanged(const QString value);

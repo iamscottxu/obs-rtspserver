@@ -27,6 +27,8 @@ RtspProperties::RtspProperties(std::string rtspOutputName, QWidget *parent)
 	connect(ui->spinBoxPort,
 		static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
 		this, &RtspProperties::onSpinBoxPortValueChanged);
+	connect(ui->lineEditUrlSuffix, &QLineEdit::textChanged, this,
+		&RtspProperties::onLineEditUrlSuffixValueChanged);
 	connect(ui->checkBoxEnableAuthentication, &QCheckBox::clicked, this,
 		&RtspProperties::onCheckBoxEnableAuthenticationClicked);
 	connect(ui->lineEditRealm, &QLineEdit::textChanged, this,
@@ -100,13 +102,20 @@ void RtspProperties::onPushButtonAddressCopyClicked()
 		url.append(":");
 		url.append(ui->spinBoxPort->text());
 	}
-	url.append("/live");
+	url.append("/");
+	url.append(ui->lineEditUrlSuffix->text());
 	QApplication::clipboard()->setText(url);
 }
 
 void RtspProperties::onSpinBoxPortValueChanged(int value)
 {
 	obs_data_set_int(settings, "port", value);
+}
+
+void RtspProperties::onLineEditUrlSuffixValueChanged(const QString value)
+{
+	obs_data_set_string(settings, "url_suffix",
+			    value.toStdString().c_str());
 }
 
 void RtspProperties::onCheckBoxEnableAuthenticationClicked(bool checked)
@@ -147,6 +156,7 @@ void RtspProperties::onButtonStatusChanging(bool outputStarted,
 					    bool outputStopped)
 {
 	ui->spinBoxPort->setEnabled(outputStarted);
+	ui->lineEditUrlSuffix->setEnabled(outputStarted);
 	ui->checkBoxAudioTrack1->setEnabled(outputStarted);
 	ui->checkBoxAudioTrack2->setEnabled(outputStarted);
 	ui->checkBoxAudioTrack3->setEnabled(outputStarted);
@@ -183,6 +193,11 @@ void RtspProperties::showEvent(QShowEvent *event)
 	ui->spinBoxPort->blockSignals(true);
 	ui->spinBoxPort->setValue(obs_data_get_int(settings, "port"));
 	ui->spinBoxPort->blockSignals(false);
+
+	ui->lineEditUrlSuffix->blockSignals(true);
+	ui->lineEditUrlSuffix->setText(
+		std::string(obs_data_get_string(settings, "url_suffix")).c_str());
+	ui->lineEditUrlSuffix->blockSignals(false);
 
 	const auto realm = std::string(
 		obs_data_get_string(settings, "authentication_realm"));

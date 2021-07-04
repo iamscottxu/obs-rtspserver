@@ -279,6 +279,7 @@ static bool rtsp_output_start(void *data)
 	const auto settings = obs_output_get_settings(out_data->output);
 	rtsp_output_update(data, settings);
 	const auto port = obs_data_get_int(settings, "port");
+	const auto url_suffix = obs_data_get_string(settings, "url_suffix");
 	
 	if (!out_data->server->Start("0.0.0.0", port) ||
 	    !out_data->server->Start("::0", port)) {
@@ -290,7 +291,7 @@ static bool rtsp_output_start(void *data)
 	os_atomic_set_bool(&out_data->stopping, false);
 
 	xop::MediaSession *session = xop::MediaSession::CreateNew(
-		"live", enabled_channels_count + 1);
+		url_suffix, enabled_channels_count + 1);
 
 	if (!rtsp_output_add_video_channel(data, session)) {
 		return false;
@@ -496,6 +497,7 @@ static void rtsp_output_defaults(obs_data_t *defaults)
 #else
 	obs_data_set_default_int(defaults, "port", 554);
 #endif
+	obs_data_set_default_string(defaults, "url_suffix", "live");
 	obs_data_set_default_bool(defaults, "authentication", false);
 	obs_data_set_default_string(defaults, "authentication_realm", "");
 	obs_data_set_default_string(defaults, "authentication_username", "");
@@ -539,6 +541,10 @@ static obs_properties_t *rtsp_output_properties(void *data)
 	obs_properties_add_int(props, "port",
 			       obs_module_text("RtspOutput.Properties.Port"), 1,
 			       65535, 1);
+
+	obs_properties_add_text(props, "url_suffix",
+			       obs_module_text("RtspOutput.Properties.UrlSuffix"),
+		OBS_TEXT_DEFAULT);
 
 	obs_properties_t *auth_group = obs_properties_create();
 	obs_properties_add_text(
