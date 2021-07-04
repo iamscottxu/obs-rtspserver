@@ -33,7 +33,7 @@ class MediaSession
 public:
     typedef std::function<void (MediaSessionId sessionId, uint32_t numClients)> NotifyCallback;
 
-    static MediaSession* CreateNew(std::string url_suffxx="live", uint32_t max_channel_count =2);
+    static MediaSession* CreateNew(std::string url_suffix="live", uint32_t max_channel_count =2);
     ~MediaSession();
 
     bool AddSource(MediaChannelId channel_id, MediaSource* source);
@@ -85,7 +85,7 @@ public:
 private:
     friend class MediaSource;
     friend class RtspServer;
-    MediaSession(std::string url_suffxx, uint32_t max_channel_count);
+    MediaSession(std::string url_suffix, uint32_t max_channel_count);
 
     uint32_t max_channel_count_ = 0;
 

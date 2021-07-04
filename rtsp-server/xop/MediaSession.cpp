@@ -17,8 +17,8 @@ using namespace std;
 
 std::atomic_uint MediaSession::last_session_id_(1);
 
-MediaSession::MediaSession(std::string url_suffxx, uint32_t max_channel_count)
-    : suffix_(url_suffxx)
+MediaSession::MediaSession(std::string url_suffix, uint32_t max_channel_count)
+    : suffix_(url_suffix)
     , media_sources_(max_channel_count)
     , multicast_port_(max_channel_count, 0)
     , _buffer(max_channel_count)
@@ -28,9 +28,9 @@ MediaSession::MediaSession(std::string url_suffxx, uint32_t max_channel_count)
 	session_id_ = ++last_session_id_;
 }
 
-MediaSession* MediaSession::CreateNew(std::string url_suffxx, uint32_t max_channel_count)
+MediaSession* MediaSession::CreateNew(std::string url_suffix, uint32_t max_channel_count)
 {
-	return new MediaSession(std::move(url_suffxx), max_channel_count);
+	return new MediaSession(std::move(url_suffix), max_channel_count);
 }
 
 MediaSession::~MediaSession()
