@@ -1,4 +1,9 @@
+![Latest Release](https://img.shields.io/github/v/release/iamscottxu/obs-rtspserver.svg)
 ![CI Release](https://github.com/iamscottxu/obs-rtspserver/workflows/CI%20Release/badge.svg)
+![Contributors](https://img.shields.io/github/contributors/iamscottxu/obs-rtspserver.svg)
+![Total Downloads](https://img.shields.io/github/downloads/iamscottxu/obs-rtspserver/total.svg)
+![License](https://img.shields.io/github/license/iamscottxu/obs-rtspserver.svg)
+
 
 🇨🇳 [简体中文](//github.com/iamscottxu/obs-rtspserver/blob/master/README_zh-CN.md)
 🇯🇵 [日本語](//github.com/iamscottxu/obs-rtspserver/blob/master/README_ja-JP.md)
