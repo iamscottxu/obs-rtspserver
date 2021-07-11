@@ -100,17 +100,16 @@ bool RtspRequest::ParseRequestLine(const char* begin, const char* end)
 	char host[64] = {0};
 	char suffix[64] = {0};
 
-	if (sscanf(url + 7, "[%[^]]]:%hu/%s", host, &port, suffix) ==
-	    3) { //IPv6
+	if (sscanf(url + 7, "[%[^]]]:%hu/%s", host, &port, suffix) >= 2) { //IPv6
 
 	}
-	else if (sscanf(url + 7, "[%[^]]]/%s", host, &port, suffix) == 3) {
+	else if (sscanf(url + 7, "[%[^]]]/%s", host, suffix) >= 1) {
 		port = 554;
 	}
-	else if (sscanf(url + 7, "%[^:]:%hu/%s", host, &port, suffix) == 3) { //IPv4, domain
+	else if (sscanf(url + 7, "%[^:]:%hu/%s", host, &port, suffix) >= 2) { //IPv4, domain
 
 	}
-	else if (sscanf(url + 7, "%[^/]/%s", host, suffix) == 2) {
+	else if (sscanf(url + 7, "%[^/]/%s", host, suffix) >= 1) {
 		port = 554;
 	}
 	else {
@@ -516,7 +515,7 @@ int RtspRequest::BuildNotFoundRes(const char* buf, int buf_size)
 {
 	memset((void*)buf, 0, buf_size);
 	snprintf((char*)buf, buf_size,
-			"RTSP/1.0 404 Stream Not Found\r\n"
+			"RTSP/1.0 404 Not Found\r\n"
 			"CSeq: %u\r\n"
 			"\r\n",
 			this->GetCSeq());
