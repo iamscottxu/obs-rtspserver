@@ -48,6 +48,12 @@ RtspProperties::RtspProperties(std::string rtspOutputName, QWidget *parent)
 	connect(this, &RtspProperties::setLabelMessageStatus, this,
 		&RtspProperties::onLabelMessageStatusChanging);
 
+	//ui->lineEditUrlSuffix->setValidator(new QRegExpValidator(QRegExp("^([-A-Za-z0-9+&@#%=~_|]+)(\\/[-A-Za-z0-9+&@#%=~_|]+)*$"), this));
+
+#ifdef VERSION_STRING
+	ui->labelVersion->setText(VERSION_STRING);
+#endif
+
 	settings = rtspOutputHelper->GetSettings();
 	onButtonStatusChanging(!rtspOutputHelper->IsActive(),
 			       rtspOutputHelper->IsActive());
@@ -114,6 +120,9 @@ void RtspProperties::onSpinBoxPortValueChanged(int value)
 
 void RtspProperties::onLineEditUrlSuffixValueChanged(const QString value)
 {
+	//auto rx = QRegExp("^[-A-Za-z0-9+&@#%=~_|]+(/[-A-Za-z0-9+&@#%=~_|]+)*$");
+	//if (!rx.exactMatch(value))
+		//return;
 	obs_data_set_string(settings, "url_suffix",
 			    value.toStdString().c_str());
 }
