@@ -226,7 +226,7 @@ void RtspConnection::HandleCmdOption()
 {
 	std::shared_ptr<char> res(new char[2048]);
 	int size = rtsp_request_->BuildOptionRes(res.get(), 2048);
-	this->SendRtspMessage(res, size);	
+	this->SendRtspMessage(res, size);
 }
 
 void RtspConnection::HandleCmdDescribe()
@@ -244,7 +244,7 @@ void RtspConnection::HandleCmdDescribe()
 		media_session = rtsp->LookMediaSession(rtsp_request_->GetRtspUrlSuffix());
 	}
 
-        if (rtp_conn_ == nullptr) {
+        if (!rtp_conn_ && media_session) {
                 rtp_conn_.reset(new RtpConnection(shared_from_this(), media_session->GetMaxChannelCount()));
         }
 	
@@ -273,7 +273,6 @@ void RtspConnection::HandleCmdDescribe()
 	}
 
 	SendRtspMessage(res, size);
-	return ;
 }
 
 void RtspConnection::HandleCmdSetup()
