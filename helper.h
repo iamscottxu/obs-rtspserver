@@ -1,4 +1,3 @@
-#include <queue>
 #include <vector>
 #include <string>
 #include <obs-module.h>
