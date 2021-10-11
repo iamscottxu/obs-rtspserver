@@ -18,6 +18,10 @@
 #define ERROR_ENCODE OBS_OUTPUT_ENCODE_ERROR
 
 struct queue_frame {
+	queue_frame(uint32_t size = 0) : av_frame(size)
+	{
+		channe_id = xop::MediaChannelId::channel_0;
+	}
 	struct xop::AVFrame av_frame;
 	xop::MediaChannelId channe_id;
 };
@@ -415,48 +419,43 @@ static void rtsp_push_frame(void *param)
 static void rtsp_output_video(void *param, struct encoder_packet *packet)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)param;
-	xop::AVFrame video_frame = {0};
-	video_frame.timestamp = get_timestamp(90000, packet);
+	uint8_t *header;
+	const size_t header_size = packet->keyframe
+		? get_video_header(obs_output_get_video_encoder(out_data->output), &header)
+		: 0;
+
+	struct queue_frame queue_frame(packet->size + header_size);
+	xop::AVFrame *frame = &queue_frame.av_frame;
+	queue_frame.channe_id = xop::channel_0;
+
+	frame->timestamp = get_timestamp(90000, packet);
+
+	memcpy(frame->buffer.get() + header_size, packet->data, packet->size);
 
 	if (packet->keyframe) {
-		uint8_t *header;
-		const size_t header_size = get_video_header(
-			obs_output_get_video_encoder(out_data->output),
-			&header);
-		video_frame.size = packet->size + header_size;
-		video_frame.buffer.reset(new uint8_t[video_frame.size]);
-		memcpy(video_frame.buffer.get(), header, header_size);
-		memcpy(video_frame.buffer.get() + header_size, packet->data,
-		       packet->size);
-		video_frame.type = xop::VIDEO_FRAME_I;
-	} else {
-		video_frame.size = packet->size;
-		video_frame.buffer.reset(new uint8_t[video_frame.size]);
-		memcpy(video_frame.buffer.get(), packet->data, packet->size);
-		video_frame.type = xop::VIDEO_FRAME_P;
+		frame->type = xop::VIDEO_FRAME_I;
+		memcpy(frame->buffer.get(), header, header_size);
 	}
+	else frame->type = xop::VIDEO_FRAME_P;
 
-	struct queue_frame queue_frame;
-	queue_frame.av_frame = video_frame;
-	queue_frame.channe_id = xop::channel_0;
 	out_data->frame_queue->push(queue_frame);
 }
 
 static void rtsp_output_audio(void *param, struct encoder_packet *packet)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)param;
-	xop::AVFrame audio_frame = {0};
 
-	audio_frame.type = xop::AUDIO_FRAME;
-	audio_frame.size = packet->size;
-	audio_frame.timestamp = get_timestamp(
-		out_data->audio_timestamp_clocks[packet->track_idx], packet);
-	audio_frame.buffer.reset(new uint8_t[audio_frame.size]);
-	memcpy(audio_frame.buffer.get(), packet->data, packet->size);
-
-	struct queue_frame queue_frame;
-	queue_frame.av_frame = audio_frame;
+	struct queue_frame queue_frame(packet->size);
+	xop::AVFrame *frame = &queue_frame.av_frame;
 	queue_frame.channe_id = out_data->channel_ids[packet->track_idx];
+
+	frame->timestamp = get_timestamp(
+		out_data->audio_timestamp_clocks[packet->track_idx], packet);
+
+	memcpy(frame->buffer.get(), packet->data, packet->size);
+
+	frame->type = xop::AUDIO_FRAME;
+
 	out_data->frame_queue->push(queue_frame);
 }
 
@@ -579,7 +578,7 @@ void rtsp_output_register()
 	struct obs_output_info output_info = {};
 	output_info.id = "rtsp_output";
 	output_info.flags = OBS_OUTPUT_AV | OBS_OUTPUT_ENCODED |
-			    OBS_OUTPUT_CAN_PAUSE | OBS_OUTPUT_MULTI_TRACK;
+			    OBS_OUTPUT_MULTI_TRACK;
 	output_info.encoded_video_codecs = "h264";
 	output_info.encoded_audio_codecs = "aac";
 	output_info.get_name = rtsp_output_getname;

@@ -1,4 +1,4 @@
-﻿// PHZ
+// PHZ
 // 2018-5-16
 
 #ifndef XOP_MEDIA_H
@@ -31,7 +31,7 @@ enum FrameType
 struct AVFrame
 {	
 	AVFrame(uint32_t size = 0)
-		:buffer(new uint8_t[size + 1])
+		:buffer(new uint8_t[size])
 	{
 		this->size = size;
 		type = 0;
