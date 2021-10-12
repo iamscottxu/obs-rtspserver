@@ -203,7 +203,7 @@ jobs:
         run: |
           mkdir ./build64
           cd ./build64
-          cmake -DENABLE_WAYLAND=OFF -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DDISABLE_PYTHON="ON" -DBUILD_BROWSER=OFF -ENABLE_PIPEWIRE=OFF ..
+          cmake -DENABLE_WAYLAND=OFF -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DDISABLE_PYTHON="ON" -DBUILD_BROWSER=OFF -DENABLE_PIPEWIRE=OFF ..
       - name: 'Build obs-rtspserver 64-bit'
         working-directory: ${{ github.workspace }}/obs-studio/build64/plugins/obs-rtspserver/
         run: |
