@@ -33,8 +33,8 @@ public:
 	void SetCloseCallback(const CloseCallback& cb)
 	{ close_cb_ = cb; }
 
-	void Send(std::shared_ptr<char> data, uint32_t size);
-	void Send(const char *data, uint32_t size);
+	void Send(std::shared_ptr<char> data, size_t size);
+	void Send(const char *data, size_t size);
     
 	void Disconnect();
 

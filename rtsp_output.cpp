@@ -18,7 +18,7 @@
 #define ERROR_ENCODE OBS_OUTPUT_ENCODE_ERROR
 
 struct queue_frame {
-	queue_frame(uint32_t size = 0) : av_frame(size)
+	queue_frame(size_t size = 0) : av_frame(size)
 	{
 		channe_id = xop::MediaChannelId::channel_0;
 	}
@@ -213,7 +213,7 @@ static bool rtsp_output_add_video_channel(void *data,
 						    &pps_size);
 	}
 	session->AddSource(
-		xop::channel_0,
+		xop::MediaChannelId::channel_0,
 		xop::H264Source::CreateNew(
 			vector(sps, sps + sps_size),
 			vector(pps, pps + pps_size),
@@ -316,9 +316,9 @@ static bool rtsp_output_start(void *data)
 
 	session->SetNotifyCallback([out_data](xop::MediaSessionId session_id,
 	                                      const uint32_t num_clients) {
-		if (num_clients > 0 && out_data->num_clients == 0) {
+		/*if (num_clients > 0 && out_data->num_clients == 0) {
 			obs_output_pause(out_data->output, false);
-		}
+		}*/
 		out_data->num_clients = num_clients;
 		blog(LOG_INFO, "the number of rtsp clients: %d", num_clients);
 	});
@@ -342,7 +342,7 @@ static void rtsp_output_stop(void *data, uint64_t ts)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)data;
 	out_data->stop_ts = ts / 1000ULL;
-	obs_output_pause(out_data->output, false);
+	//obs_output_pause(out_data->output, false);
 	os_atomic_set_bool(&out_data->stopping, true);
 }
 
@@ -418,14 +418,14 @@ static void rtsp_push_frame(void *param)
 static void rtsp_output_video(void *param, struct encoder_packet *packet)
 {
 	rtsp_out_data *out_data = (rtsp_out_data *)param;
-	uint8_t *header;
+	uint8_t *header = nullptr;
 	const size_t header_size = packet->keyframe
 		? get_video_header(obs_output_get_video_encoder(out_data->output), &header)
 		: 0;
 
 	struct queue_frame queue_frame(packet->size + header_size);
 	xop::AVFrame *frame = &queue_frame.av_frame;
-	queue_frame.channe_id = xop::channel_0;
+	queue_frame.channe_id = xop::MediaChannelId::channel_0;
 
 	frame->timestamp = get_timestamp(90000, packet);
 
@@ -476,14 +476,14 @@ static void rtsp_output_data(void *data, struct encoder_packet *packet)
 		return;
 	}
 
-	if (out_data->num_clients > 0) {
-		if (packet->type == OBS_ENCODER_VIDEO)
-			rtsp_output_video(data, packet);
-		else if (packet->type == OBS_ENCODER_AUDIO)
-			rtsp_output_audio(data, packet);
-	} else if (!stopping(out_data)) {
-		obs_output_pause(out_data->output, true);
-	}
+	//if (out_data->num_clients > 0) {
+	if (packet->type == obs_encoder_type::OBS_ENCODER_VIDEO)
+		rtsp_output_video(data, packet);
+	else if (packet->type == obs_encoder_type::OBS_ENCODER_AUDIO)
+		rtsp_output_audio(data, packet);
+	//} else if (!stopping(out_data)) {
+		//obs_output_pause(out_data->output, true);
+	//}
 }
 
 static void rtsp_output_defaults(obs_data_t *defaults)

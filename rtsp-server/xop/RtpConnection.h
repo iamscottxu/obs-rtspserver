@@ -28,32 +28,32 @@ public:
     virtual ~RtpConnection();
 
     void SetClockRate(MediaChannelId channel_id, uint32_t clock_rate)
-    { media_channel_info_[channel_id].clock_rate = clock_rate; }
+    { media_channel_info_[static_cast<int>(channel_id)].clock_rate = clock_rate; }
 
     void SetPayloadType(MediaChannelId channel_id, uint32_t payload)
-    { media_channel_info_[channel_id].rtp_header.payload = payload; }
+    { media_channel_info_[static_cast<int>(channel_id)].rtp_header.payload = payload; }
 
     bool SetupRtpOverTcp(MediaChannelId channel_id, uint16_t rtp_channel, uint16_t rtcp_channel);
     bool SetupRtpOverUdp(MediaChannelId channel_id, uint16_t rtp_port, uint16_t rtcp_port);
     bool SetupRtpOverMulticast(MediaChannelId channel_id, std::string ip, uint16_t port);
 
-    uint32_t GetRtpSessionId() const
-    { return (uint32_t)((size_t)(this)); }
+    uint16_t GetRtpSessionId() const
+    { return (uint16_t)((size_t)(this)); }
 
     uint16_t GetRtpPort(MediaChannelId channel_id) const
-    { return local_rtp_port_[channel_id]; }
+    { return local_rtp_port_[static_cast<int>(channel_id)]; }
 
     uint16_t GetRtcpPort(MediaChannelId channel_id) const
-    { return local_rtcp_port_[channel_id]; }
+    { return local_rtcp_port_[static_cast<int>(channel_id)]; }
 
     SOCKET GetRtcpfd(MediaChannelId channel_id)
-    { return rtcpfd_[channel_id]; }
+    { return rtcpfd_[static_cast<int>(channel_id)]; }
 
     bool IsMulticast() const
     { return is_multicast_; }
 
     bool IsSetup(MediaChannelId channel_id) const
-    { return media_channel_info_[channel_id].is_setup; }
+    { return media_channel_info_[static_cast<int>(channel_id)].is_setup; }
 
     std::string GetMulticastIp(MediaChannelId channel_id) const;
 

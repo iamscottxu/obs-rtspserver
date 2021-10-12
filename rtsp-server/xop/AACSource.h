@@ -37,8 +37,8 @@ private:
     uint8_t channels_ = 2;         
     bool has_adts_ = true;
 
-	static const int ADTS_SIZE = 7;
-	static const int AU_SIZE   = 4;
+    static const size_t ADTS_SIZE = 7;
+    static const size_t AU_SIZE = 4;
 };
 
 }

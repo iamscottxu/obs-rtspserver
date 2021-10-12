@@ -56,7 +56,7 @@ BufferWriter::BufferWriter(int capacity)
 	
 }	
 
-bool BufferWriter::Append(std::shared_ptr<char> data, uint32_t size, uint32_t index)
+bool BufferWriter::Append(std::shared_ptr<char> data, size_t size, uint32_t index)
 {
 	if (size <= index) {
 		return false;
@@ -71,7 +71,7 @@ bool BufferWriter::Append(std::shared_ptr<char> data, uint32_t size, uint32_t in
 	return true;
 }
 
-bool BufferWriter::Append(const char* data, uint32_t size, uint32_t index)
+bool BufferWriter::Append(const char* data, size_t size, uint32_t index)
 {
 	if (size <= index) {
 		return false;

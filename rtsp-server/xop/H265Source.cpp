@@ -22,9 +22,9 @@ using namespace std;
 H265Source::H265Source(uint32_t framerate)
 	: framerate_(framerate)
 {
-    payload_    = 96;
-    media_type_ = H265;
-    clock_rate_ = 90000;
+	payload_    = 96;
+	media_type_ = MediaType::H265;
+	clock_rate_ = 90000;
 }
 
 H265Source* H265Source::CreateNew(uint32_t framerate)
@@ -53,7 +53,7 @@ string H265Source::GetAttribute()
 bool H265Source::HandleFrame(MediaChannelId channelId, AVFrame frame)
 {
 	uint8_t *frame_buf  = frame.buffer.get();
-	uint32_t frame_size = frame.size;
+	size_t frame_size = frame.size;
 
 	if (frame.timestamp == 0) {
 		frame.timestamp = GetTimestamp();

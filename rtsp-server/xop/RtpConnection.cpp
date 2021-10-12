@@ -64,12 +64,12 @@ bool RtpConnection::SetupRtpOverTcp(MediaChannelId channel_id, uint16_t rtp_chan
 		return false;
 	}
 
-	media_channel_info_[channel_id].rtp_channel = rtp_channel;
-	media_channel_info_[channel_id].rtcp_channel = rtcp_channel;
-	rtpfd_[channel_id] = conn->GetSocket();
-	rtcpfd_[channel_id] = conn->GetSocket();
-	media_channel_info_[channel_id].is_setup = true;
-	transport_mode_ = RTP_OVER_TCP;
+	media_channel_info_[static_cast<int>(channel_id)].rtp_channel = rtp_channel;
+	media_channel_info_[static_cast<int>(channel_id)].rtcp_channel = rtcp_channel;
+	rtpfd_[static_cast<int>(channel_id)] = conn->GetSocket();
+	rtcpfd_[static_cast<int>(channel_id)] = conn->GetSocket();
+	media_channel_info_[static_cast<int>(channel_id)].is_setup = true;
+	transport_mode_ = TransportMode::RTP_OVER_TCP;
 
 	return true;
 }
@@ -87,8 +87,8 @@ bool RtpConnection::SetupRtpOverUdp(MediaChannelId channel_id, uint16_t rtp_port
 		return false;
 	}
 
-	media_channel_info_[channel_id].rtp_port = rtp_port;
-	media_channel_info_[channel_id].rtcp_port = rtcp_port;
+	media_channel_info_[static_cast<int>(channel_id)].rtp_port = rtp_port;
+	media_channel_info_[static_cast<int>(channel_id)].rtcp_port = rtcp_port;
 
 	std::random_device rd;
 	for (int n = 0; n <= 10; n++) {
@@ -96,59 +96,59 @@ bool RtpConnection::SetupRtpOverUdp(MediaChannelId channel_id, uint16_t rtp_port
 			return false;
 		}
         
-		local_rtp_port_[channel_id] = rd() & 0xfffe;
-		local_rtcp_port_[channel_id] =local_rtp_port_[channel_id] + 1;
+		local_rtp_port_[static_cast<int>(channel_id)] = rd() & 0xfffe;
+		local_rtcp_port_[static_cast<int>(channel_id)] =local_rtp_port_[static_cast<int>(channel_id)] + 1;
 
-		rtpfd_[channel_id] = ::socket(ipv6_ ? AF_INET6 : AF_INET, SOCK_DGRAM, 0);
-		if (!SocketUtil::Bind(rtpfd_[channel_id],
+		rtpfd_[static_cast<int>(channel_id)] = ::socket(ipv6_ ? AF_INET6 : AF_INET, SOCK_DGRAM, 0);
+		if (!SocketUtil::Bind(rtpfd_[static_cast<int>(channel_id)],
 				      ipv6_ ? "::0" : "0.0.0.0",
-				      local_rtp_port_[channel_id], ipv6_))
+				      local_rtp_port_[static_cast<int>(channel_id)], ipv6_))
 		{
-			SocketUtil::Close(rtpfd_[channel_id]);
+			SocketUtil::Close(rtpfd_[static_cast<int>(channel_id)]);
 			continue;
 		}
 
-		rtcpfd_[channel_id] = ::socket(ipv6_ ? AF_INET6 : AF_INET, SOCK_DGRAM, 0);
-		if (!SocketUtil::Bind(rtcpfd_[channel_id],
+		rtcpfd_[static_cast<int>(channel_id)] = ::socket(ipv6_ ? AF_INET6 : AF_INET, SOCK_DGRAM, 0);
+		if (!SocketUtil::Bind(rtcpfd_[static_cast<int>(channel_id)],
 				      ipv6_ ? "::0" : "0.0.0.0",
-				      local_rtcp_port_[channel_id], ipv6_))
+				      local_rtcp_port_[static_cast<int>(channel_id)], ipv6_))
 		{
-			SocketUtil::Close(rtpfd_[channel_id]);
-			SocketUtil::Close(rtcpfd_[channel_id]);
+			SocketUtil::Close(rtpfd_[static_cast<int>(channel_id)]);
+			SocketUtil::Close(rtcpfd_[static_cast<int>(channel_id)]);
 			continue;
 		}
 
 		break;
 	}
 
-	SocketUtil::SetSendBufSize(rtpfd_[channel_id], 50*1024);
+	SocketUtil::SetSendBufSize(rtpfd_[static_cast<int>(channel_id)], 50*1024);
 
 	if (ipv6_) {
 		auto peer_addr = (struct sockaddr_in6 *)&peer_addr_;
-		auto peer_rtp_addr = (struct sockaddr_in6 *)&peer_rtp_addr_[channel_id];
-		auto peer_rtcp_sddr = (struct sockaddr_in6 *)&peer_rtcp_sddr_[channel_id];
+		auto peer_rtp_addr = (struct sockaddr_in6 *)&peer_rtp_addr_[static_cast<int>(channel_id)];
+		auto peer_rtcp_sddr = (struct sockaddr_in6 *)&peer_rtcp_sddr_[static_cast<int>(channel_id)];
 		peer_rtp_addr->sin6_family = AF_INET6;
 		peer_rtp_addr->sin6_addr = peer_addr->sin6_addr;
-		peer_rtp_addr->sin6_port = htons(media_channel_info_[channel_id].rtp_port);
+		peer_rtp_addr->sin6_port = htons(media_channel_info_[static_cast<int>(channel_id)].rtp_port);
 
 		peer_rtcp_sddr->sin6_family = AF_INET6;
 		peer_rtcp_sddr->sin6_addr = peer_addr->sin6_addr;
-		peer_rtcp_sddr->sin6_port = htons(media_channel_info_[channel_id].rtcp_port);
+		peer_rtcp_sddr->sin6_port = htons(media_channel_info_[static_cast<int>(channel_id)].rtcp_port);
 	} else {
 		auto peer_addr = (struct sockaddr_in *)&peer_addr_;
-		auto peer_rtp_addr = (struct sockaddr_in *)&peer_rtp_addr_[channel_id];
-		auto peer_rtcp_sddr = (struct sockaddr_in *)&peer_rtcp_sddr_[channel_id];
+		auto peer_rtp_addr = (struct sockaddr_in *)&peer_rtp_addr_[static_cast<int>(channel_id)];
+		auto peer_rtcp_sddr = (struct sockaddr_in *)&peer_rtcp_sddr_[static_cast<int>(channel_id)];
 		peer_rtp_addr->sin_family = AF_INET;
 		peer_rtp_addr->sin_addr = peer_addr->sin_addr;
-		peer_rtp_addr->sin_port = htons(media_channel_info_[channel_id].rtp_port);
+		peer_rtp_addr->sin_port = htons(media_channel_info_[static_cast<int>(channel_id)].rtp_port);
 
 		peer_rtcp_sddr->sin_family = AF_INET;
 		peer_rtcp_sddr->sin_addr = peer_addr->sin_addr;
-		peer_rtcp_sddr->sin_port = htons(media_channel_info_[channel_id].rtcp_port);
+		peer_rtcp_sddr->sin_port = htons(media_channel_info_[static_cast<int>(channel_id)].rtcp_port);
 	}
 
-	media_channel_info_[channel_id].is_setup = true;
-	transport_mode_ = RTP_OVER_UDP;
+	media_channel_info_[static_cast<int>(channel_id)].is_setup = true;
+	transport_mode_ = TransportMode::RTP_OVER_UDP;
 
 	return true;
 }
@@ -162,34 +162,34 @@ bool RtpConnection::SetupRtpOverMulticast(MediaChannelId channel_id, std::string
 			return false;
 		}
        
-		local_rtp_port_[channel_id] = rd() & 0xfffe;
-		rtpfd_[channel_id] = ::socket(ipv6 ? AF_INET6 : AF_INET, SOCK_DGRAM, 0);
-		if (!SocketUtil::Bind(rtpfd_[channel_id],
+		local_rtp_port_[static_cast<int>(channel_id)] = rd() & 0xfffe;
+		rtpfd_[static_cast<int>(channel_id)] = ::socket(ipv6 ? AF_INET6 : AF_INET, SOCK_DGRAM, 0);
+		if (!SocketUtil::Bind(rtpfd_[static_cast<int>(channel_id)],
 				      ipv6 ? "::0" : "0.0.0.0",
-				      local_rtp_port_[channel_id], ipv6)) {
-			SocketUtil::Close(rtpfd_[channel_id]);
+				      local_rtp_port_[static_cast<int>(channel_id)], ipv6)) {
+			SocketUtil::Close(rtpfd_[static_cast<int>(channel_id)]);
 			continue;
 		}
 
 		break;
     }
 
-	media_channel_info_[channel_id].rtp_port = port;
+	media_channel_info_[static_cast<int>(channel_id)].rtp_port = port;
 
 	if (ipv6) {
-		auto peer_rtp_addr = (struct sockaddr_in6 *)&peer_rtp_addr_[channel_id];
+		auto peer_rtp_addr = (struct sockaddr_in6 *)&peer_rtp_addr_[static_cast<int>(channel_id)];
 		peer_rtp_addr->sin6_family = AF_INET6;
 		peer_rtp_addr->sin6_port = htons(port);
 		inet_pton(AF_INET6, ip.c_str(), &peer_rtp_addr->sin6_addr);
 	} else {
-		auto peer_rtp_addr = (struct sockaddr_in *)&peer_rtp_addr_[channel_id];
+		auto peer_rtp_addr = (struct sockaddr_in *)&peer_rtp_addr_[static_cast<int>(channel_id)];
 		peer_rtp_addr->sin_family = AF_INET;
 		peer_rtp_addr->sin_port = htons(port);
 		inet_pton(AF_INET, ip.c_str(), &peer_rtp_addr->sin_addr);
 	}
 
-	media_channel_info_[channel_id].is_setup = true;
-	transport_mode_ = RTP_OVER_MULTICAST;
+	media_channel_info_[static_cast<int>(channel_id)].is_setup = true;
+	transport_mode_ = TransportMode::RTP_OVER_MULTICAST;
 	is_multicast_ = true;
 	return true;
 }
@@ -227,12 +227,12 @@ void RtpConnection::Teardown()
 string RtpConnection::GetMulticastIp(MediaChannelId channel_id) const
 {
 	if (ipv6_) {
-		auto peer_rtp_addr = (struct sockaddr_in6 *)&peer_rtp_addr_[channel_id];
+		auto peer_rtp_addr = (struct sockaddr_in6 *)&peer_rtp_addr_[static_cast<int>(channel_id)];
 		char str[INET6_ADDRSTRLEN] = "::0";
 		inet_ntop(AF_INET6, &peer_rtp_addr->sin6_addr, str, sizeof(str));
 		return std::string(str);
 	} else {
-		auto peer_rtp_addr = (struct sockaddr_in *)&peer_rtp_addr_[channel_id];
+		auto peer_rtp_addr = (struct sockaddr_in *)&peer_rtp_addr_[static_cast<int>(channel_id)];
 		char str[INET_ADDRSTRLEN] = "0.0.0.0";
 		inet_ntop(AF_INET, &peer_rtp_addr->sin_addr, str, sizeof(str));
 		return std::string(str);
@@ -275,11 +275,11 @@ void RtpConnection::SetFrameType(uint8_t frame_type)
 
 void RtpConnection::SetRtpHeader(MediaChannelId channel_id, RtpPacket pkt)
 {
-	if((media_channel_info_[channel_id].is_play || media_channel_info_[channel_id].is_record) && has_key_frame_) {
-		media_channel_info_[channel_id].rtp_header.marker = pkt.last;
-		media_channel_info_[channel_id].rtp_header.ts = htonl(pkt.timestamp);
-		media_channel_info_[channel_id].rtp_header.seq = htons(media_channel_info_[channel_id].packet_seq++);
-		memcpy(pkt.data.get()+4, &media_channel_info_[channel_id].rtp_header, RTP_HEADER_SIZE);
+	if((media_channel_info_[static_cast<int>(channel_id)].is_play || media_channel_info_[static_cast<int>(channel_id)].is_record) && has_key_frame_) {
+		media_channel_info_[static_cast<int>(channel_id)].rtp_header.marker = pkt.last;
+		media_channel_info_[static_cast<int>(channel_id)].rtp_header.ts = htonl(pkt.timestamp);
+		media_channel_info_[static_cast<int>(channel_id)].rtp_header.seq = htons(media_channel_info_[static_cast<int>(channel_id)].packet_seq++);
+		memcpy(pkt.data.get()+4, &media_channel_info_[static_cast<int>(channel_id)].rtp_header, RTP_HEADER_SIZE);
 	}
 }
 
@@ -297,8 +297,8 @@ int RtpConnection::SendRtpPacket(MediaChannelId channel_id, RtpPacket pkt)
 	bool ret = rtsp_conn->task_scheduler_->AddTriggerEvent([this, channel_id, pkt] {
 		this->SetFrameType(pkt.type);
 		this->SetRtpHeader(channel_id, pkt);
-		if((media_channel_info_[channel_id].is_play || media_channel_info_[channel_id].is_record) && has_key_frame_ ) {            
-			if(transport_mode_ == RTP_OVER_TCP) {
+		if((media_channel_info_[static_cast<int>(channel_id)].is_play || media_channel_info_[static_cast<int>(channel_id)].is_record) && has_key_frame_ ) {            
+			if (transport_mode_ == TransportMode::RTP_OVER_TCP) {
 				SendRtpOverTcp(channel_id, pkt);
 			}
 			else {
@@ -322,7 +322,7 @@ int RtpConnection::SendRtpOverTcp(MediaChannelId channel_id, RtpPacket pkt)
 
 	uint8_t* rtpPktPtr = pkt.data.get();
 	rtpPktPtr[0] = '$';
-	rtpPktPtr[1] = (char)media_channel_info_[channel_id].rtp_channel;
+	rtpPktPtr[1] = (char)media_channel_info_[static_cast<int>(channel_id)].rtp_channel;
 	rtpPktPtr[2] = (char)(((pkt.size-4)&0xFF00)>>8);
 	rtpPktPtr[3] = (char)((pkt.size -4)&0xFF);
 
@@ -335,8 +335,8 @@ int RtpConnection::SendRtpOverUdp(MediaChannelId channel_id, RtpPacket pkt)
 	//media_channel_info_[channel_id].octetCount  += pktSize;
 	//media_channel_info_[channel_id].packetCount += 1;
 
-	int ret = sendto(rtpfd_[channel_id], (const char*)pkt.data.get()+4, pkt.size-4, 0, 
-					(struct sockaddr *)&(peer_rtp_addr_[channel_id]),
+	int ret = sendto(rtpfd_[static_cast<int>(channel_id)], (const char*)pkt.data.get()+4, pkt.size-4, 0, 
+					(struct sockaddr *)&(peer_rtp_addr_[static_cast<int>(channel_id)]),
 					sizeof(struct sockaddr_in));
                    
 	if(ret < 0) {        

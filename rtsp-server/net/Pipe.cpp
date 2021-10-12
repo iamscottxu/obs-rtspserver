@@ -9,7 +9,7 @@ using namespace xop;
 
 Pipe::Pipe()
 {
-
+	memset(pipe_fd_, 0, 2);
 }
 
 bool Pipe::Create()

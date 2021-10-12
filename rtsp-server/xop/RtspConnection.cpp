@@ -60,12 +60,12 @@ bool RtspConnection::OnRead(BufferReader& buffer)
 		return false; //close
 	}
 
-	if (conn_mode_ == RTSP_SERVER) {
+	if (conn_mode_ == ConnectionMode::RTSP_SERVER) {
 		if (!HandleRtspRequest(buffer)){
 			return false; 
 		}
 	}
-	else if (conn_mode_ == RTSP_PUSHER) {
+	else if (conn_mode_ == ConnectionMode::RTSP_PUSHER) {
 		if (!HandleRtspResponse(buffer)) {           
 			return false;
 		}
@@ -111,7 +111,7 @@ bool RtspConnection::HandleRtspRequest(BufferReader& buffer)
 
     if (rtsp_request_->ParseRequest(&buffer)) {
 		RtspRequest::Method method = rtsp_request_->GetMethod();
-		if(method == RtspRequest::RTCP) {
+		if(method == RtspRequest::Method::RTCP) {
 			HandleRtcp(buffer);
 			return true;
 		}
@@ -121,22 +121,22 @@ bool RtspConnection::HandleRtspRequest(BufferReader& buffer)
         
 		switch (method)
 		{
-		case RtspRequest::OPTIONS:
+		case RtspRequest::Method::OPTIONS:
 			HandleCmdOption();
 			break;
-		case RtspRequest::DESCRIBE:
+		case RtspRequest::Method::DESCRIBE:
 			HandleCmdDescribe();
 			break;
-		case RtspRequest::SETUP:
+		case RtspRequest::Method::SETUP:
 			HandleCmdSetup();
 			break;
-		case RtspRequest::PLAY:
+		case RtspRequest::Method::PLAY:
 			HandleCmdPlay();
 			break;
-		case RtspRequest::TEARDOWN:
+		case RtspRequest::Method::TEARDOWN:
 			HandleCmdTeardown();
 			break;
-		case RtspRequest::GET_PARAMETER:
+		case RtspRequest::Method::GET_PARAMETER:
 			HandleCmdGetParamter();
 			break;
 		default:
@@ -167,19 +167,19 @@ bool RtspConnection::HandleRtspResponse(BufferReader& buffer)
 		RtspResponse::Method method = rtsp_response_->GetMethod();
 		switch (method)
 		{
-		case RtspResponse::OPTIONS:
-			if (conn_mode_ == RTSP_PUSHER) {
+		case RtspResponse::Method::OPTIONS:
+			if (conn_mode_ == ConnectionMode::RTSP_PUSHER) {
 				SendAnnounce();
 			}             
 			break;
-		case RtspResponse::ANNOUNCE:
-		case RtspResponse::DESCRIBE:
+		case RtspResponse::Method::ANNOUNCE:
+		case RtspResponse::Method::DESCRIBE:
 			SendSetup();
 			break;
-		case RtspResponse::SETUP:
+		case RtspResponse::Method::SETUP:
 			SendSetup();
 			break;
-		case RtspResponse::RECORD:
+		case RtspResponse::Method::RECORD:
 			HandleRecord();
 			break;
 		default:            
@@ -207,9 +207,9 @@ void RtspConnection::HandleRtcp(BufferReader& buffer)
 {    
 	char *peek = buffer.Peek();
 	if(peek[0] == '$' &&  buffer.ReadableBytes() > 4) {
-		uint32_t pkt_size = peek[2]<<8 | peek[3];
-		if(pkt_size +4 >=  buffer.ReadableBytes()) {
-			buffer.Retrieve(pkt_size +4);  
+		size_t pkt_size = peek[2]<<8 | peek[3];
+		if(pkt_size + 4 >=  buffer.ReadableBytes()) {
+			buffer.Retrieve(pkt_size + 4);  
 		}
 	}
 }
@@ -255,7 +255,7 @@ void RtspConnection::HandleCmdDescribe()
 		session_id_ = media_session->GetMediaSessionId();
 		media_session->AddClient(this->GetSocket(), rtp_conn_);
 
-		for(int chn=0; chn<media_session->GetMaxChannelCount(); chn++) {
+		for(uint16_t chn=0; chn<media_session->GetMaxChannelCount(); chn++) {
 			MediaSource* source = media_session->GetMediaSource((MediaChannelId)chn);
 			if(source != nullptr) {
 				rtp_conn_->SetClockRate((MediaChannelId)chn, source->GetClockRate());
@@ -297,7 +297,7 @@ void RtspConnection::HandleCmdSetup()
 
 	if(media_session->IsMulticast())  {
 		std::string multicast_ip = media_session->GetMulticastIp();
-		if(rtsp_request_->GetTransportMode() == RTP_OVER_MULTICAST) {
+		if(rtsp_request_->GetTransportMode() == TransportMode::RTP_OVER_MULTICAST) {
 			uint16_t port = media_session->GetMulticastPort(channel_id);
 			uint16_t session_id = rtp_conn_->GetRtpSessionId();
 			if (!rtp_conn_->SetupRtpOverMulticast(channel_id, multicast_ip.c_str(), port)) {
@@ -311,7 +311,7 @@ void RtspConnection::HandleCmdSetup()
 		}
 	}
 	else {
-		if(rtsp_request_->GetTransportMode() == RTP_OVER_TCP) {
+		if(rtsp_request_->GetTransportMode() == TransportMode::RTP_OVER_TCP) {
 			uint16_t rtp_channel = rtsp_request_->GetRtpChannel();
 			uint16_t rtcp_channel = rtsp_request_->GetRtcpChannel();
 			uint16_t session_id = rtp_conn_->GetRtpSessionId();
@@ -319,7 +319,7 @@ void RtspConnection::HandleCmdSetup()
 			rtp_conn_->SetupRtpOverTcp(channel_id, rtp_channel, rtcp_channel);
 			size = rtsp_request_->BuildSetupTcpRes(res.get(), 4096, rtp_channel, rtcp_channel, session_id);
 		}
-		else if(rtsp_request_->GetTransportMode() == RTP_OVER_UDP) {
+		else if(rtsp_request_->GetTransportMode() == TransportMode::RTP_OVER_UDP) {
 			uint16_t cliRtpPort = rtsp_request_->GetRtpPort();
 			uint16_t cliRtcpPort = rtsp_request_->GetRtcpPort();
 			uint16_t session_id = rtp_conn_->GetRtpSessionId();
@@ -330,7 +330,8 @@ void RtspConnection::HandleCmdSetup()
                                 channel->SetReadCallback([rtcpfd, this]() { this->HandleRtcp(rtcpfd); });
                                 channel->EnableReading();
                                 task_scheduler_->UpdateChannel(channel);
-				rtcp_channels_[channel_id] = channel;
+				rtcp_channels_[static_cast<int>(channel_id)] =
+					channel;
 			}
 			else {
 				goto server_error;
@@ -371,7 +372,7 @@ void RtspConnection::HandleCmdPlay()
 		return;
 	}
 
-	conn_state_ = START_PLAY;
+	conn_state_ = ConnectionState::START_PLAY;
 	rtp_conn_->Play();
 
 	uint16_t session_id = rtp_conn_->GetRtpSessionId();
@@ -412,7 +413,7 @@ void RtspConnection::HandleCmdGetParamter()
 bool RtspConnection::HandleAuthentication()
 {
 	if (auth_info_ != nullptr && !has_auth_) {
-		std::string cmd = rtsp_request_->MethodToString[rtsp_request_->GetMethod()];
+		std::string cmd = rtsp_request_->MethodToString[static_cast<int>(rtsp_request_->GetMethod())];
 		std::string url = rtsp_request_->GetRtspUrl();
 
 		if (_nonce.size() > 0 && (auth_info_->GetResponse(_nonce, cmd, url) == rtsp_request_->GetAuthResponse())) {
@@ -471,7 +472,7 @@ void RtspConnection::SendAnnounce()
 		session_id_ = media_session->GetMediaSessionId();
 		media_session->AddClient(this->GetSocket(), rtp_conn_);
 
-		for (int chn = 0; chn<media_session->GetMaxChannelCount(); chn++) {
+		for (uint16_t chn = 0; chn<media_session->GetMaxChannelCount(); chn++) {
 			MediaSource* source = media_session->GetMediaSource((MediaChannelId)chn);
 			if (source != nullptr) {
 				rtp_conn_->SetClockRate((MediaChannelId)chn, source->GetClockRate());
@@ -514,13 +515,15 @@ void RtspConnection::SendSetup()
 		return;
 	}
 
-	if (media_session->GetMediaSource(channel_0) && !rtp_conn_->IsSetup(channel_0)) {
-		rtp_conn_->SetupRtpOverTcp(channel_0, 0, 1);
-		size = rtsp_response_->BuildSetupTcpReq(buf.get(), 2048, channel_0);
+
+	//TODO:
+	if (media_session->GetMediaSource(MediaChannelId::channel_0) && !rtp_conn_->IsSetup(MediaChannelId::channel_0)) {
+		rtp_conn_->SetupRtpOverTcp(MediaChannelId::channel_0, 0, 1);
+		size = rtsp_response_->BuildSetupTcpReq(buf.get(), 2048, static_cast<int>(MediaChannelId::channel_0));
 	}
-	else if (media_session->GetMediaSource(channel_1) && !rtp_conn_->IsSetup(channel_1)) {
-		rtp_conn_->SetupRtpOverTcp(channel_1, 2, 3);
-		size = rtsp_response_->BuildSetupTcpReq(buf.get(), 2048, channel_1);
+	else if (media_session->GetMediaSource(MediaChannelId::channel_1) && !rtp_conn_->IsSetup(MediaChannelId::channel_1)) {
+		rtp_conn_->SetupRtpOverTcp(MediaChannelId::channel_1, 2, 3);
+		size = rtsp_response_->BuildSetupTcpReq(buf.get(), 2048, static_cast<int>(MediaChannelId::channel_1));
 	}
 	else {
 		size = rtsp_response_->BuildRecordReq(buf.get(), 2048);
@@ -531,6 +534,6 @@ void RtspConnection::SendSetup()
 
 void RtspConnection::HandleRecord()
 {
-	conn_state_ = START_PUSH;
+	conn_state_ = ConnectionState::START_PUSH;
 	rtp_conn_->Record();
 }

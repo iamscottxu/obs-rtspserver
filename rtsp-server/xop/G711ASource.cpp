@@ -1,4 +1,4 @@
-﻿// PHZ
+// PHZ
 // 2018-5-16
 
 #if defined(WIN32) || defined(_WIN32) 
@@ -20,9 +20,9 @@ using namespace std;
 
 G711ASource::G711ASource()
 {
-    payload_    = 8;
-    media_type_ = PCMA;
-    clock_rate_ = 8000;
+	payload_    = 8;
+	media_type_ = MediaType::PCMA;
+	clock_rate_ = 8000;
 }
 
 G711ASource* G711ASource::CreateNew()
@@ -55,7 +55,7 @@ bool G711ASource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 	}
 
 	uint8_t *frame_buf  = frame.buffer.get();
-	uint32_t frame_size = frame.size;
+	size_t frame_size = frame.size;
 
 	RtpPacket rtpPkt;
 	rtpPkt.type = frame.type;

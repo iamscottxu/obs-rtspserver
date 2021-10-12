@@ -18,13 +18,13 @@ using namespace xop;
 bool RtspRequest::ParseRequest(BufferReader *buffer)
 {
 	if(buffer->Peek()[0] == '$') {
-		method_ = RTCP;
+		method_ = Method::RTCP;
 		return true;
 	}
     
     bool ret = true;
 	while(1) {
-		if(state_ == kParseRequestLine) {
+	    if (state_ == RtspRequestParseState::kParseRequestLine) {
 			const char* firstCrlf = buffer->FindFirstCrlf();
 			if(firstCrlf != nullptr)
 			{
@@ -32,22 +32,20 @@ bool RtspRequest::ParseRequest(BufferReader *buffer)
 				buffer->RetrieveUntil(firstCrlf + 2);
 			}
 
-			if (state_ == kParseHeadersLine) {
+			if (state_ == RtspRequestParseState::kParseHeadersLine) {
 				continue;
 			}             
 			else {
 				break;
 			}           
-		}
-		else if(state_ == kParseHeadersLine) {
+		} else if (state_ == RtspRequestParseState::kParseHeadersLine) {
 			const char* lastCrlf = buffer->FindLastCrlf();
 			if(lastCrlf != nullptr) {
 				ret = ParseHeadersLine(buffer->Peek(), lastCrlf);
 				buffer->RetrieveUntil(lastCrlf + 2);
 			}
 			break;
-		}
-		else if(state_ == kGotAll) {
+		} else if (state_ == RtspRequestParseState::kGotAll) {
 			buffer->RetrieveAll();
 			return true;
 		}
@@ -69,25 +67,25 @@ bool RtspRequest::ParseRequestLine(const char* begin, const char* end)
 
 	string method_str(method);
 	if(method_str == "OPTIONS") {
-		method_ = OPTIONS;
+		method_ = Method::OPTIONS;
 	}
 	else if(method_str == "DESCRIBE") {
-		method_ = DESCRIBE;
+		method_ = Method::DESCRIBE;
 	}
 	else if(method_str == "SETUP") {
-		method_ = SETUP;
+		method_ = Method::SETUP;
 	}
 	else if(method_str == "PLAY") {
-		method_ = PLAY;
+		method_ = Method::PLAY;
 	}
 	else if(method_str == "TEARDOWN") {
-		method_ = TEARDOWN;
+		method_ = Method::TEARDOWN;
 	}
 	else if(method_str == "GET_PARAMETER") {
-		method_ = GET_PARAMETER;
+		method_ = Method::GET_PARAMETER;
 	}
 	else {
-		method_ = NONE;
+		method_ = Method::NONE;
 		return false;
 	}
 
@@ -123,7 +121,7 @@ bool RtspRequest::ParseRequestLine(const char* begin, const char* end)
 	request_line_param_.emplace("version", make_pair(string(version), 0));
 	request_line_param_.emplace("method", make_pair(move(method_str), 0));
 
-	state_ = kParseHeadersLine;
+	state_ = RtspRequestParseState::kParseHeadersLine;
 	return true;
 }
 
@@ -136,44 +134,44 @@ bool RtspRequest::ParseHeadersLine(const char* begin, const char* end)
 		} 
 	}
 
-	if (method_ == DESCRIBE || method_ == SETUP || method_ == PLAY) {
+	if (method_ == Method::DESCRIBE || method_ == Method::SETUP || method_ == Method::PLAY) {
 		ParseAuthorization(message);
 	}
 
-	if(method_ == OPTIONS) {
-		state_ = kGotAll;
+	if (method_ == Method::OPTIONS) {
+		state_ = RtspRequestParseState::kGotAll;
 		return true;
 	}
 
-	if(method_ == DESCRIBE) {
+	if (method_ == Method::DESCRIBE) {
 		if(ParseAccept(message)) {
-			state_ = kGotAll;
+			state_ = RtspRequestParseState::kGotAll;
 		}
 		return true;
 	}
 
-	if(method_ == SETUP) {
+	if (method_ == Method::SETUP) {
 		if(ParseTransport(message) && ParseMediaChannel(message)) {
-			state_ = kGotAll;
+			state_ = RtspRequestParseState::kGotAll;
 		}
 
 		return true;
 	}
 
-	if(method_ == PLAY) {
+	if (method_ == Method::PLAY) {
 		if(ParseSessionId(message)) {
-			state_ = kGotAll;
+			state_ = RtspRequestParseState::kGotAll;
 		}
 		return true;
 	}
 
-	if(method_ == TEARDOWN) {
-		state_ = kGotAll;
+	if (method_ == Method::TEARDOWN) {
+		state_ = RtspRequestParseState::kGotAll;
 		return true;
 	}
 
-	if(method_ == GET_PARAMETER) {
-		state_ = kGotAll;
+	if (method_ == Method::GET_PARAMETER) {
+		state_ = RtspRequestParseState::kGotAll;
 		return true;
 	}
 
@@ -208,7 +206,7 @@ bool RtspRequest::ParseTransport(std::string& message)
 	std::size_t pos = message.find("Transport");
 	if(pos != std::string::npos) {
 		if((pos=message.find("RTP/AVP/TCP")) != std::string::npos) {
-			transport_ = RTP_OVER_TCP;
+			transport_ = TransportMode::RTP_OVER_TCP;
 			uint16_t rtpChannel = 0, rtcpChannel = 0;
 			if (sscanf(message.c_str() + pos, "%*[^;];%*[^;];%*[^=]=%hu-%hu", &rtpChannel, &rtcpChannel) != 2) {
 				return false;
@@ -219,7 +217,7 @@ bool RtspRequest::ParseTransport(std::string& message)
 		else if((pos=message.find("RTP/AVP")) != std::string::npos) {
 			uint16_t rtp_port = 0, rtcpPort = 0;
 			if(((message.find("unicast", pos)) != std::string::npos)) {
-				transport_ = RTP_OVER_UDP;
+				transport_ = TransportMode::RTP_OVER_UDP;
 				if(sscanf(message.c_str()+pos, "%*[^;];%*[^;];%*[^=]=%hu-%hu",
 						&rtp_port, &rtcpPort) != 2)
 				{
@@ -228,7 +226,7 @@ bool RtspRequest::ParseTransport(std::string& message)
 
 			}
 			else if((message.find("multicast", pos)) != std::string::npos) {
-				transport_ = RTP_OVER_MULTICAST;
+				transport_ = TransportMode::RTP_OVER_MULTICAST;
 			}
 			else {
 				return false;
@@ -595,7 +593,7 @@ int RtspResponse::BuildOptionReq(const char* buf, int buf_size)
 			this->GetCSeq() + 1,
 			user_agent_.c_str());
 
-	method_ = OPTIONS;
+	method_ = Method::OPTIONS;
 	return (int)strlen(buf);
 }
 
@@ -618,7 +616,7 @@ int RtspResponse::BuildAnnounceReq(const char* buf, int buf_size, const char *sd
 			(int)strlen(sdp),
 			sdp);
 
-	method_ = ANNOUNCE;
+	method_ = Method::ANNOUNCE;
 	return (int)strlen(buf);
 }
 
@@ -635,7 +633,7 @@ int RtspResponse::BuildDescribeReq(const char* buf, int buf_size)
 			this->GetCSeq() + 1,
 			user_agent_.c_str());
 
-	method_ = DESCRIBE;
+	method_ = Method::DESCRIBE;
 	return (int)strlen(buf);
 }
 
@@ -663,7 +661,7 @@ int RtspResponse::BuildSetupTcpReq(const char* buf, int buf_size, int trackId)
 			user_agent_.c_str(), 
 			this->GetSession().c_str());
 
-	method_ = SETUP;
+	method_ = Method::SETUP;
 	return (int)strlen(buf);
 }
 
@@ -682,6 +680,6 @@ int RtspResponse::BuildRecordReq(const char* buf, int buf_size)
 			user_agent_.c_str(), 
 			this->GetSession().c_str());
 
-	method_ = RECORD;
+	method_ = Method::RECORD;
 	return (int)strlen(buf);
 }

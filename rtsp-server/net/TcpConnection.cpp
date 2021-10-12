@@ -35,7 +35,7 @@ TcpConnection::~TcpConnection()
 	}
 }
 
-void TcpConnection::Send(std::shared_ptr<char> data, uint32_t size)
+void TcpConnection::Send(std::shared_ptr<char> data, size_t size)
 {
 	if (!is_closed_) {
 		mutex_.lock();
@@ -46,7 +46,7 @@ void TcpConnection::Send(std::shared_ptr<char> data, uint32_t size)
 	}
 }
 
-void TcpConnection::Send(const char *data, uint32_t size)
+void TcpConnection::Send(const char *data, size_t size)
 {
 	if (!is_closed_) {
 		mutex_.lock();

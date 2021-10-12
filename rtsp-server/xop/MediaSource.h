@@ -1,4 +1,4 @@
-﻿// PHZ
+// PHZ
 // 2018-6-8
 
 #ifndef XOP_MEDIA_SOURCE_H
@@ -42,7 +42,7 @@ public:
 	{ return clock_rate_; }
 
 protected:
-	MediaType media_type_ = NONE;
+	MediaType media_type_ = MediaType::NONE;
 	uint32_t  payload_    = 0;
 	uint32_t  clock_rate_ = 0;
 	SendFrameCallback send_frame_callback_;

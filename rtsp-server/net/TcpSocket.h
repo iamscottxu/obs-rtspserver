@@ -31,7 +31,7 @@ public:
 	bool IsIpv6Socket() const { return ipv6_; }
     
 private:
-	SOCKET sockfd_ = -1;
+	SOCKET sockfd_ = 0;
 	bool ipv6_;
 };
 

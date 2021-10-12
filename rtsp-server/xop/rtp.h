@@ -1,4 +1,4 @@
-﻿// PHZ
+// PHZ
 // 2018-6-11
 
 #ifndef XOP_RTP_H
@@ -15,7 +15,7 @@
 namespace xop
 {
 
-enum TransportMode
+enum class TransportMode
 {
 	RTP_OVER_TCP = 1,
 	RTP_OVER_UDP = 2,
@@ -66,11 +66,14 @@ struct RtpPacket
 	RtpPacket()
 		: data(new uint8_t[1600])
 	{
+		size = 0;
+		timestamp = 0;
 		type = 0;
+		last = 0;
 	}
 
 	std::shared_ptr<uint8_t> data;
-	uint32_t size;
+	size_t size;
 	uint32_t timestamp;
 	uint8_t  type;
 	uint8_t  last;

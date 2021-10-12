@@ -42,33 +42,33 @@ MediaSession::~MediaSession()
 
 bool MediaSession::AddSource(MediaChannelId channelId, MediaSource* source)
 {
-	if (channelId >= max_channel_count_) return false;
+	if (static_cast<int>(channelId) >= max_channel_count_) return false;
 	source->SetSendFrameCallback([this](MediaChannelId channelId, RtpPacket pkt) {
+		std::lock_guard<std::mutex> lock(map_mutex_);
+
 		std::forward_list<std::shared_ptr<RtpConnection>> clients;
 		std::map<int, RtpPacket> packets;
-		{
-			std::lock_guard<std::mutex> lock(map_mutex_);
-			for (auto iter = clients_.begin(); iter != clients_.end();) {
-				auto conn = iter->second.lock();
-				if (conn == nullptr) {
-					clients_.erase(iter++);
-				}
-				else  {				
-					int id = conn->GetId();
-					if (id >= 0) {
-						if (packets.find(id) == packets.end()) {
-							RtpPacket tmpPkt;
-							memcpy(tmpPkt.data.get(), pkt.data.get(), pkt.size);
-							tmpPkt.size = pkt.size;
-							tmpPkt.last = pkt.last;
-							tmpPkt.timestamp = pkt.timestamp;
-							tmpPkt.type = pkt.type;
-							packets.emplace(id, tmpPkt);
-						}
-						clients.emplace_front(conn);
+
+		for (auto iter = clients_.begin(); iter != clients_.end();) {
+			auto conn = iter->second.lock();
+			if (conn == nullptr) {
+				clients_.erase(iter++);
+			}
+			else  {				
+				int id = conn->GetId();
+				if (id >= 0) {
+					if (packets.find(id) == packets.end()) {
+						RtpPacket tmpPkt;
+						memcpy(tmpPkt.data.get(), pkt.data.get(), pkt.size);
+						tmpPkt.size = pkt.size;
+						tmpPkt.last = pkt.last;
+						tmpPkt.timestamp = pkt.timestamp;
+						tmpPkt.type = pkt.type;
+						packets.emplace(id, tmpPkt);
 					}
-					iter++;
+					clients.emplace_front(conn);
 				}
+				iter++;
 			}
 		}
         
@@ -88,15 +88,15 @@ bool MediaSession::AddSource(MediaChannelId channelId, MediaSource* source)
 			}					
 		}
 		return true;
-    });
+	});
 
-	media_sources_[channelId].reset(source);
+	media_sources_[static_cast<int>(channelId)].reset(source);
 	return true;
 }
 
 bool MediaSession::RemoveSource(MediaChannelId channelId)
 {
-	media_sources_[channelId] = nullptr;
+	media_sources_[static_cast<int>(channelId)] = nullptr;
 	return true;
 }
 
@@ -176,8 +176,8 @@ std::string MediaSession::GetSdpMessage(std::string ip, std::string sessionName,
 
 MediaSource* MediaSession::GetMediaSource(MediaChannelId channelId)
 {
-	if (channelId < max_channel_count_) {
-		return media_sources_[channelId].get();
+	if (static_cast<int>(channelId) < max_channel_count_) {
+		return media_sources_[static_cast<int>(channelId)].get();
 	}
 
 	return nullptr;
@@ -187,8 +187,8 @@ bool MediaSession::HandleFrame(MediaChannelId channelId, AVFrame frame)
 {
 	std::lock_guard<std::mutex> lock(mutex_);
 
-        if (channelId < max_channel_count_) {
-		media_sources_[channelId]->HandleFrame(channelId, frame);
+        if (static_cast<int>(channelId) < max_channel_count_) {
+		media_sources_[static_cast<int>(channelId)]->HandleFrame(channelId, frame);
 	}
 	else {
 		return false;

@@ -10,7 +10,7 @@ namespace xop
 {
 
 /* RTSP服务支持的媒体类型 */
-enum MediaType
+enum class MediaType
 {
 	//PCMU = 0,	 
 	PCMA = 8,
@@ -30,7 +30,7 @@ enum FrameType
 
 struct AVFrame
 {	
-	AVFrame(uint32_t size = 0)
+	AVFrame(size_t size = 0)
 		:buffer(new uint8_t[size])
 	{
 		this->size = size;
@@ -39,23 +39,23 @@ struct AVFrame
 	}
 
 	std::shared_ptr<uint8_t> buffer; /* 帧数据 */
-	uint32_t size;				     /* 帧大小 */
+	size_t size;                                 /* 帧大小 */
 	uint8_t  type;				     /* 帧类型 */	
 	uint32_t timestamp;		  	     /* 时间戳 */
 };
 
-enum MediaChannelId
+enum class MediaChannelId
 {
-	channel_0,
-	channel_1,
-        channel_2,
-        channel_3,
-        channel_4,
-        channel_5,
-        channel_6,
-        channel_7,
-        channel_8,
-        channel_9
+	channel_0 = 0,
+	channel_1 = 1,
+	channel_2 = 2,
+	channel_3 = 3,
+	channel_4 = 4,
+	channel_5 = 5,
+	channel_6 = 6,
+	channel_7 = 7,
+	channel_8 = 8,
+        channel_9 = 9
 };
 
 typedef uint32_t MediaSessionId;

@@ -29,9 +29,9 @@ H264Source::H264Source(const vector<uint8_t> sps, const vector<uint8_t> pps,
 	: framerate_(framerate),
 	  sps_(sps), pps_(pps)
 {
-    payload_    = 96; 
-    media_type_ = H264;
-    clock_rate_ = 90000;
+	payload_    = 96; 
+	media_type_ = MediaType::H264;
+	clock_rate_ = 90000;
 }
 
 H264Source *H264Source::CreateNew(uint32_t framerate)
@@ -90,7 +90,7 @@ string H264Source::GetAttribute()
 bool H264Source::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 {
     uint8_t* frame_buf  = frame.buffer.get();
-    uint32_t frame_size = frame.size;
+    size_t frame_size = frame.size;
 
 	if (frame.timestamp == 0) {
 		frame.timestamp = GetTimestamp();

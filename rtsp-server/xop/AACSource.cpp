@@ -26,7 +26,7 @@ AACSource::AACSource(uint32_t samplerate, uint8_t channels, bool has_adts)
 	: samplerate_(samplerate), channels_(channels), has_adts_(has_adts)
 {
 	payload_ = 97;
-	media_type_ = AAC;
+	media_type_ = MediaType::AAC;
 	clock_rate_ = samplerate;
 }
 
@@ -93,13 +93,13 @@ bool AACSource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 		return false;
 	}
 
-	int adts_size = 0;
+	size_t adts_size = 0;
 	if (has_adts_) {
 		adts_size = ADTS_SIZE;
 	}
 
 	uint8_t *frame_buf = frame.buffer.get() + adts_size;
-	uint32_t frame_size = frame.size - adts_size;
+	size_t frame_size = frame.size - adts_size;
 
 	char AU[AU_SIZE] = {0};
 	AU[0] = 0x00;

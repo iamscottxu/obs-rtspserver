@@ -39,10 +39,10 @@
 #define SOCKET int
 #define INVALID_SOCKET  (-1)
 #define SOCKET_ERROR    (-1)
-#endif
 
-#define INET_ADDRSTRLEN 16 /* for IPv4 dotted-decimal */
+#define INET_ADDRSTRLEN 16  /* for IPv4 dotted-decimal */
 #define INET6_ADDRSTRLEN 46 /* for IPv6 hex string */
+#endif
 
 #include <cstdint>
 #include <cstring>

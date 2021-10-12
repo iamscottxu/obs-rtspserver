@@ -29,14 +29,14 @@ class RtspConnection : public TcpConnection
 public:
 	typedef std::function<void (SOCKET sockfd)> CloseCallback;
 
-	enum ConnectionMode
+	enum class ConnectionMode
 	{
 		RTSP_SERVER, 
 		RTSP_PUSHER,
 		//RTSP_CLIENT,
 	};
 
-	enum ConnectionState
+	enum class ConnectionState
 	{
 		START_CONNECT,
 		START_PLAY,
@@ -78,10 +78,10 @@ public:
 	{ return task_scheduler_->GetId(); }
 
 	bool IsPlay() const
-	{ return conn_state_ == START_PLAY; }
+	{ return conn_state_ == ConnectionState::START_PLAY; }
 
 	bool IsRecord() const
-	{ return conn_state_ == START_PUSH; }
+	{ return conn_state_ == ConnectionState::START_PUSH; }
 
 private:
 	friend class RtpConnection;
@@ -106,7 +106,7 @@ private:
 	void HandleCmdGetParamter();
 	bool HandleAuthentication();
 
-	void SendOptions(ConnectionMode mode= RTSP_SERVER);
+	void SendOptions(ConnectionMode mode = ConnectionMode::RTSP_SERVER);
 	void SendDescribe();
 	void SendAnnounce();
 	void SendSetup();
@@ -116,8 +116,8 @@ private:
 	std::weak_ptr<Rtsp> rtsp_;
 	xop::TaskScheduler *task_scheduler_ = nullptr;
 
-	ConnectionMode  conn_mode_ = RTSP_SERVER;
-	ConnectionState conn_state_ = START_CONNECT;
+	ConnectionMode conn_mode_ = ConnectionMode::RTSP_SERVER;
+	ConnectionState conn_state_ = ConnectionState::START_CONNECT;
 	MediaSessionId  session_id_ = 0;
 
 	bool has_auth_ = true;

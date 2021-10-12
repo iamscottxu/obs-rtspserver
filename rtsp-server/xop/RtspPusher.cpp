@@ -1,4 +1,4 @@
-﻿#include "RtspPusher.h"
+#include "RtspPusher.h"
 #include "RtspConnection.h"
 #include "net/Logger.h"
 #include "net/TcpSocket.h"
@@ -78,7 +78,7 @@ int RtspPusher::OpenUrl(std::string url, int msec)
 	task_scheduler_ = event_loop_->GetTaskScheduler().get();
 	rtsp_conn_.reset(new RtspConnection(shared_from_this(), task_scheduler_, tcpSocket.GetSocket()));
     event_loop_->AddTriggerEvent([this]() {
-		rtsp_conn_->SendOptions(RtspConnection::RTSP_PUSHER);
+		rtsp_conn_->SendOptions(RtspConnection::ConnectionMode::RTSP_PUSHER);
     });
 
 	timeout -= (int)tp.elapsed();

@@ -44,7 +44,7 @@ private:
 
 	uint32_t framerate_ = 25;
 
-	uint32_t profileLevelId_;
+	//uint32_t profileLevelId_;
 
 	std::vector<uint8_t> sps_;
 

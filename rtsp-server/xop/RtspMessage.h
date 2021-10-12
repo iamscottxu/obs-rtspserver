@@ -20,7 +20,7 @@ namespace xop
 class RtspRequest
 {
 public:
-	enum Method
+	enum class Method
 	{
 		OPTIONS=0, DESCRIBE, SETUP, PLAY, TEARDOWN, GET_PARAMETER, 
 		RTCP, NONE,
@@ -32,7 +32,7 @@ public:
 		"RTCP", "NONE"
 	};
 
-	enum RtspRequestParseState
+	enum class RtspRequestParseState
 	{
 		kParseRequestLine,
 		kParseHeadersLine,
@@ -43,11 +43,11 @@ public:
 	bool ParseRequest(xop::BufferReader *buffer);
 
 	bool GotAll() const
-	{ return state_ == kGotAll; }
+	{ return state_ == RtspRequestParseState::kGotAll; }
 
 	void Reset()
 	{
-		state_ = kParseRequestLine;
+		state_ = RtspRequestParseState::kParseRequestLine;
 		request_line_param_.clear();
 		header_line_param_.clear();
 	}
@@ -106,13 +106,13 @@ private:
 	std::unordered_map<std::string, std::pair<std::string, uint32_t>> request_line_param_;
 	std::unordered_map<std::string, std::pair<std::string, uint32_t>> header_line_param_;
 
-	RtspRequestParseState state_ = kParseRequestLine;
+	RtspRequestParseState state_ = RtspRequestParseState::kParseRequestLine;
 };
 
 class RtspResponse
 {
 public:
-	enum Method
+	enum class Method
 	{
 		OPTIONS=0, DESCRIBE, ANNOUNCE, SETUP, RECORD, RTCP,
 		NONE, 
