@@ -215,8 +215,7 @@ static bool rtsp_output_add_video_channel(void *data,
 	session->AddSource(
 		xop::channel_0,
 		xop::H264Source::CreateNew(
-			xop::H264Parser::RemoveEmulationBytes(
-				vector(sps, sps + sps_size)),
+			vector(sps, sps + sps_size),
 			vector(pps, pps + pps_size),
 			static_cast<uint32_t>(video_frame_rate)));
 
