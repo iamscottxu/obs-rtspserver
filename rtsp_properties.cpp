@@ -199,6 +199,7 @@ void RtspProperties::onLabelMessageStatusChanging(bool showError)
 
 void RtspProperties::showEvent(QShowEvent *event)
 {
+	UNUSED_PARAMETER(event);
 	ui->spinBoxPort->blockSignals(true);
 	ui->spinBoxPort->setValue(obs_data_get_int(settings, "port"));
 	ui->spinBoxPort->blockSignals(false);
@@ -236,6 +237,7 @@ void RtspProperties::showEvent(QShowEvent *event)
 
 void RtspProperties::closeEvent(QCloseEvent *event)
 {
+	UNUSED_PARAMETER(event);
 	if (this->isHidden())
 		return;
 	{
@@ -248,6 +250,7 @@ void RtspProperties::closeEvent(QCloseEvent *event)
 
 void RtspProperties::OnOutputStart(void *data, calldata_t *cd)
 {
+	UNUSED_PARAMETER(cd);
 	auto page = static_cast<RtspProperties *>(data);
 	page->setButtonStatus(false, true);
 	page->setStatusTimerStatus(true);

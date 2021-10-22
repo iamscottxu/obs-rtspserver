@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <cstdint>
+#include "media.h"
 
 #define RTP_HEADER_SIZE   	   12
 #define MAX_RTP_PAYLOAD_SIZE   1420 //1460  1500-20-12-8
@@ -42,8 +43,8 @@ struct MediaChannelInfo
 	RtpHeader rtp_header;
 
 	// tcp
-	uint16_t rtp_channel;
-	uint16_t rtcp_channel;
+	uint8_t rtp_channel;
+	uint8_t rtcp_channel;
 
 	// udp
 	uint16_t rtp_port;
@@ -68,14 +69,14 @@ struct RtpPacket
 	{
 		size = 0;
 		timestamp = 0;
-		type = 0;
+		type = FrameType::NONE;
 		last = 0;
 	}
 
 	std::shared_ptr<uint8_t> data;
-	size_t size;
+	uint16_t size;
 	uint32_t timestamp;
-	uint8_t  type;
+	FrameType  type;
 	uint8_t  last;
 };
 

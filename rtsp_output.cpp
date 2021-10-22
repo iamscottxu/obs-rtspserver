@@ -141,7 +141,7 @@ static void *rtsp_output_create(obs_data_t *settings, obs_output_t *output)
 }
 
 static void rtsp_push_frame(void *param);
-static void set_output_error(rtsp_out_data *out_data, char code, ...)
+static void set_output_error(rtsp_out_data *out_data, int code, ...)
 {
 	char *message;
 	char *lookup_string;
@@ -281,7 +281,7 @@ static bool rtsp_output_start(void *data)
 
 	const auto settings = obs_output_get_settings(out_data->output);
 	rtsp_output_update(data, settings);
-	const auto port = obs_data_get_int(settings, "port");
+	const auto port = static_cast<uint16_t>(obs_data_get_int(settings, "port"));
 	const auto url_suffix = obs_data_get_string(settings, "url_suffix");
 	
 	if (!out_data->server->Start("0.0.0.0", port) ||
@@ -432,10 +432,10 @@ static void rtsp_output_video(void *param, struct encoder_packet *packet)
 	memcpy(frame->buffer.get() + header_size, packet->data, packet->size);
 
 	if (packet->keyframe) {
-		frame->type = xop::VIDEO_FRAME_I;
+		frame->type = xop::FrameType::VIDEO_FRAME_I;
 		memcpy(frame->buffer.get(), header, header_size);
-	}
-	else frame->type = xop::VIDEO_FRAME_P;
+	} else
+		frame->type = xop::FrameType::VIDEO_FRAME_P;
 
 	out_data->frame_queue->push(queue_frame);
 }
@@ -453,7 +453,7 @@ static void rtsp_output_audio(void *param, struct encoder_packet *packet)
 
 	memcpy(frame->buffer.get(), packet->data, packet->size);
 
-	frame->type = xop::AUDIO_FRAME;
+	frame->type = xop::FrameType::AUDIO_FRAME;
 
 	out_data->frame_queue->push(queue_frame);
 }

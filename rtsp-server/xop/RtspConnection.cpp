@@ -312,8 +312,8 @@ void RtspConnection::HandleCmdSetup()
 	}
 	else {
 		if(rtsp_request_->GetTransportMode() == TransportMode::RTP_OVER_TCP) {
-			uint16_t rtp_channel = rtsp_request_->GetRtpChannel();
-			uint16_t rtcp_channel = rtsp_request_->GetRtcpChannel();
+			uint8_t rtp_channel = rtsp_request_->GetRtpChannel();
+			uint8_t rtcp_channel = rtsp_request_->GetRtcpChannel();
 			uint16_t session_id = rtp_conn_->GetRtpSessionId();
 
 			rtp_conn_->SetupRtpOverTcp(channel_id, rtp_channel, rtcp_channel);
@@ -330,7 +330,7 @@ void RtspConnection::HandleCmdSetup()
                                 channel->SetReadCallback([rtcpfd, this]() { this->HandleRtcp(rtcpfd); });
                                 channel->EnableReading();
                                 task_scheduler_->UpdateChannel(channel);
-				rtcp_channels_[static_cast<int>(channel_id)] =
+				rtcp_channels_[static_cast<uint8_t>(channel_id)] =
 					channel;
 			}
 			else {
@@ -413,7 +413,7 @@ void RtspConnection::HandleCmdGetParamter()
 bool RtspConnection::HandleAuthentication()
 {
 	if (auth_info_ != nullptr && !has_auth_) {
-		std::string cmd = rtsp_request_->MethodToString[static_cast<int>(rtsp_request_->GetMethod())];
+		std::string cmd = rtsp_request_->MethodToString[static_cast<uint8_t>(rtsp_request_->GetMethod())];
 		std::string url = rtsp_request_->GetRtspUrl();
 
 		if (_nonce.size() > 0 && (auth_info_->GetResponse(_nonce, cmd, url) == rtsp_request_->GetAuthResponse())) {
@@ -516,18 +516,28 @@ void RtspConnection::SendSetup()
 	}
 
 
-	//TODO:
-	if (media_session->GetMediaSource(MediaChannelId::channel_0) && !rtp_conn_->IsSetup(MediaChannelId::channel_0)) {
+	for(uint16_t chn = 0; chn<media_session->GetMaxChannelCount(); chn++) {
+		auto mediaChannelId = static_cast<MediaChannelId>(chn);
+		if (media_session->GetMediaSource(mediaChannelId) &&
+		    !rtp_conn_->IsSetup(mediaChannelId)) {
+			rtp_conn_->SetupRtpOverTcp(mediaChannelId, chn * 2, chn * 2 + 1);
+			size = rtsp_response_->BuildSetupTcpReq(buf.get(), 2048, chn);
+		} else {
+			size = rtsp_response_->BuildRecordReq(buf.get(), 2048);
+		}
+	}
+	
+	/*if (media_session->GetMediaSource(MediaChannelId::channel_0) && !rtp_conn_->IsSetup(MediaChannelId::channel_0)) {
 		rtp_conn_->SetupRtpOverTcp(MediaChannelId::channel_0, 0, 1);
-		size = rtsp_response_->BuildSetupTcpReq(buf.get(), 2048, static_cast<int>(MediaChannelId::channel_0));
+		size = rtsp_response_->BuildSetupTcpReq(buf.get(), 2048, static_cast<uint8_t>(MediaChannelId::channel_0));
 	}
 	else if (media_session->GetMediaSource(MediaChannelId::channel_1) && !rtp_conn_->IsSetup(MediaChannelId::channel_1)) {
 		rtp_conn_->SetupRtpOverTcp(MediaChannelId::channel_1, 2, 3);
-		size = rtsp_response_->BuildSetupTcpReq(buf.get(), 2048, static_cast<int>(MediaChannelId::channel_1));
+		size = rtsp_response_->BuildSetupTcpReq(buf.get(), 2048, static_cast<uint8_t>(MediaChannelId::channel_1));
 	}
 	else {
 		size = rtsp_response_->BuildRecordReq(buf.get(), 2048);
-	}
+	}*/
 
 	SendRtspMessage(buf, size);
 }

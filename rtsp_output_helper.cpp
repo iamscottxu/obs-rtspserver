@@ -191,6 +191,7 @@ void RtspOutputHelper::GetBaseConfig()
 
 void RtspOutputHelper::OnPreStartSignal(void *data, calldata_t *cd)
 {
+	UNUSED_PARAMETER(cd);
 	auto helper = static_cast<RtspOutputHelper *>(data);
 	helper->UpdateEncoder();
 }

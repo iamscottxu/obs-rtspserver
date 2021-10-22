@@ -20,12 +20,13 @@ enum class MediaType
 	NONE
 };	
 
-enum FrameType
+enum class FrameType : uint8_t
 {
-	VIDEO_FRAME_I = 0x01,	  
+	VIDEO_FRAME_I = 0x01,
 	VIDEO_FRAME_P = 0x02,
-	VIDEO_FRAME_B = 0x03,    
-	AUDIO_FRAME   = 0x11,   
+	VIDEO_FRAME_B = 0x03,
+	AUDIO_FRAME   = 0x11,
+	NONE          = 0x00
 };
 
 struct AVFrame
@@ -34,17 +35,17 @@ struct AVFrame
 		:buffer(new uint8_t[size])
 	{
 		this->size = size;
-		type = 0;
+		type = FrameType::NONE;
 		timestamp = 0;
 	}
 
 	std::shared_ptr<uint8_t> buffer; /* 帧数据 */
 	size_t size;                                 /* 帧大小 */
-	uint8_t  type;				     /* 帧类型 */	
+	FrameType  type;				     /* 帧类型 */	
 	uint32_t timestamp;		  	     /* 时间戳 */
 };
 
-enum class MediaChannelId
+enum class MediaChannelId : uint8_t
 {
 	channel_0 = 0,
 	channel_1 = 1,

@@ -46,6 +46,8 @@ static config_t *rtsp_properties_open_config()
 	config_t *config;
 	auto ret = config_open(&config, path, CONFIG_OPEN_ALWAYS);
 	bfree(path);
+	if (ret)
+		return nullptr;
 	config_set_default_bool(config, CONFIG_SECTIION, "AutoStart", false);
 	config_set_default_bool(config, CONFIG_SECTIION, "AudioTrack1", true);
 	config_set_default_bool(config, CONFIG_SECTIION, "AudioTrack2", false);
@@ -87,15 +89,15 @@ static void rtsp_output_avc_get_sps_pps(const uint8_t *data, size_t size,
 	}
 }
 
-static std::string string_format(std::string format, ...)
+static std::string string_format(char* format, ...)
 {
 	va_list argp;
 	va_start(argp, format);
-	auto size = (size_t)vsnprintf(nullptr, 0, format.c_str(), argp) + 1;
+	auto size = (size_t)vsnprintf(nullptr, 0, format, argp) + 1;
 	va_end(argp);
 	auto buf = std::vector<char>(size);
 	va_start(argp, format);
-	vsnprintf(buf.data(), size, format.c_str(), argp);
+	vsnprintf(buf.data(), size, format, argp);
 	va_end(argp);
 	return std::string(buf.data(), buf.data() + size - 1);
 }

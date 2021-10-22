@@ -76,10 +76,10 @@ public:
 
     uint16_t GetMulticastPort(MediaChannelId channel_id) const
     {
-	    if (static_cast<int>(channel_id) >= multicast_port_.size()) {
+	    if (static_cast<uint8_t>(channel_id) >= multicast_port_.size()) {
 			return 0;
 		}         
-        return multicast_port_[static_cast<int>(channel_id)];
+        return multicast_port_[static_cast<uint8_t>(channel_id)];
     }
 
 private:

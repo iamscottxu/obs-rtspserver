@@ -42,7 +42,7 @@ MediaSession::~MediaSession()
 
 bool MediaSession::AddSource(MediaChannelId channelId, MediaSource* source)
 {
-	if (static_cast<int>(channelId) >= max_channel_count_) return false;
+	if (static_cast<uint8_t>(channelId) >= max_channel_count_) return false;
 	source->SetSendFrameCallback([this](MediaChannelId channelId, RtpPacket pkt) {
 		std::lock_guard<std::mutex> lock(map_mutex_);
 
@@ -90,13 +90,13 @@ bool MediaSession::AddSource(MediaChannelId channelId, MediaSource* source)
 		return true;
 	});
 
-	media_sources_[static_cast<int>(channelId)].reset(source);
+	media_sources_[static_cast<uint8_t>(channelId)].reset(source);
 	return true;
 }
 
 bool MediaSession::RemoveSource(MediaChannelId channelId)
 {
-	media_sources_[static_cast<int>(channelId)] = nullptr;
+	media_sources_[static_cast<uint8_t>(channelId)] = nullptr;
 	return true;
 }
 
@@ -176,8 +176,8 @@ std::string MediaSession::GetSdpMessage(std::string ip, std::string sessionName,
 
 MediaSource* MediaSession::GetMediaSource(MediaChannelId channelId)
 {
-	if (static_cast<int>(channelId) < max_channel_count_) {
-		return media_sources_[static_cast<int>(channelId)].get();
+	if (static_cast<uint8_t>(channelId) < max_channel_count_) {
+		return media_sources_[static_cast<uint8_t>(channelId)].get();
 	}
 
 	return nullptr;
@@ -187,8 +187,9 @@ bool MediaSession::HandleFrame(MediaChannelId channelId, AVFrame frame)
 {
 	std::lock_guard<std::mutex> lock(mutex_);
 
-        if (static_cast<int>(channelId) < max_channel_count_) {
-		media_sources_[static_cast<int>(channelId)]->HandleFrame(channelId, frame);
+        if (static_cast<uint8_t>(channelId) < max_channel_count_) {
+		media_sources_[static_cast<uint8_t>(channelId)]->HandleFrame(
+			channelId, frame);
 	}
 	else {
 		return false;
