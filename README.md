@@ -61,10 +61,8 @@ yay -S obs-rtspserver
 * Add `add_subdirectory(obs-rtspserver)` to (obs-studio source code)/plugins/CMakeLists.txt
 * Build obs-rtspserver.
 
-# Can't find the plugin in the menu
-See also [https://github.com/iamscottxu/obs-rtspserver/issues/1](https://github.com/iamscottxu/obs-rtspserver/issues/1).
-
-Please download and install the VC++ runtime. [https://www.microsoft.com/en-US/download/details.aspx?id=48145](https://www.microsoft.com/en-US/download/details.aspx?id=48145)
+# FAQ
+* [Can't find the plugin in the menu](https://github.com/iamscottxu/obs-rtspserver/wiki/FAQ#cant-find-the-plugin-in-the-menu)
 
 # License
 * [RtspServer](https://github.com/PHZ76/RtspServer/) - [MIT License](https://github.com/PHZ76/RtspServer/blob/master/LICENSE)
