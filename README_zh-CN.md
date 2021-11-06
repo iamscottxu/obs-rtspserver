@@ -8,11 +8,20 @@
 
 **支持的 OBS Studio 版本** : 24.0.0+
 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
+
 # 安装
 ## Windows
-如果你使用的是 Windows 操作系统，您可以使用安装程序进行安装，安装程序可以在[发布页面](https://github.com/iamscottxu/obs-rtspserver/releases)中找到。
+可以使用安装程序进行安装，安装程序可以在[发布页面](https://github.com/iamscottxu/obs-rtspserver/releases)中找到。
 
 如果要使用压缩文件手动安装，可以解压缩压缩文件（例如： obs-rtspserver-v2.0.1-windows.zip）把它放到你的 OBS Studio 安装文件夹里。
+
+### winget 软件包
+如果你使用Windows 10 1709和以后的版本，且已经安装了[app-installer](https://www.microsoft.com/store/productId/9NBLGGH4NNS1)后，可以运行以下命令进行安装：
+
+```
+winget install iamscottxu.obs-rtspserver
+```
 
 ## macOS
 如果你使用的是 macOS 操作系统，您可以使用安装程序进行安装，安装程序 .pkg 可以在发布页面中找到。
@@ -21,8 +30,6 @@
 * 从[发布页面](https://github.com/iamscottxu/obs-rtspserver/releases)下载最新发布版本。
 * mkdir -p $HOME/.config/obs-studio/plugins
 * 解压压缩包。例如：tar -xzvf obs-rtspserver-v2.0.1-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
-
-[![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
 ### ArchLinux AUR 软件包
 obs-rtspserver也可以作为[AUR软件包](https://aur.archlinux.org/packages/?O=0&K=obs-rtspserver)提供。如果您使用[yay](https://github.com/Jguer/yay)，请运行以下命令进行安装：
