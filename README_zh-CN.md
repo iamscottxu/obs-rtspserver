@@ -45,10 +45,8 @@ yay -S obs-rtspserver
 * 添加 `add_subdirectory(obs-rtspserver)` 到 (OBS Studio 源代码目录)/plugins/CMakeLists.txt 中；
 * 生成 obs-rtspserver 。
 
-# 我在菜单中找不到插件
-请参阅 [https://github.com/iamscottxu/obs-rtspserver/issues/1](https://github.com/iamscottxu/obs-rtspserver/issues/1) 。
-
-请下载 VC++ 运行时并安装。[https://www.microsoft.com/zh-CN/download/details.aspx?id=48145](https://www.microsoft.com/zh-CN/download/details.aspx?id=48145)
+# 常见问题
+* [在菜单中找不到插件](https://github.com/iamscottxu/obs-rtspserver/wiki/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98#%E5%9C%A8%E8%8F%9C%E5%8D%95%E4%B8%AD%E6%89%BE%E4%B8%8D%E5%88%B0%E6%8F%92%E4%BB%B6)
 
 # 许可信息
 * [RtspServer](https://github.com/PHZ76/RtspServer/) - [MIT License](https://github.com/PHZ76/RtspServer/blob/master/LICENSE)
