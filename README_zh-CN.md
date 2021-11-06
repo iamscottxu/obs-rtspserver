@@ -19,7 +19,7 @@
 ### winget 软件包
 如果你使用Windows 10 1709和以后的版本，且已经安装了[app-installer](https://www.microsoft.com/store/productId/9NBLGGH4NNS1)后，可以运行以下命令进行安装：
 
-```
+```powershell
 winget install iamscottxu.obs-rtspserver
 ```
 
