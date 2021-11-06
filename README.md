@@ -23,11 +23,20 @@ This is a plugin for obs-studio, encode and publish to a RTSP stream.
 
 **Supported OBS Studio version** : 24.0.0+
 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
+
 # Install
 ## Windows
-You can use installer to install and the installer can be found in [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases) if use windows.
+The installer can be found in [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases).
 
 If you want to use compressed file to install manually, you can unzip it (e.g.: obs-rtspserver-v2.0.5-windows.zip) and put it to your obs-studio install folder.
+
+### winget Package
+If the operating system version is Windows 10 1709 or later and [app-installer](https://www.microsoft.com/store/productId/9NBLGGH4NNS1) has been installed, just run this to install it:
+
+```powershell
+winget install iamscottxu.obs-rtspserver
+```
 
 ## macOS
 You can use the .pkg installer to install and the installer can be found in [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases) if use macOS.
@@ -36,8 +45,6 @@ You can use the .pkg installer to install and the installer can be found in [Rel
 * Download the latest release from the [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases).
 * mkdir -p $HOME/.config/obs-studio/plugins
 * Untar, e.g.: tar -xzvf obs-rtspserver-v2.0.5-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
-
-[![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
 ### ArchLinux AUR Package
 obs-rtspserver is also available as an [AUR Package](https://aur.archlinux.org/packages/?O=0&K=obs-rtspserver)
