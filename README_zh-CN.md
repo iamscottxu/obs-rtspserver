@@ -1,5 +1,3 @@
-![CI Release](https://github.com/iamscottxu/obs-rtspserver/workflows/CI%20Release/badge.svg)
-
 # OBS-RTSPServer
 
 这是一个 OBS Studio 插件，此插件可对输出进行编码并发布 RTSP 流。
