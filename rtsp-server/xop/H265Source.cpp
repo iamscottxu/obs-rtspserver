@@ -75,9 +75,9 @@ bool H265Source::HandleFrame(MediaChannelId channelId, AVFrame frame)
     else {
 		char nalUnitType = (frame_buf[0] & 0x7E) >> 1; 
 		char FU[3] = {
-			(frame_buf[0] & 0x81) | (49<<1),
-			frame_buf[1],
-			(0x80 | nalUnitType)
+			static_cast<char>((frame_buf[0] & 0x81) | (49 << 1)),
+			static_cast<char>(frame_buf[1]),
+			static_cast<char>(0x80 | nalUnitType)
 		};
         
 		frame_buf  += 2;
