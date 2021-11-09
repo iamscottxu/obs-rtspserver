@@ -24,6 +24,8 @@ RtspProperties::RtspProperties(std::string rtspOutputName, QWidget *parent)
 		&RtspProperties::onPushButtonStopClicked);
 	connect(ui->pushButtonAddressCopy, &QPushButton::clicked, this,
 		&RtspProperties::onPushButtonAddressCopyClicked);
+	connect(ui->checkBoxEnableMulticast, &QCheckBox::clicked, this,
+		&RtspProperties::onCheckBoxEnableMulticastClicked);
 	connect(ui->spinBoxPort,
 		static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
 		this, &RtspProperties::onSpinBoxPortValueChanged);
@@ -113,6 +115,11 @@ void RtspProperties::onPushButtonAddressCopyClicked()
 	QApplication::clipboard()->setText(url);
 }
 
+void RtspProperties::onCheckBoxEnableMulticastClicked(int checked)
+{
+	obs_data_set_bool(settings, "multicast", checked);
+}
+
 void RtspProperties::onSpinBoxPortValueChanged(int value)
 {
 	obs_data_set_int(settings, "port", value);
@@ -164,6 +171,7 @@ void RtspProperties::onStatusTimerTimeout()
 void RtspProperties::onButtonStatusChanging(bool outputStarted,
 					    bool outputStopped)
 {
+	ui->checkBoxEnableMulticast->setEnabled(outputStarted);
 	ui->spinBoxPort->setEnabled(outputStarted);
 	ui->lineEditUrlSuffix->setEnabled(outputStarted);
 	ui->checkBoxAudioTrack1->setEnabled(outputStarted);
@@ -200,6 +208,11 @@ void RtspProperties::onLabelMessageStatusChanging(bool showError)
 void RtspProperties::showEvent(QShowEvent *event)
 {
 	UNUSED_PARAMETER(event);
+	ui->checkBoxEnableMulticast->blockSignals(true);
+	ui->checkBoxEnableMulticast->setChecked(
+		obs_data_get_bool(settings, "multicast"));
+	ui->checkBoxEnableMulticast->blockSignals(false);
+
 	ui->spinBoxPort->blockSignals(true);
 	ui->spinBoxPort->setValue(obs_data_get_int(settings, "port"));
 	ui->spinBoxPort->blockSignals(false);
