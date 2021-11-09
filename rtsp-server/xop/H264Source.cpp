@@ -111,8 +111,8 @@ bool H264Source::HandleFrame(MediaChannelId channel_id, AVFrame frame)
     }
     else {
 	    char FU_A[2] = {
-		    (frame_buf[0] & 0xE0) | 28,
-			 0x80 | (frame_buf[0] & 0x1f)
+		    static_cast<char>((frame_buf[0] & 0xE0) | 28),
+		    static_cast<char>(0x80 | (frame_buf[0] & 0x1f))
 	    };
 
         frame_buf  += 1;
