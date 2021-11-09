@@ -284,7 +284,7 @@ jobs:
         run: |
           mkdir ./build64
           cd ./build64
-          cmake -DQTDIR="/usr/local/opt/qt@5" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.13" -DDISABLE_PYTHON="ON" -DBUILD_BROWSER=OFF ..
+          cmake -DQTDIR="/usr/local/opt/qt@5" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DDISABLE_PYTHON="ON" -DBUILD_BROWSER=OFF ..
       - name: 'Build obs-rtspserver 64-bit'
         working-directory: ${{ github.workspace }}/obs-studio/build64/plugins/obs-rtspserver/
         run: |
