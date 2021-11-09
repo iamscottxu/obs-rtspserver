@@ -104,8 +104,8 @@ bool AACSource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 	char AU[AU_SIZE] = {
 		0x00,
 		0x10,
-		(frame_size & 0x1fe0) >> 5,
-		(frame_size & 0x1f) << 3
+		static_cast<char>((frame_size & 0x1fe0) >> 5),
+		static_cast<char>((frame_size & 0x1f) << 3)
 	};
 
 	RtpPacket rtp_pkt;
