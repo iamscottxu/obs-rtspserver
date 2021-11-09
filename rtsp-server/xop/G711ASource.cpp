@@ -57,16 +57,16 @@ bool G711ASource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 	uint8_t *frame_buf  = frame.buffer.get();
 	size_t frame_size = frame.size;
 
-	RtpPacket rtpPkt;
-	rtpPkt.type = frame.type;
-	rtpPkt.timestamp = frame.timestamp;
-	rtpPkt.size = frame_size + 4 + RTP_HEADER_SIZE;
-	rtpPkt.last = 1;
+	RtpPacket rtp_pkt;
+	rtp_pkt.type = frame.type;
+	rtp_pkt.timestamp = frame.timestamp;
+	rtp_pkt.size = frame_size + 4 + RTP_HEADER_SIZE;
+	rtp_pkt.last = 1;
 
-	memcpy(rtpPkt.data.get()+4+RTP_HEADER_SIZE, frame_buf, frame_size);
+	memcpy(rtp_pkt.data.get() + 4 + RTP_HEADER_SIZE, frame_buf, frame_size);
 
 	if (send_frame_callback_) {
-		send_frame_callback_(channel_id, rtpPkt);
+		send_frame_callback_(channel_id, rtp_pkt);
 	}
 
 	return true;
@@ -75,6 +75,6 @@ bool G711ASource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 uint32_t G711ASource::GetTimestamp()
 {
 	auto time_point = chrono::time_point_cast<chrono::microseconds>(chrono::steady_clock::now());
-	return (uint32_t)((time_point.time_since_epoch().count()+500)/1000*8);
+	return (uint32_t)((time_point.time_since_epoch().count() + 500) / 1000 * 8);
 }
 
