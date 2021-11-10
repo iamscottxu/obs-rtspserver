@@ -1,5 +1,3 @@
-![CI Release](https://github.com/iamscottxu/obs-rtspserver/workflows/CI%20Release/badge.svg)
-
 # OBS-RTSPServer
 
 Questo è un plugin per obs-studio che codificherà l'output e pubblicherà un flusso RTSP.
@@ -7,6 +5,8 @@ Questo è un plugin per obs-studio che codificherà l'output e pubblicherà un f
 **Sistemi operativi supportati** : Windows 7 , Windows 8 , Windows 10, Linux e macOS
 
 **Versioni di OBS Studio supportate** : 24.0.0+
+
+[![Stato del pacchetto](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
 # Installazione
 ## Windows
@@ -16,8 +16,6 @@ Se desideri utilizzare un file compresso per l'installazione manuale, puoi decom
 
 ## macOS
 È possibile utilizzare il programma di installazione .pkg per l'installazione. Puoi trovare il programma di installazione qui [Pagina di rilascio](https://github.com/iamscottxu/obs-rtspserver/releases).
-
-[![Stato del pacchetto](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
 ## Linux (solo x64)
 * Scarica l'ultima versione: [Pagina di rilascio](https://github.com/iamscottxu/obs-rtspserver/releases).
