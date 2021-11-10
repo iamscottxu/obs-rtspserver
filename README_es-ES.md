@@ -1,5 +1,3 @@
-![CI Release](https://github.com/iamscottxu/obs-rtspserver/workflows/CI%20Release/badge.svg)
-
 # OBS-RTSPServer
 
 Este es un complemento para obs-studio que codificará la salida y publicará un flujo RTSP.
@@ -7,6 +5,8 @@ Este es un complemento para obs-studio que codificará la salida y publicará un
 **Sistemas operativos compatibles** : Windows 7 , Windows 8 , Windows 10 , Linux y macOS
 
 **Versiones de OBS Studio compatibles** : 24.0.0+
+
+[![Estado de empaque](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
 # Instalación
 ## Windows
@@ -21,8 +21,6 @@ Puede utilizar el instalador .pkg para instalar. Puede encontrar el programa de 
 * Descarge la última versión: [Página de lanzamiento](https://github.com/iamscottxu/obs-rtspserver/releases).
 * mkdir -p $HOME/.config/obs-studio/plugins
 * Untar, por Ej.: tar -xzvf obs-rtspserver-v2.0.1-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
-
-[![Estado de empaque](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
 ### ArchLinux Paquete AUR
 obs-rtspserver también está disponible como un [paquete AUR](https://aur.archlinux.org/packages/?O=0&K=obs-rtspserver).
