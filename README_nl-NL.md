@@ -1,5 +1,3 @@
-![CI Release](https://github.com/iamscottxu/obs-rtspserver/workflows/CI%20Release/badge.svg)
-
 # OBS-RTSPServer
 
 Dit is een plug-in voor obs-studio die de uitvoer codeert en een RTSP-stream publiceert.
@@ -7,6 +5,8 @@ Dit is een plug-in voor obs-studio die de uitvoer codeert en een RTSP-stream pub
 **Ondersteunde besturingssystemen** : Windows 7 , Windows 8 , Windows 10, Linux en macOS
 
 **Ondersteunde OBS Studio-versies** : 24.0.0+
+
+[![Verpakkingsstatus](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
 # Installatie
 ## Windows
@@ -21,8 +21,6 @@ U kunt het .pkg installatieprogramma gebruiken om het te installeren. Je vindt h
 * Download de laatste versie: [Release Page] (https://github.com/iamscottxu/obs-rtspserver/releases).
 * mkdir -p $HOME/.config/obs-studio/plugins
 * Untar, bijv.: tar -xzvf obs-rtspserver-v2.0.1-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
-
-[![Verpakkingsstatus](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
 ### ArchLinux AUR Pakket
 obs-rtspserver is ook beschikbaar als een [AUR-Pakket] (https://aur.archlinux.org/packages/?O=0&K=obs-rtspserver).
