@@ -1,5 +1,3 @@
-![CI Release](https://github.com/iamscottxu/obs-rtspserver/workflows/CI%20Release/badge.svg)
-
 # OBS-RTSPServer
 
 Ceci est un plugin pour obs-studio, encoder et publier dans un flux RTSP.
@@ -7,6 +5,8 @@ Ceci est un plugin pour obs-studio, encoder et publier dans un flux RTSP.
 **Systèmes d'exploitation pris en charge** : Windows 7 , Windows 8 , Windows 10, Linux and macOS
 
 **Version OBS Studio prise en charge** : 24.0.0+
+
+[![Statut de l'emballage](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
 # Installer
 ## Windows
@@ -21,8 +21,6 @@ Vous pouvez utiliser le programme d'installation .pkg pour l'installation et le 
 * Téléchargez la dernière version à partir de la [Page de version](https://github.com/iamscottxu/obs-rtspserver/releases).
 * mkdir -p $HOME/.config/obs-studio/plugins
 * Décompresser (Untar), par exemple: tar -xzvf obs-rtspserver-v2.0.5-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
-
-[![Statut de l'emballage](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
 ### ArchLinux AUR Paquet
 obs-rtspserver est également disponible en tant que [AUR Paquet](https://aur.archlinux.org/packages/?O=0&K=obs-rtspserver)
