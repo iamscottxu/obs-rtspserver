@@ -103,7 +103,7 @@ $BuildConfiguration = "$(if (Test-Path Env:BuildConfiguration) { $env:BuildConfi
 $BuildArch = "$(if (Test-Path Env:BuildArch) { $env:BuildArch } else { $BuildArch })"
 $OBSBranch = "$(if (Test-Path Env:OBSBranch) { $env:OBSBranch } else { $OBSBranch })"
 $WindowsDepsVersion = "$(if (Test-Path Env:WindowsDepsVersion ) { $env:WindowsDepsVersion } else { $CIDepsVersion })"
-$WindowsQtVersion = "$(if (Test-Path Env:WindowsQtVersion ) { $env:WindowsQtVersion } else { $CIQtVersion }")
+$WindowsQtVersion = "$(if (Test-Path Env:WindowsQtVersion ) { $env:WindowsQtVersion } else { $CIQtVersion })"
 $CmakeSystemVersion = "$(if (Test-Path Env:CMAKE_SYSTEM_VERSION) { $Env:CMAKE_SYSTEM_VERSION } else { "10.0.18363.657" })"
 $OBSVersion = "$(if ( Test-Path Env:OBSVersion ) { $env:ObsVersion } else { $CIObsVersion })"
 
