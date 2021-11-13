@@ -23,11 +23,13 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: obsproject/obs-studio
+          path: 'obs-studio'
           fetch-depth: 0
           submodules: 'recursive'
           
       - name: 'Get OBS-Studio git info'
         shell: bash
+        working-directory: ${{ github.workspace }}/obs-studio
         run: |
           git fetch --prune --unshallow
           echo OBS_GIT_BRANCH=`git rev-parse --abbrev-ref HEAD` >> $GITHUB_ENV
@@ -41,11 +43,13 @@ jobs:
       - name: 'Checkout plugin'
         uses: actions/checkout@v2
         with:
+          path: 'plugin'
           fetch-depth: 0
           submodules: 'recursive'
           
       - name: 'Get plugin git info'
         shell: bash
+        working-directory: ${{ github.workspace }}/plugin
         run: |
           export GIT_TAG=${GITHUB_REF/refs\/tags\//}
           export TAG_VERSION=${GIT_TAG#v}
