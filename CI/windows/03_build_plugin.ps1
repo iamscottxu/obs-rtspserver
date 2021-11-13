@@ -37,6 +37,7 @@ function Build-OBS-Plugin {
         cmake -S . -B "${BuildDirectory}64" -G "Visual Studio 16 2019" `
             -DCMAKE_GENERATOR_PLATFORM=x64 `
             -DCMAKE_SYSTEM_VERSION="${CmakeSystemVersion}" `
+            -P "${CheckoutDir}/external/BuildHelper.cmake" `
             "$(if (Test-Path Variable:$Quiet) { "-Wno-deprecated -Wno-dev --log-level=ERROR" })"
 
         cmake --build "${BuildDirectory}64" --config ${BuildConfiguration}
@@ -48,6 +49,7 @@ function Build-OBS-Plugin {
         cmake -S . -B "${BuildDirectory}32" -G "Visual Studio 16 2019" `
             -DCMAKE_GENERATOR_PLATFORM=Win32 `
             -DCMAKE_SYSTEM_VERSION="${CmakeSystemVersion}" `
+            -P "${CheckoutDir}/external/BuildHelper.cmake" `
             "$(if (Test-Path Variable:$Quiet) { "-Wno-deprecated -Wno-dev --log-level=ERROR" })"
 
         cmake --build "${BuildDirectory}32" --config ${BuildConfiguration}
