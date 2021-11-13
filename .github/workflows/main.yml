@@ -47,14 +47,7 @@ jobs:
       git_tag: ${{ steps.get_info.outputs.git_tag }}
       git_tag_version: ${{ steps.get_info.outputs.git_tag_version }}
       git_tag_fversion: ${{ steps.get_info.outputs.git_tag_fversion }}
-    steps:
-      - name: 'Checkout plugin'
-        uses: actions/checkout@v2
-        with:
-          path: 'plugin'
-          fetch-depth: 0
-          submodules: 'recursive'
-          
+    steps:    
       - name: 'Get plugin git info'
         id: get_info
         shell: bash
@@ -96,6 +89,7 @@ jobs:
     env:
       CMAKE_GENERATOR: "Visual Studio 16 2019"
       CMAKE_SYSTEM_VERSION: "10.0.18363.657"
+      OBS_VERSION: ${{ needs.get_obs_info.outputs.git_tag }}
     steps:
       - name: 'Add msbuild to PATH'
         uses: microsoft/setup-msbuild@v1.0.2
