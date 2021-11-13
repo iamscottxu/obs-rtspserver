@@ -116,7 +116,7 @@ jobs:
           ${{ github.workspace }}/plugin/CI/windows/01_install_dependencies.ps1 -BuildArch ${{ matrix.arch }}-bit -NoChoco
         
       - name: 'Build libobs and obs-frontend-api'
-        working-directory: 'obs-studio'
+        working-directory: 'plugin'
         run: |
           $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
