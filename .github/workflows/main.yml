@@ -113,7 +113,7 @@ jobs:
           $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
           $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
-          CI/windows/01_install_dependencies.ps1 -BuildArch ${{ matrix.arch }}-bit -NoChoco
+          ${{ github.workspace }}/plugin/CI/windows/01_install_dependencies.ps1 -BuildArch ${{ matrix.arch }}-bit -NoChoco
         
       - name: 'Build libobs and obs-frontend-api'
         working-directory: 'obs-studio'
@@ -121,7 +121,7 @@ jobs:
           $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
           $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
-          CI/windows/02_build_obs_libs.ps1 -BuildArch "${{ matrix.arch }}-bit"
+          ${{ github.workspace }}/plugin/CI/windows/02_build_obs_libs.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Build plugin'
         working-directory: 'plugin'
@@ -129,14 +129,14 @@ jobs:
           $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
           $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
-          CI/windows/03_build_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
+          ${{ github.workspace }}/plugin/CI/windows/03_build_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Create build artifact'
         run: |
           $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
           $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
-          CI/windows/04_package_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
+          ${{ github.workspace }}/plugin/CI/windows/04_package_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Upload build Artifact'
         uses: actions/upload-artifact@v2
