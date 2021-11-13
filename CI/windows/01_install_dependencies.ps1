@@ -87,7 +87,8 @@ function Install-obs-studio {
         & git fetch origin --tags
         & git checkout ${CheckoutRef} -b obs-plugin-build
     } else {
-        $BranchExists = &git show-ref --verify --quiet refs/heads/obs-plugin-build
+        & git show-ref --verify --quiet refs/heads/obs-plugin-build
+        $BranchExists = $?
 
         if ($BranchExists -Eq $false) {
             & git checkout ${CheckoutRef} -b obs-plugin-build
