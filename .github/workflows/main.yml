@@ -81,14 +81,12 @@ jobs:
     name: '03 - Windows (Latest)'
     runs-on: [windows-latest]
     needs: [get_obs_info, get_plugin_info, clang_check]
-    if: always()
     strategy:
       matrix:
         arch: [64, 32]
     env:
       CMAKE_GENERATOR: "Visual Studio 16 2019"
       CMAKE_SYSTEM_VERSION: "10.0.18363.657"
-      OBS_VERSION: ${{ needs.get_obs_info.outputs.git_tag }}
     steps:
       - name: 'Add msbuild to PATH'
         uses: microsoft/setup-msbuild@v1.0.2
@@ -111,22 +109,36 @@ jobs:
       
       - name: "Install Dependencies"
         working-directory: 'plugin'
-        run: CI/windows/01_install_dependencies.ps1 -BuildArch ${{ matrix.arch }}-bit -NoChoco
+        run: |
+          $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
+          $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
+          $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
+          CI/windows/01_install_dependencies.ps1 -BuildArch ${{ matrix.arch }}-bit -NoChoco
         
       - name: 'Build libobs and obs-frontend-api'
         working-directory: 'obs-studio'
-        run: CI/windows/02_build_obs_libs.ps1 -BuildArch "${{ matrix.arch }}-bit"
+        run: |
+          $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
+          $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
+          $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
+          CI/windows/02_build_obs_libs.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Build plugin'
         working-directory: 'plugin'
-        run: CI/windows/03_build_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
+        run: |
+          $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
+          $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
+          $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
+          CI/windows/03_build_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Create build artifact'
-        if: success() && (github.event_name != 'pull_request' || env.SEEKING_TESTERS == '1')
-        run: CI/windows/04_package_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
+        run: |
+          $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
+          $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
+          $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
+          CI/windows/04_package_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Upload build Artifact'
-        if: success() && (github.event_name != 'pull_request' || env.SEEKING_TESTERS == '1')
         uses: actions/upload-artifact@v2
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-${{ matrix.arch }}'
