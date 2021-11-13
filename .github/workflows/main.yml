@@ -5,58 +5,56 @@ on:
     release:
       types: [published]
 
+env:
+  PRODUCT_NAME: 'obs-rtspserver'
+  QT_VERSION_MAC: '5.15.2'
+  QT_HASH_MAC: 'a09690095d16b3f476ae6e0f5bf3154effcd6571738c1c40f8abbb83676d2afb'
+  QT_VERSION_WIN: '5.15.2'
+  DEPS_VERSION_MAC: '2021-08-17'
+  DEPS_HASH_MAC: 'fc6b356572c4703d56f5b2deb98e46cddffb29a0d36c988702dd76329efe7072'
+  DEPS_VERSION_WIN: '2019'
+  
 jobs:
-  windows:
-    name: 'Windows 32+64bit'
+  clang_check:
+    name: '01 - Code Format Check'
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v2.3.3
+        with:
+          submodules: 'recursive'
+
+      - name: 'Install clang-format'
+        run: sudo apt-get install -y clang-format-12
+
+      - name: 'Run clang-format'
+        run: |
+          ./CI/formatcode.sh
+          ./CI/check-format.sh
+          
+  windows_build:
+    name: '02 - Windows (Latest)'
     runs-on: [windows-latest]
+    needs: [clang_check]
+    if: always()
+    strategy:
+      matrix:
+        arch: [64, 32]
     env:
-      QT_VERSION: '5.15.2'
       WINDOWS_DEPS_VERSION: '2019'
       CMAKE_GENERATOR: "Visual Studio 16 2019"
-      CMAKE_SYSTEM_VERSION: "10.0"
+      CMAKE_SYSTEM_VERSION: "10.0.18363.657"
     steps:
       - name: 'Add msbuild to PATH'
         uses: microsoft/setup-msbuild@v1.0.2
-      - name: 'Install prerequisite: QT'
-        run: |
-          curl -kLO https://cdn-fastly.obsproject.com/downloads/Qt_${{ env.QT_VERSION }}.7z -f --retry 5 -C -
-          7z x Qt_${{ env.QT_VERSION }}.7z -o"${{ github.workspace }}\cmbuild\QT"
-      - name: 'Install prerequisite: Pre-built OBS dependencies'
-        run: |
-          curl -kLO https://cdn-fastly.obsproject.com/downloads/dependencies${{ env.WINDOWS_DEPS_VERSION }}.zip -f --retry 5 -C -
-          7z x dependencies${{ env.WINDOWS_DEPS_VERSION }}.zip -o"${{ github.workspace }}\cmbuild\deps"
-      - name: 'Install prerequisite: NSIS'
-        working-directory: ${{ github.workspace }}
-        run: |
-          Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
-          scoop bucket add extras
-          scoop install nsis
-      - name: 'Checkout OBS'
+      
+      - name: 'Checkout plugin'
         uses: actions/checkout@v2
         with:
-          repository: obsproject/obs-studio
-          path: ${{ github.workspace }}/obs-studio
+          path: 'plugin'
           submodules: 'recursive'
-      - name: 'Get OBS-Studio git info'
-        shell: bash
-        working-directory: ${{ github.workspace }}/obs-studio
-        run: |
-          git fetch --prune --unshallow
-          echo OBS_GIT_BRANCH=`git rev-parse --abbrev-ref HEAD` >> $GITHUB_ENV
-          echo OBS_GIT_HASH=`git rev-parse --short HEAD` >> $GITHUB_ENV
-          echo OBS_GIT_TAG=`git describe --tags --abbrev=0` >> $GITHUB_ENV
-      - name: 'Checkout last OBS-Studio release (${{ env.OBS_GIT_TAG }})'
-        shell: bash
-        working-directory: ${{ github.workspace }}/obs-studio
-        run: |
-          git checkout ${{ env.OBS_GIT_TAG }}
-          git submodule update
-      - name: 'Checkout obs-rtspserver'
-        uses: actions/checkout@v2
-        with:
-          path: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
-          submodules: 'recursive'
-      - name: 'Get obs-rtspserver tag'
+          
+      - name: 'Get plugin tag'
         shell: bash
         run: |
           export GIT_TAG=${GITHUB_REF/refs\/tags\//}
@@ -64,66 +62,114 @@ jobs:
           echo GIT_TAG=${GIT_TAG} >> $GITHUB_ENV
           echo TAG_VERSION=${TAG_VERSION} >> $GITHUB_ENV
           echo TAG_FVERSION=${TAG_VERSION/-*/}.0 >> $GITHUB_ENV
-      - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
+          
+      - name: 'Checkout plugin release (${{ env.GIT_TAG }})'
         shell: bash
-        working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
+        working-directory: 'plugin'
         run: |
           git checkout ${{ env.GIT_TAG }}
           git submodule update
-      - name: 'Add obs-rtspserver Subdirectory'
-        working-directory: ${{ github.workspace }}/obs-studio/plugins
-        run: echo "add_subdirectory(obs-rtspserver)" >> .\CMakeLists.txt
-      - name: 'Configure OBS 32-bit'
-        working-directory: ${{ github.workspace }}/obs-studio
-        run: |
-          mkdir .\build32
-          cd .\build32
-          cmake -G "${{ env.CMAKE_GENERATOR }}" -A Win32 -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DQTDIR="${{ github.workspace }}\cmbuild\QT\${{ env.QT_VERSION }}\msvc2019" -DDepsPath="${{ github.workspace }}\cmbuild\deps\win32" -DBUILD_CAPTIONS=YES -DCOPIED_DEPENDENCIES=NO -DCOPY_DEPENDENCIES=YES -DDISABLE_PYTHON="ON" -DBUILD_BROWSER=OFF ..
-      - name: 'Build obs-rtspserver 32-bit'
-        working-directory: ${{ github.workspace }}/obs-studio
-        run: |
-          msbuild /m /p:Configuration=RelWithDebInfo .\build32\plugins\obs-rtspserver\obs-rtspserver.vcxproj
-      - name: 'Configure OBS 64-bit'
-        working-directory: ${{ github.workspace }}/obs-studio
-        run: |
-          mkdir .\build64
-          cd .\build64
-          cmake -G "${{ env.CMAKE_GENERATOR }}" -A x64 -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DQTDIR="${{ github.workspace }}\cmbuild\QT\${{ env.QT_VERSION }}\msvc2019_64" -DDepsPath="${{ github.workspace }}\cmbuild\deps\win64" -DBUILD_CAPTIONS=YES -DCOPIED_DEPENDENCIES=NO -DCOPY_DEPENDENCIES=YES -DDISABLE_PYTHON="ON" -DBUILD_BROWSER=OFF ..
-      - name: 'Build obs-rtspserver 64-bit'
-        working-directory: ${{ github.workspace }}/obs-studio
-        run: |
-          msbuild /m /p:Configuration=RelWithDebInfo .\build64\plugins\obs-rtspserver\obs-rtspserver.vcxproj
-      - name: 'Set release filename'
+          
+      - name: 'Checkout OBS'
+        uses: actions/checkout@v2
+        with:
+          repository: obsproject/obs-studio
+          path: 'obs-studio'
+          fetch-depth: 0
+          submodules: 'recursive'
+      
+      - name: 'Get OBS-Studio git info'
         shell: bash
+        working-directory: 'obs-studio'
         run: |
-          FILENAME="obs-rtspserver-${{ env.GIT_TAG }}-windows"
-          echo WIN_FILENAME=$FILENAME >> $GITHUB_ENV
-      - name: 'Package obs-rtspserver'
+          git fetch --prune --unshallow
+          echo OBS_GIT_BRANCH=`git rev-parse --abbrev-ref HEAD` >> $GITHUB_ENV
+          echo OBS_GIT_HASH=`git rev-parse --short HEAD` >> $GITHUB_ENV
+          echo OBS_GIT_TAG=`git describe --tags --abbrev=0` >> $GITHUB_ENV
+      
+      - name: 'Checkout last OBS-Studio release (${{ env.OBS_GIT_TAG }})'
+        shell: bash
+        working-directory: ${{ github.workspace }}/obs-studio
+        run: |
+          git checkout ${{ env.OBS_GIT_TAG }}
+          git submodule update
+      
+      - name: "Install Dependencies"
+        working-directory: 'plugin'
+        run: CI/windows/01_install_dependencies.ps1 -BuildArch ${{ matrix.arch }}-bit -NoChoco
+        
+      - name: 'Build libobs and obs-frontend-api'
+        working-directory: 'obs-studio'
+        run: CI/windows/02_build_obs_libs.ps1 -BuildArch "${{ matrix.arch }}-bit"
+        
+      - name: 'Build plugin'
+        working-directory: 'plugin'
+        run: CI/windows/03_build_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
+        
+      - name: 'Create build artifact'
+        if: success() && (github.event_name != 'pull_request' || env.SEEKING_TESTERS == '1')
+        run: CI/windows/04_package_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
+        
+      - name: 'Upload build Artifact'
+        if: success() && (github.event_name != 'pull_request' || env.SEEKING_TESTERS == '1')
+        uses: actions/upload-artifact@v2
+        with:
+          name: '${{ env.PRODUCT_NAME }}-windows-${{ matrix.arch }}'
+          path: '${{ github.workspace }}/plugin/*-Win${{ matrix.arch }}.zip'
+          
+  windows_package:
+    name: '03 - Windows Installer'
+    runs-on: [windows-latest]
+    needs: [windows_build]
+    steps:
+      - name: 'Checkout plugin'
+        uses: actions/checkout@v2
+        with:
+          path: 'plugin'
+          submodules: 'recursive'
+          
+      - name: 'Install prerequisite: NSIS'
         working-directory: ${{ github.workspace }}
         run: |
-          mkdir build-package\obs-plugins\64bit
-          mkdir build-package\obs-plugins\32bit
-          mkdir build-package\data\obs-plugins\obs-rtspserver\locale\
-          robocopy .\obs-studio\build64\plugins\obs-rtspserver\RelWithDebInfo\ .\build-package\obs-plugins\64bit\ obs-rtspserver.dll obs-rtspserver.pdb
-          robocopy .\obs-studio\build32\plugins\obs-rtspserver\RelWithDebInfo\ .\build-package\obs-plugins\32bit\ obs-rtspserver.dll obs-rtspserver.pdb
-          robocopy /E .\obs-studio\plugins\obs-rtspserver\data\ .\build-package\data\obs-plugins\obs-rtspserver\ *
-          robocopy .\obs-studio\plugins\obs-rtspserver\ .\installer\ LICENSE
-          robocopy /E .\obs-studio\plugins\obs-rtspserver\installer\ .\installer\ *
-          mkdir release
-          7z a ".\release\${{ env.WIN_FILENAME }}.zip" ".\build-package\*"
-      - name: 'Build obs-rtspserver installer'
+          Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
+          scoop bucket add extras
+          scoop install nsis
+          
+      - name: 'Download 64-bit artifact'
+        uses: actions/download-artifact@v2
+        with:
+          name: '${{ env.PRODUCT_NAME }}-windows-64'
+          path: ${{ github.workspace }}
+
+      - name: 'Download 32-bit artifact'
+        uses: actions/download-artifact@v2
+        with:
+          name: '${{ env.PRODUCT_NAME }}-windows-32'
+          path: ${{ github.workspace }}
+          
+      - name: 'Build NSIS installer'
+        working-directory: ${{ github.workspace }}
+        run: |
+          Get-ChildItem -Filter "*-Win32.zip" -File | Expand-Archive -DestinationPath .\build-package\
+          Get-ChildItem -Filter "*-Win64.zip" -File | Expand-Archive -DestinationPath .\build-package\
+          robocopy .\plugins\ .\installer\ LICENSE
+          robocopy /E .\plugins\installer\ .\installer\ *
+          
+      - name: 'Build NSIS installer'
         working-directory: ${{ github.workspace }}\installer
         run: makensis /V4 /DVERSION=${{ env.TAG_VERSION }} /DFVERSION=${{ env.TAG_FVERSION }} .\installer.nsi
-      - name: 'Publish files'
+        
+      - name: 'Upload build Artifact'
         if: success()
         uses: actions/upload-artifact@v2
         with:
           name: '${{ env.GIT_TAG }}-windows'
           path: ${{ github.workspace }}\release\*
 
-  linux:
+  linux_build:
     name: 'Linux 64bit'
     runs-on: [ubuntu-latest]
+    needs: [clang_check]
     steps:
       - name: 'Install prerequisite'
 #         sudo dpkg --add-architecture i386
@@ -229,9 +275,10 @@ jobs:
           name: '${{ env.GIT_TAG }}-linux'
           path: ${{ github.workspace }}/release/*
           
-  macos:
+  macos_build:
     name: 'Mac OS 64bit'
     runs-on: [macos-latest]
+    needs: [clang_check]
     steps:
       - name: 'Install brew'
         run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
@@ -329,7 +376,7 @@ jobs:
   make-release:
     name: 'Upload release'
     runs-on: [ubuntu-latest]
-    needs: [windows, linux, macos]
+    needs: [windows_package, linux_build, macos_build]
     steps:
       - name: 'Get the version'
         shell: bash
