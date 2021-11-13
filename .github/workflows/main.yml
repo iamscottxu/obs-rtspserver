@@ -44,9 +44,9 @@ jobs:
     name: '01 - Get plugin git info'
     runs-on: [ubuntu-latest]
     outputs:
-      git_branch: ${{ steps.get_info.outputs.git_tag }}
-      git_hash: ${{ steps.get_info.outputs.git_tag_version }}
-      git_tag: ${{ steps.get_info.outputs.git_tag_fversion }}
+      git_tag: ${{ steps.get_info.outputs.git_tag }}
+      git_tag_version: ${{ steps.get_info.outputs.git_tag_version }}
+      git_tag_fversion: ${{ steps.get_info.outputs.git_tag_fversion }}
     steps:
       - name: 'Checkout plugin'
         uses: actions/checkout@v2
