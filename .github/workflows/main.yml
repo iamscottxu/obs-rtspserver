@@ -27,10 +27,10 @@ jobs:
       - name: 'Install clang-format'
         run: sudo apt-get install -y clang-format-12
 
-      - name: 'Run clang-format'
-        run: |
-          ./CI/formatcode.sh
-          ./CI/check-format.sh
+      #- name: 'Run clang-format'
+      #  run: |
+      #    ./CI/formatcode.sh
+      #    ./CI/check-format.sh
           
   windows_build:
     name: '02 - Windows (Latest)'
