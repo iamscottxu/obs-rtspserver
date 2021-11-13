@@ -13,17 +13,15 @@ env:
   DEPS_VERSION_MAC: '2021-08-17'
   DEPS_HASH_MAC: 'fc6b356572c4703d56f5b2deb98e46cddffb29a0d36c988702dd76329efe7072'
   DEPS_VERSION_WIN: '2019'
-  OBS_GIT_BRANCH: ''
-  OBS_GIT_HASH: ''
-  OBS_GIT_TAG: ''
-  GIT_TAG: ''
-  TAG_VERSION: ''
-  TAG_FVERSION: ''
   
 jobs:
-  get_obs_tag:
+  get_obs_info:
     name: '01 - Get obs-studio git info'
     runs-on: [ubuntu-latest]
+    outputs:
+      git_branch: ${{ steps.get_info.outputs.git_branch }}
+      git_hash: ${{ steps.get_info.outputs.git_hash }}
+      git_tag: ${{ steps.get_info.outputs.git_tag }}
     steps:
       - name: 'Checkout OBS'
         uses: actions/checkout@v2
@@ -34,24 +32,21 @@ jobs:
           submodules: 'recursive'
           
       - name: 'Get OBS-Studio git info'
+        id: get_info
         shell: bash
         working-directory: 'obs-studio'
         run: |
-          echo OBS_GIT_BRANCH=`git rev-parse --abbrev-ref HEAD` >> $GITHUB_ENV
-          echo OBS_GIT_HASH=`git rev-parse --short HEAD` >> $GITHUB_ENV
-          echo OBS_GIT_TAG=`git describe --tags --abbrev=0` >> $GITHUB_ENV
+          echo ::set-output name=git_branch::`git rev-parse --abbrev-ref HEAD`
+          echo ::set-output name=git_hash::`git rev-parse --short HEAD`
+          echo ::set-output name=git_tag::`git describe --tags --abbrev=0`
           
-      - name: 'echo git info'
-        shell: bash
-        working-directory: 'obs-studio'
-        run: |
-          echo '${{ env.OBS_GIT_BRANCH }}'
-          echo '${{ env.OBS_GIT_HASH }}'
-          echo '${{ env.OBS_GIT_TAG }}'
-          
-  get_plugin_tag:
+  get_plugin_info:
     name: '01 - Get plugin git info'
     runs-on: [ubuntu-latest]
+    outputs:
+      git_branch: ${{ steps.get_info.outputs.git_tag }}
+      git_hash: ${{ steps.get_info.outputs.git_tag_version }}
+      git_tag: ${{ steps.get_info.outputs.git_tag_fversion }}
     steps:
       - name: 'Checkout plugin'
         uses: actions/checkout@v2
@@ -61,24 +56,25 @@ jobs:
           submodules: 'recursive'
           
       - name: 'Get plugin git info'
+        id: get_info
         shell: bash
         working-directory: 'plugin'
         run: |
           export GIT_TAG=${GITHUB_REF/refs\/tags\//}
           export TAG_VERSION=${GIT_TAG#v}
-          echo GIT_TAG=${GIT_TAG} >> $GITHUB_ENV
-          echo TAG_VERSION=${TAG_VERSION} >> $GITHUB_ENV
-          echo TAG_FVERSION=${TAG_VERSION/-*/}.0 >> $GITHUB_ENV
+          echo ::set-output name=git_tag::${GIT_TAG}
+          echo ::set-output name=git_tag_version::${TAG_VERSION}
+          echo ::set-output name=git_tag_fversion::${TAG_VERSION/-*/}.0
           
   clang_check:
     name: '02 - Code Format Check'
     runs-on: [ubuntu-latest]
-    needs: [get_obs_tag, get_plugin_tag]
+    needs: [get_obs_info, get_plugin_info]
     steps:
-      - name: 'Checkout plugin ${{ env.GIT_TAG }}'
+      - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag }}'
         uses: actions/checkout@v2.3.3
         with:
-          ref: '${{ env.GIT_TAG }}'
+          ref: '${{ needs.get_plugin_info.outputs.git_tag }}'
           submodules: 'recursive'
 
       - name: 'Install clang-format'
@@ -92,7 +88,7 @@ jobs:
   windows_build:
     name: '03 - Windows (Latest)'
     runs-on: [windows-latest]
-    needs: [clang_check]
+    needs: [get_obs_info, get_plugin_info, clang_check]
     if: always()
     strategy:
       matrix:
@@ -104,19 +100,19 @@ jobs:
       - name: 'Add msbuild to PATH'
         uses: microsoft/setup-msbuild@v1.0.2
 
-      - name: 'Checkout plugin ${{ env.GIT_TAG }}'
+      - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag }}'
         uses: actions/checkout@v2.3.3
         with:
           path: 'plugin'
-          ref: '${{ env.GIT_TAG }}'
+          ref: '${{ needs.get_plugin_info.outputs.git_tag }}'
           submodules: 'recursive'
           
-      - name: 'Checkout OBS v${{ env.OBS_GIT_TAG }}'
+      - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.git_tag }}'
         uses: actions/checkout@v2
         with:
           repository: obsproject/obs-studio
           path: 'obs-studio'
-          ref: '${{ env.OBS_GIT_TAG }}'
+          ref: '${{ needs.get_obs_info.outputs.git_tag }}'
           fetch-depth: 0
           submodules: 'recursive'
       
