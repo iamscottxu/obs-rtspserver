@@ -47,18 +47,10 @@ jobs:
       git_tag: ${{ steps.get_info.outputs.git_tag }}
       git_tag_version: ${{ steps.get_info.outputs.git_tag_version }}
       git_tag_fversion: ${{ steps.get_info.outputs.git_tag_fversion }}
-    steps:
-      - name: 'Checkout plugin'
-        uses: actions/checkout@v2
-        with:
-          path: 'plugin'
-          fetch-depth: 0
-          submodules: 'recursive'
-          
+    steps:    
       - name: 'Get plugin git info'
         id: get_info
         shell: bash
-        working-directory: 'plugin'
         run: |
           export GIT_TAG=${GITHUB_REF/refs\/tags\//}
           export TAG_VERSION=${GIT_TAG#v}
@@ -89,7 +81,6 @@ jobs:
     name: '03 - Windows (Latest)'
     runs-on: [windows-latest]
     needs: [get_obs_info, get_plugin_info, clang_check]
-    if: always()
     strategy:
       matrix:
         arch: [64, 32]
@@ -118,22 +109,36 @@ jobs:
       
       - name: "Install Dependencies"
         working-directory: 'plugin'
-        run: CI/windows/01_install_dependencies.ps1 -BuildArch ${{ matrix.arch }}-bit -NoChoco
+        run: |
+          $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
+          $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
+          $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
+          CI/windows/01_install_dependencies.ps1 -BuildArch ${{ matrix.arch }}-bit -NoChoco
         
       - name: 'Build libobs and obs-frontend-api'
         working-directory: 'obs-studio'
-        run: CI/windows/02_build_obs_libs.ps1 -BuildArch "${{ matrix.arch }}-bit"
+        run: |
+          $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
+          $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
+          $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
+          CI/windows/02_build_obs_libs.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Build plugin'
         working-directory: 'plugin'
-        run: CI/windows/03_build_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
+        run: |
+          $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
+          $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
+          $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
+          CI/windows/03_build_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Create build artifact'
-        if: success() && (github.event_name != 'pull_request' || env.SEEKING_TESTERS == '1')
-        run: CI/windows/04_package_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
+        run: |
+          $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
+          $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
+          $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
+          CI/windows/04_package_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Upload build Artifact'
-        if: success() && (github.event_name != 'pull_request' || env.SEEKING_TESTERS == '1')
         uses: actions/upload-artifact@v2
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-${{ matrix.arch }}'
