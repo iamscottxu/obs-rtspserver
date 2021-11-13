@@ -3,9 +3,6 @@ project(obs-rtspserver)
 
 add_subdirectory(rtsp-server)
 
-find_package(FFmpeg COMPONENTS avutil avfilter REQUIRED)
-
-set(CMAKE_PREFIX_PATH "${QTDIR}")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -47,7 +44,6 @@ add_library(obs-rtspserver MODULE
 	${obs-rtspserver_HEADERS})
 	
 include_directories(
-	${FFMPEG_INCLUDE_DIRS}
 	${Qt5Core_INCLUDES}
 	${Qt5Widgets_INCLUDES}
 	"rtsp-server")
@@ -55,7 +51,6 @@ include_directories(
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/UI/obs-frontend-api")
 		
 target_link_libraries(obs-rtspserver
-	${FFMPEG_LIBRARIES}
 	${obs-rtspserver_PLATFORM_DEPS}
 	rtsp-server
 	obs-frontend-api
