@@ -41,6 +41,14 @@ jobs:
           echo OBS_GIT_HASH=`git rev-parse --short HEAD` >> $GITHUB_ENV
           echo OBS_GIT_TAG=`git describe --tags --abbrev=0` >> $GITHUB_ENV
           
+      - name: 'echo git info'
+        shell: bash
+        working-directory: 'obs-studio'
+        run: |
+          echo '${{ env.OBS_GIT_BRANCH }}'
+          echo '${{ env.OBS_GIT_HASH }}'
+          echo '${{ env.OBS_GIT_TAG }}'
+          
   get_plugin_tag:
     name: '01 - Get plugin git info'
     runs-on: [ubuntu-latest]
