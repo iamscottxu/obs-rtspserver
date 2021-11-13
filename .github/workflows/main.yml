@@ -51,7 +51,6 @@ jobs:
       - name: 'Get plugin git info'
         id: get_info
         shell: bash
-        working-directory: 'plugin'
         run: |
           export GIT_TAG=${GITHUB_REF/refs\/tags\//}
           export TAG_VERSION=${GIT_TAG#v}
