@@ -79,7 +79,7 @@ function Install-obs-studio {
 
     $CheckoutRef = "$(if (!(Test-Path variable:OBSBranch)) { ${OBSBranch} } else { "tags/${OBSVersion}" })"
 
-    Write-Status "Setup for OBS Studio v${CheckoutRef}"
+    Write-Status "Setup for OBS Studio v${OBSVersion}"
     Ensure-Directory ${ObsBuildDir}
 
     if (!(Test-Path "${ObsBuildDir}/.git")) {

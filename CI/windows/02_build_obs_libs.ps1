@@ -41,6 +41,7 @@ function Build-OBS-Libs {
             -DENABLE_PLUGINS=OFF `
             -DENABLE_UI=ON `
             -DENABLE_SCRIPTING=OFF `
+            -DBUILD_BROWSER=OFF `
             "$(if (Test-Path Variable:$Quiet) { "-Wno-deprecated -Wno-dev --log-level=ERROR" })"
 
         cmake --build "plugin_${BuildDirectory}64" -t obs-frontend-api --config ${BuildConfiguration}
@@ -55,6 +56,7 @@ function Build-OBS-Libs {
             -DENABLE_PLUGINS=OFF `
             -DENABLE_UI=ON `
             -DENABLE_SCRIPTING=OFF `
+            -DBUILD_BROWSER=OFF `
             "$(if (Test-Path Variable:$Quiet) { "-Wno-deprecated -Wno-dev --log-level=ERROR" })"
 
         cmake --build "plugin_${BuildDirectory}32" -t obs-frontend-api --config ${BuildConfiguration}
