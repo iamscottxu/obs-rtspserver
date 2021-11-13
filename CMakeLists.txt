@@ -71,4 +71,6 @@ else()
 			PRODUCTNAME "OBS RTSP Server Plugin")
 endif()
 
-install_obs_plugin_with_data(obs-rtspserver data)
+if(COMMAND install_obs_plugin_with_data)
+	install_obs_plugin_with_data(obs-rtspserver data)
+endif()
