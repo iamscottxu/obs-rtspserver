@@ -15,13 +15,53 @@ env:
   DEPS_VERSION_WIN: '2019'
   
 jobs:
-  clang_check:
-    name: '01 - Code Format Check'
+  get_tag:
+    name: '01 - Get latest version'
     runs-on: [ubuntu-latest]
     steps:
-      - name: 'Checkout'
+      - name: 'Checkout OBS'
+        uses: actions/checkout@v2
+        with:
+          repository: obsproject/obs-studio
+          path: 'obs-studio'
+          fetch-depth: 0
+          submodules: 'recursive'
+          
+      - name: 'Get OBS-Studio git info'
+        shell: bash
+        working-directory: 'obs-studio'
+        run: |
+          git fetch --prune --unshallow
+          echo OBS_GIT_BRANCH=`git rev-parse --abbrev-ref HEAD` >> $GITHUB_ENV
+          echo OBS_GIT_HASH=`git rev-parse --short HEAD` >> $GITHUB_ENV
+          echo OBS_GIT_TAG=`git describe --tags --abbrev=0` >> $GITHUB_ENV
+          
+      - name: 'Checkout plugin'
+        uses: actions/checkout@v2
+        with:
+          path: 'plugin'
+          fetch-depth: 0
+          submodules: 'recursive'
+          
+      - name: 'Get plugin tag'
+        shell: bash
+        working-directory: 'plugin'
+        run: |
+          export GIT_TAG=${GITHUB_REF/refs\/tags\//}
+          export TAG_VERSION=${GIT_TAG#v}
+          echo GIT_TAG=${GIT_TAG} >> $GITHUB_ENV
+          echo TAG_VERSION=${TAG_VERSION} >> $GITHUB_ENV
+          echo TAG_FVERSION=${TAG_VERSION/-*/}.0 >> $GITHUB_ENV
+          
+  clang_check:
+    name: '02 - Code Format Check'
+    runs-on: [ubuntu-latest]
+    needs: [get_tag]
+    steps:
+      - name: 'Checkout plugin ${{ env.GIT_TAG }}'
         uses: actions/checkout@v2.3.3
         with:
+          ref: '${{ env.GIT_TAG }}'
           submodules: 'recursive'
 
       - name: 'Install clang-format'
@@ -33,7 +73,7 @@ jobs:
       #    ./CI/check-format.sh
           
   windows_build:
-    name: '02 - Windows (Latest)'
+    name: '03 - Windows (Latest)'
     runs-on: [windows-latest]
     needs: [clang_check]
     if: always()
@@ -41,58 +81,27 @@ jobs:
       matrix:
         arch: [64, 32]
     env:
-      WINDOWS_DEPS_VERSION: '2019'
       CMAKE_GENERATOR: "Visual Studio 16 2019"
       CMAKE_SYSTEM_VERSION: "10.0.18363.657"
     steps:
       - name: 'Add msbuild to PATH'
         uses: microsoft/setup-msbuild@v1.0.2
-      
-      - name: 'Checkout plugin'
-        uses: actions/checkout@v2
+
+      - name: 'Checkout plugin ${{ env.GIT_TAG }}'
+        uses: actions/checkout@v2.3.3
         with:
           path: 'plugin'
+          ref: '${{ env.GIT_TAG }}'
           submodules: 'recursive'
           
-      - name: 'Get plugin tag'
-        shell: bash
-        run: |
-          export GIT_TAG=${GITHUB_REF/refs\/tags\//}
-          export TAG_VERSION=${GIT_TAG#v}
-          echo GIT_TAG=${GIT_TAG} >> $GITHUB_ENV
-          echo TAG_VERSION=${TAG_VERSION} >> $GITHUB_ENV
-          echo TAG_FVERSION=${TAG_VERSION/-*/}.0 >> $GITHUB_ENV
-          
-      - name: 'Checkout plugin release (${{ env.GIT_TAG }})'
-        shell: bash
-        working-directory: 'plugin'
-        run: |
-          git checkout ${{ env.GIT_TAG }}
-          git submodule update
-          
-      - name: 'Checkout OBS'
+      - name: 'Checkout OBS v${{ env.OBS_GIT_TAG }}'
         uses: actions/checkout@v2
         with:
           repository: obsproject/obs-studio
           path: 'obs-studio'
+          ref: '${{ env.OBS_GIT_TAG }}'
           fetch-depth: 0
           submodules: 'recursive'
-      
-      - name: 'Get OBS-Studio git info'
-        shell: bash
-        working-directory: 'obs-studio'
-        run: |
-          git fetch --prune --unshallow
-          echo OBS_GIT_BRANCH=`git rev-parse --abbrev-ref HEAD` >> $GITHUB_ENV
-          echo OBS_GIT_HASH=`git rev-parse --short HEAD` >> $GITHUB_ENV
-          echo OBS_GIT_TAG=`git describe --tags --abbrev=0` >> $GITHUB_ENV
-      
-      - name: 'Checkout last OBS-Studio release (${{ env.OBS_GIT_TAG }})'
-        shell: bash
-        working-directory: ${{ github.workspace }}/obs-studio
-        run: |
-          git checkout ${{ env.OBS_GIT_TAG }}
-          git submodule update
       
       - name: "Install Dependencies"
         working-directory: 'plugin'
@@ -122,10 +131,11 @@ jobs:
     runs-on: [windows-latest]
     needs: [windows_build]
     steps:
-      - name: 'Checkout plugin'
-        uses: actions/checkout@v2
+      - name: 'Checkout plugin ${{ env.GIT_TAG }}'
+        uses: actions/checkout@v2.3.3
         with:
           path: 'plugin'
+          ref: '${{ env.GIT_TAG }}'
           submodules: 'recursive'
           
       - name: 'Install prerequisite: NSIS'
