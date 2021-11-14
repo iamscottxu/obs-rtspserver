@@ -31,6 +31,8 @@ function Package-OBS-Plugin {
     Write-Status "Package plugin ${ProductName}"
     Ensure-Directory ${CheckoutDir}
 
+    $makensis_path = "${CheckoutDir}/../obs-build-dependencies/nsis-$NSISVersion/makensis.exe"
+
     if ($CombinedArchs.isPresent) {
         if (!(Test-Path ${CheckoutDir}/release/obs-plugins/64bit)) {
             cmake --build ${BuildDirectory}64 --config ${BuildConfiguration} -t install
@@ -43,15 +45,18 @@ function Package-OBS-Plugin {
         $CompressVars = @{
             Path = "${CheckoutDir}/release/*"
             CompressionLevel = "Optimal"
-            DestinationPath = "${FileName}-Windows.zip"
+            DestinationPath = "${FileName}-windows-all.zip"
         }
 
         Write-Step "Creating zip archive..."
 
         Compress-Archive -Force @CompressVars
-        if(($BuildInstaller.isPresent) -And (Test-CommandExists "iscc")) {
+        if(($BuildInstaller.isPresent) -And (Test-Path $makensis_path)) {
             Write-Step "Creating installer..."
-            & iscc ${CheckoutDir}/installer/installer-Windows.generated.iss /O. /F"${FileName}-Windows-Installer"
+            Set-Location "${CheckoutDir}/installer"
+            Copy-Item "${CheckoutDir}/LICENSE" "${CheckoutDir}/installer/LICENSE"
+            & $makensis_path /V4 /DVERSION=${ProductVersion} /DFVERSION=${ProductFileVersion} /DPLANTFORM=all .\installer.nsi
+            Ensure-Directory ${CheckoutDir}
         }
     } elseif ($BuildArch -eq "64-bit") {
         cmake --build ${BuildDirectory}64 --config ${BuildConfiguration} -t install
@@ -59,16 +64,18 @@ function Package-OBS-Plugin {
         $CompressVars = @{
             Path = "${CheckoutDir}/release/*"
             CompressionLevel = "Optimal"
-            DestinationPath = "${FileName}-Win64.zip"
+            DestinationPath = "${FileName}-windows-x64.zip"
         }
 
         Write-Step "Creating zip archive..."
 
         Compress-Archive -Force @CompressVars
-
-        if(($BuildInstaller.isPresent) -And (Test-CommandExists "iscc")) {
+        if(($BuildInstaller.isPresent) -And (Test-Path $makensis_path)) {
             Write-Step "Creating installer..."
-            & iscc ${CheckoutDir}/installer/installer-Windows.generated.iss /O. /F"${FileName}-Win64-Installer"
+            Set-Location "${CheckoutDir}/installer"
+            Copy-Item "${CheckoutDir}/LICENSE" "${CheckoutDir}/installer/LICENSE"
+            & $makensis_path /V4 /DVERSION=${ProductVersion} /DFVERSION=${ProductFileVersion} /DPLANTFORM=x64 .\installer.nsi
+            Ensure-Directory ${CheckoutDir}
         }
     } elseif ($BuildArch -eq "32-bit") {
         cmake --build ${BuildDirectory}32 --config ${BuildConfiguration} -t install
@@ -76,16 +83,18 @@ function Package-OBS-Plugin {
         $CompressVars = @{
             Path = "${CheckoutDir}/release/*"
             CompressionLevel = "Optimal"
-            DestinationPath = "${FileName}-Win32.zip"
+            DestinationPath = "${FileName}-windows-x86.zip"
         }
 
         Write-Step "Creating zip archive..."
 
         Compress-Archive -Force @CompressVars
-
-        if(($BuildInstaller.isPresent) -And (Test-CommandExists "iscc")) {
+        if(($BuildInstaller.isPresent) -And (Test-Path $makensis_path)) {
             Write-Step "Creating installer..."
-            & iscc ${CheckoutDir}/installer/installer-Windows.generated.iss /O. /F"${FileName}-Win32-Installer"
+            Set-Location "${CheckoutDir}/installer"
+            Copy-Item "${CheckoutDir}/LICENSE" "${CheckoutDir}/installer/LICENSE"
+            & $makensis_path /V4 /DVERSION=${ProductVersion} /DFVERSION=${ProductFileVersion} /DPLANTFORM=x86 .\installer.nsi
+            Ensure-Directory ${CheckoutDir}
         }
     }
 }
@@ -106,11 +115,17 @@ function Package-Plugin-Standalone {
     $GitTag = git describe --tags --abbrev=0
     $ErrorActionPreference = "Stop"
 
-    if ($GitTag -eq $null) {
-        $GitTag=$ProductVersion
+    if ($null -eq $GitTag) {
+        $GitTag="v$ProductVersion"
+    } elseif ($GitTag -match "[0-9]+.[0-9]+.[0-9]+(-[a-z0-9]+)+$") {
+        $ProductVersion = $Matches[0]
     }
 
-    $FileName = "${ProductName}-${GitTag}-${GitHash}"
+    if ($ProductVersion -match "^[0-9]+.[0-9]+.[0-9]+")
+    {
+        $ProductFileVersion = $Matches[0] + ".0"
+    }
+    $FileName = "${ProductName}-v${ProductVersion}"
 
     Package-OBS-Plugin
 }

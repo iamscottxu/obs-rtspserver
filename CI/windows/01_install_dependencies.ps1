@@ -65,7 +65,7 @@ function Install-qt-deps {
 
         # TODO: Replace with zip and properly package Qt to share directory with other deps
         & 7z x Qt_${Version}.7z
-        & mv ${Version} "Qt_${Version}"
+        Move-Item ${Version} "Qt_${Version}"
     } else {
         Write-Step "Found existing pre-built Qt..."
     }
@@ -79,7 +79,7 @@ function Install-obs-studio {
 
     $CheckoutRef = "$(if (!(Test-Path variable:OBSBranch)) { ${OBSBranch} } else { "tags/${OBSVersion}" })"
 
-    Write-Status "Setup for OBS Studio v${OBSVersion}"
+    Write-Status "Setting up NSIS v${NSISVersion}"
     Ensure-Directory ${ObsBuildDir}
 
     if (!(Test-Path "${ObsBuildDir}/.git")) {
@@ -98,6 +98,31 @@ function Install-obs-studio {
     }
 }
 
+function Install-nsis {
+    Param(
+        [parameter(Mandatory=$true)]
+        [string]$Version
+    )
+
+    Write-Status "Setup for NSIS v${Version}"
+    Ensure-Directory $DepsBuildDir
+
+    if (!(Test-Path $DepsBuildDir/nsis-${Version})) {
+        Write-Status "Setting up NSIS v${Version}"
+
+        Write-Step "Download..."
+        $ProgressPreference = $(if ($Quiet.isPresent) { 'SilentlyContinue' } else { 'Continue' })
+        Invoke-WebRequest -Uri "https://sourceforge.net/projects/nsis/files/NSIS 3/${Version}/nsis-${Version}.zip/download" -UseBasicParsing -OutFile "nsis-${Version}.zip" -UserAgent "Wget/1.10.2"
+        $ProgressPreference = 'Continue'
+        
+        Write-Step "Unpack..."
+
+        Expand-Archive -Path "nsis-${Version}.zip" -DestinationPath "./"
+    } else {
+        Write-Step "Found existing NSIS..."
+    }
+}
+
 function Install-Dependencies {
     if(!($NoChoco.isPresent)) {
         Install-Windows-Dependencies
@@ -106,7 +131,8 @@ function Install-Dependencies {
     $BuildDependencies = @(
         @('obs-deps', $WindowsDepsVersion),
         @('qt-deps', $WindowsQtVersion),
-        @('obs-studio', $OBSVersion)
+        @('obs-studio', $OBSVersion),
+        @('nsis', $NSISVersion)
     )
 
     Foreach($Dependency in ${BuildDependencies}) {

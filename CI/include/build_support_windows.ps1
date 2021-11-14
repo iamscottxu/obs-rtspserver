@@ -1,9 +1,3 @@
-$CIWorkflow = "${CheckoutDir}/.github/workflows/main.yml"
-
-$CIDepsVersion = Get-Content ${CIWorkflow} | Select-String "[ ]+DEPS_VERSION_WIN: '([0-9\-]+)'" | ForEach-Object{$_.Matches.Groups[1].Value}
-$CIQtVersion = Get-Content ${CIWorkflow} | Select-String "[ ]+QT_VERSION_WIN: '([0-9\.]+)'" | ForEach-Object{$_.Matches.Groups[1].Value}
-$CIObsVersion = Get-Content ${CIWorkflow} | Select-String "[ ]+OBS_VERSION: '([0-9\.]+)'" | ForEach-Object{$_.Matches.Groups[1].Value}
-
 function Write-Status {
     param(
         [parameter(Mandatory=$true)]
@@ -102,10 +96,11 @@ $BuildDirectory = "$(if (Test-Path Env:BuildDirectory) { $env:BuildDirectory } e
 $BuildConfiguration = "$(if (Test-Path Env:BuildConfiguration) { $env:BuildConfiguration } else { $BuildConfiguration })"
 $BuildArch = "$(if (Test-Path Env:BuildArch) { $env:BuildArch } else { $BuildArch })"
 $OBSBranch = "$(if (Test-Path Env:OBSBranch) { $env:OBSBranch } else { $OBSBranch })"
-$WindowsDepsVersion = "$(if (Test-Path Env:WindowsDepsVersion ) { $env:WindowsDepsVersion } else { $CIDepsVersion })"
-$WindowsQtVersion = "$(if (Test-Path Env:WindowsQtVersion ) { $env:WindowsQtVersion } else { $CIQtVersion })"
+$WindowsDepsVersion = "$(if (Test-Path Env:WindowsDepsVersion ) { $env:WindowsDepsVersion } else { "2019" })"
+$WindowsQtVersion = "$(if (Test-Path Env:WindowsQtVersion ) { $env:WindowsQtVersion } else { "5.15.2" })"
 $CmakeSystemVersion = "$(if (Test-Path Env:CMAKE_SYSTEM_VERSION) { $Env:CMAKE_SYSTEM_VERSION } else { "10.0.18363.657" })"
-$OBSVersion = "$(if ( Test-Path Env:OBSVersion ) { $env:ObsVersion } else { $CIObsVersion })"
+$OBSVersion = "$(if ( Test-Path Env:OBSVersion ) { $env:ObsVersion } else { "27.1.3" })"
+$NSISVersion = "$(if ( Test-Path Env:NSISVersion ) { $env:NSISVersion } else { "3.08" })"
 
 function Install-Windows-Dependencies {
     Write-Status "Checking Windows build dependencies"
