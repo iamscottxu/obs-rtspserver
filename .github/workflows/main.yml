@@ -192,7 +192,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-release'
-          path: '${{ github.workspace }}/plugin/${{ env.PRODUCT_NAME }}-*-windows-all-installer.exe'
+          path: '${{ github.workspace }}/plugin/${{ env.PRODUCT_NAME }}-*-windows-all*.*'
 
   linux_build:
     name: 'Linux 64bit'
