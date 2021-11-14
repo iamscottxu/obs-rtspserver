@@ -175,7 +175,7 @@ jobs:
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
           $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
           $env:NSISVersion = "${{ env.NSIS_VERSION_WIN }}"
-          CI/windows/01_install_dependencies.ps1 -BuildArch ${{ matrix.arch }}-bit -NoChoco -InstallList "nsis"
+          CI/windows/01_install_dependencies.ps1 -BuildArch 64-bit -NoChoco -InstallList "nsis"
           
       - name: 'Build NSIS installer'
         working-directory: 'plugin'
@@ -186,7 +186,7 @@ jobs:
           $env:NSISVersion = "${{ env.NSIS_VERSION_WIN }}"
           Get-ChildItem -Filter "*-windows-x86.zip" -File | Expand-Archive -Force -DestinationPath ./release/
           Get-ChildItem -Filter "*-windows-x64.zip" -File | Expand-Archive -Force -DestinationPath ./release/
-          CI/windows/04_package_plugin.ps1 -BuildInstaller -CombinedArchs
+          CI/windows/04_package_plugin.ps1 -BuildArch 64-bit -BuildInstaller -CombinedArchs
         
       - name: 'Upload build Artifact'
         uses: actions/upload-artifact@v2
