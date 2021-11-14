@@ -4,7 +4,8 @@ Param(
     [Switch]$Verbose = $(if (Test-Path variable:Verbose) { $Verbose }),
     [Switch]$NoChoco = $(if (Test-Path variable:NoChoco) { $true } else { $false }),
     [String]$BuildArch = $(if (Test-Path variable:BuildArch) { "${BuildArch}" } else { (Get-CimInstance CIM_OperatingSystem).OSArchitecture }),
-    [String]$ProductName = $(if (Test-Path variable:ProductName) { "${ProductName}" } else { "obs-plugin" })
+    [String]$ProductName = $(if (Test-Path variable:ProductName) { "${ProductName}" } else { "obs-plugin" }),
+    [string[]]$InstallList = $(if (Test-Path variable:InstallList) { "${InstallList}" } else { $null })
 )
 
 ##############################################################################
@@ -79,7 +80,7 @@ function Install-obs-studio {
 
     $CheckoutRef = "$(if (!(Test-Path variable:OBSBranch)) { ${OBSBranch} } else { "tags/${OBSVersion}" })"
 
-    Write-Status "Setting up NSIS v${NSISVersion}"
+    Write-Status "Setup for OBS Studio v${OBSVersion}"
     Ensure-Directory ${ObsBuildDir}
 
     if (!(Test-Path "${ObsBuildDir}/.git")) {
@@ -138,6 +139,10 @@ function Install-Dependencies {
     Foreach($Dependency in ${BuildDependencies}) {
         $DependencyName = $Dependency[0]
         $DependencyVersion = $Dependency[1]
+
+        if ($null -ne $InstallList -and $InstallList -notcontains $DependencyName) {
+            continue
+        }
 
         $FunctionName = "Install-${DependencyName}"
         & $FunctionName -Version $DependencyVersion
