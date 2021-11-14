@@ -180,8 +180,8 @@ jobs:
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
           $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
           $env:NSISVersion = "${{ env.NSIS_VERSION_WIN }}"
-          Get-ChildItem -Filter "*-Win32.zip" -File | Expand-Archive -DestinationPath ./release/
-          Get-ChildItem -Filter "*-Win64.zip" -File | Expand-Archive -DestinationPath ./release/
+          Get-ChildItem -Filter "*-windows-x86.zip" -File | Expand-Archive -DestinationPath ./release/
+          Get-ChildItem -Filter "*-windows-x64.zip" -File | Expand-Archive -DestinationPath ./release/
           CI/windows/04_package_plugin.ps1 -BuildInstaller -CombinedArchs
         
       - name: 'Upload build Artifact'
