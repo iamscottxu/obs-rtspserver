@@ -13,7 +13,7 @@ env:
   DEPS_VERSION_MAC: '2021-08-17'
   DEPS_HASH_MAC: 'fc6b356572c4703d56f5b2deb98e46cddffb29a0d36c988702dd76329efe7072'
   DEPS_VERSION_WIN: '2019'
-  
+  NSIS_VERSION_WIN: '3.08'
 jobs:
   get_obs_info:
     name: '01 - Get obs-studio git info'
@@ -113,6 +113,7 @@ jobs:
           $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
           $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
+          $env:NSISVersion = "${{ env.NSIS_VERSION_WIN }}"
           ${{ github.workspace }}/plugin/CI/windows/01_install_dependencies.ps1 -BuildArch ${{ matrix.arch }}-bit -NoChoco
         
       - name: 'Build libobs and obs-frontend-api'
@@ -121,6 +122,7 @@ jobs:
           $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
           $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
+          $env:NSISVersion = "${{ env.NSIS_VERSION_WIN }}"
           ${{ github.workspace }}/plugin/CI/windows/02_build_obs_libs.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Build plugin'
@@ -129,20 +131,23 @@ jobs:
           $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
           $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
+          $env:NSISVersion = "${{ env.NSIS_VERSION_WIN }}"
           ${{ github.workspace }}/plugin/CI/windows/03_build_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Create build artifact'
+        working-directory: 'plugin'
         run: |
           $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
           $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
+          $env:NSISVersion = "${{ env.NSIS_VERSION_WIN }}"
           ${{ github.workspace }}/plugin/CI/windows/04_package_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Upload build Artifact'
         uses: actions/upload-artifact@v2
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-${{ matrix.arch }}'
-          path: '${{ github.workspace }}/plugin/*-Win${{ matrix.arch }}.zip'
+          path: '${{ github.workspace }}/plugin/*-windows-*.zip'
           
   windows_package:
     name: '03 - Windows Installer'
@@ -156,43 +161,34 @@ jobs:
           ref: '${{ env.GIT_TAG }}'
           submodules: 'recursive'
           
-      - name: 'Install prerequisite: NSIS'
-        working-directory: ${{ github.workspace }}
-        run: |
-          Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
-          scoop bucket add extras
-          scoop install nsis
-          
       - name: 'Download 64-bit artifact'
         uses: actions/download-artifact@v2
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-64'
-          path: ${{ github.workspace }}
+          path: 'plugin'
 
       - name: 'Download 32-bit artifact'
         uses: actions/download-artifact@v2
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-32'
-          path: ${{ github.workspace }}
+          path: 'plugin'
           
       - name: 'Build NSIS installer'
-        working-directory: ${{ github.workspace }}
+        working-directory: 'plugin'
         run: |
-          Get-ChildItem -Filter "*-Win32.zip" -File | Expand-Archive -DestinationPath .\build-package\
-          Get-ChildItem -Filter "*-Win64.zip" -File | Expand-Archive -DestinationPath .\build-package\
-          robocopy .\plugins\ .\installer\ LICENSE
-          robocopy /E .\plugins\installer\ .\installer\ *
-          
-      - name: 'Build NSIS installer'
-        working-directory: ${{ github.workspace }}\installer
-        run: makensis /V4 /DVERSION=${{ env.TAG_VERSION }} /DFVERSION=${{ env.TAG_FVERSION }} .\installer.nsi
+          $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
+          $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
+          $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
+          $env:NSISVersion = "${{ env.NSIS_VERSION_WIN }}"
+          Get-ChildItem -Filter "*-windows-x86.zip" -File | Expand-Archive -DestinationPath ./release/
+          Get-ChildItem -Filter "*-windows-x64.zip" -File | Expand-Archive -DestinationPath ./release/
+          CI/windows/04_package_plugin.ps1 -BuildInstaller -CombinedArchs
         
       - name: 'Upload build Artifact'
-        if: success()
         uses: actions/upload-artifact@v2
         with:
-          name: '${{ env.GIT_TAG }}-windows'
-          path: ${{ github.workspace }}\release\*
+          name: '${{ env.PRODUCT_NAME }}-windows-release'
+          path: '${{ github.workspace }}/plugin/${{ env.PRODUCT_NAME }}-windows-all-installer.exe'
 
   linux_build:
     name: 'Linux 64bit'
@@ -419,8 +415,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.GIT_TAG }}-windows/obs-rtspserver-${{ env.GIT_TAG }}-windows.zip
-          asset_name: obs-rtspserver-${{ env.GIT_TAG }}-windows.zip
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-windows-release/${{ env.PRODUCT_NAME }}-${{ env.GIT_TAG }}-windows-all.zip
+          asset_name: ${{ env.PRODUCT_NAME }}-${{ env.GIT_TAG }}-windows.zip
           asset_content_type: application/zip
       - name: 'Upload Windows .exe artifact to release'
         uses: actions/upload-release-asset@v1
@@ -428,8 +424,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.GIT_TAG }}-windows/obs-rtspserver-${{ env.GIT_TAG }}-windows-installer.exe
-          asset_name: obs-rtspserver-${{ env.GIT_TAG }}-windows-installer.exe
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-windows-release/${{ env.PRODUCT_NAME }}-${{ env.GIT_TAG }}-windows-all-installer.exe
+          asset_name: ${{ env.PRODUCT_NAME }}-${{ env.GIT_TAG }}-windows-installer.exe
           asset_content_type: application/x-msdownload
       - name: 'Upload linux .tar.gz artifact to release'
         uses: actions/upload-release-asset@v1
