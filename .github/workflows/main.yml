@@ -135,6 +135,7 @@ jobs:
           ${{ github.workspace }}/plugin/CI/windows/03_build_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Create build artifact'
+        working-directory: 'plugin'
         run: |
           $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
@@ -146,7 +147,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-${{ matrix.arch }}'
-          path: '${{ github.workspace }}/plugin/*-Win${{ matrix.arch }}.zip'
+          path: '${{ github.workspace }}/plugin/*-windows-*.zip'
           
   windows_package:
     name: '03 - Windows Installer'
@@ -187,7 +188,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-release'
-          path: '${{ github.workspace }}/plugin/*-windows-all*.*'
+          path: '${{ github.workspace }}/plugin/${{ env.PRODUCT_NAME }}-windows-all-installer.exe'
 
   linux_build:
     name: 'Linux 64bit'
