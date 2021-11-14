@@ -45,18 +45,13 @@ jobs:
     runs-on: [ubuntu-latest]
     outputs:
       git_tag: ${{ steps.get_info.outputs.git_tag }}
-      git_tag_version: ${{ steps.get_info.outputs.git_tag_version }}
-      git_tag_fversion: ${{ steps.get_info.outputs.git_tag_fversion }}
     steps:    
       - name: 'Get plugin git info'
         id: get_info
         shell: bash
         run: |
           export GIT_TAG=${GITHUB_REF/refs\/tags\//}
-          export TAG_VERSION=${GIT_TAG#v}
           echo ::set-output name=git_tag::${GIT_TAG}
-          echo ::set-output name=git_tag_version::${TAG_VERSION}
-          echo ::set-output name=git_tag_fversion::${TAG_VERSION/-*/}.0
           
   clang_check:
     name: '02 - Code Format Check'
@@ -189,8 +184,8 @@ jobs:
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
           $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
           $env:NSISVersion = "${{ env.NSIS_VERSION_WIN }}"
-          Get-ChildItem -Filter "*-windows-x86.zip" -File | Expand-Archive -DestinationPath ./release/
-          Get-ChildItem -Filter "*-windows-x64.zip" -File | Expand-Archive -DestinationPath ./release/
+          Get-ChildItem -Filter "*-windows-x86.zip" -File | Expand-Archive -Force -DestinationPath ./release/
+          Get-ChildItem -Filter "*-windows-x64.zip" -File | Expand-Archive -Force -DestinationPath ./release/
           CI/windows/04_package_plugin.ps1 -BuildInstaller -CombinedArchs
         
       - name: 'Upload build Artifact'
