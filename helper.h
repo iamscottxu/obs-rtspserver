@@ -89,7 +89,7 @@ static void rtsp_output_avc_get_sps_pps(const uint8_t *data, size_t size,
 	}
 }
 
-static std::string string_format(char* format, ...)
+static std::string string_format(char const *format, ...)
 {
 	va_list argp;
 	va_start(argp, format);
