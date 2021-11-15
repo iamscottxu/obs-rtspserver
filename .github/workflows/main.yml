@@ -199,7 +199,7 @@ jobs:
     runs-on: ${{ matrix.ubuntu }}
     strategy:
       matrix:
-        ubuntu: ['ubuntu-20.04', 'ubuntu-18.04']
+        ubuntu: ['ubuntu-20.04']
     needs: [get_obs_info, get_plugin_info, clang_check]
     defaults:
       run:
