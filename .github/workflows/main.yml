@@ -224,26 +224,26 @@ jobs:
       - name: "Install Dependencies"
         working-directory: 'plugin'
         run: |
-          export OBS_VERSION = "${{ needs.get_obs_info.outputs.git_tag }}"
+          export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
           CI/linux/01_install_dependencies.sh --disable-pipewire
         
       - name: 'Build libobs and obs-frontend-api'
         if: steps.libobs-cache.outputs.cache-hit != 'true'
         working-directory: 'plugin'
         run: |
-          export OBS_VERSION = "${{ needs.get_obs_info.outputs.git_tag }}"
+          export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
           CI/linux/02_build_obs-libs.sh --disable-pipewire
         
       - name: 'Build plugin'
         working-directory: 'plugin'
         run: |
-          export OBS_VERSION = "${{ needs.get_obs_info.outputs.git_tag }}"
+          export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
           CI/linux/03_build_plugin.sh
         
       - name: 'Create build artifact'
         working-directory: 'plugin'
         run: |
-          export OBS_VERSION = "${{ needs.get_obs_info.outputs.git_tag }}"
+          export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
           CI/linux/04_package_plugin.sh
 
       - name: 'Upload build Artifact'
