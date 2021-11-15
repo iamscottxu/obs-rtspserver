@@ -233,8 +233,8 @@ jobs:
         working-directory: 'plugin'
         run: |
           export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
-          chmod +x CI/linux/02_build_obs-libs.sh
-          CI/linux/02_build_obs-libs.sh --disable-pipewire
+          chmod +x CI/linux/02_build_obs_libs.sh
+          CI/linux/02_build_obs_libs.sh --disable-pipewire
         
       - name: 'Build plugin'
         working-directory: 'plugin'
