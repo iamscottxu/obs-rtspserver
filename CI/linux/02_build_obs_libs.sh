@@ -26,6 +26,7 @@ build_obs_libs() {
         -DENABLE_UI=ON \
         -DENABLE_SCRIPTING=OFF \
         -DENABLE_PIPEWIRE=OFF \
+        -DBUILD_BROWSER=OFF \
         ${QUIET:+-Wno-deprecated -Wno-dev --log-level=ERROR}
 
     step "Building libobs and obs-frontend-api"
