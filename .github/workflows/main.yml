@@ -195,113 +195,56 @@ jobs:
           path: '${{ github.workspace }}/plugin/${{ env.PRODUCT_NAME }}-*-windows-all*.*'
 
   linux_build:
-    name: 'Linux 64bit'
-    runs-on: [ubuntu-latest]
+    name: '02 - Linux (Ubuntu)'
+    runs-on: ${{ matrix.ubuntu }}
+    strategy:
+      matrix:
+        ubuntu: ['ubuntu-20.04', 'ubuntu-18.04']
     needs: [clang_check]
+    defaults:
+      run:
+        shell: bash
     steps:
-      - name: 'Install prerequisite'
-#         sudo dpkg --add-architecture i386
-        run: |
-          sudo add-apt-repository ppa:jan-koester/pipewiremaster
-          sudo apt-get update
-          sudo apt-get install \
-           build-essential checkinstall cmake git libmbedtls-dev libasound2-dev libavcodec-dev libavdevice-dev \
-           libavfilter-dev libavformat-dev libavutil-dev libcurl4-openssl-dev libfdk-aac-dev libfontconfig-dev \
-           libfreetype6-dev libgl1-mesa-dev libjack-jackd2-dev libjansson-dev libluajit-5.1-dev libpulse-dev \
-           libqt5x11extras5-dev libspeexdsp-dev libswresample-dev libswscale-dev libudev-dev libv4l-dev \
-           libvlc-dev libx11-dev libx264-dev libxcb-shm0-dev libxcb-xinerama0-dev libxcomposite-dev \
-           libxinerama-dev pkg-config python3-dev qtbase5-dev libqt5svg5-dev swig libxcb-randr0-dev \
-           libx11-xcb-dev libxcb-xfixes0-dev \
-           libwayland-dev libpipewire-0.3-dev qtbase5-private-dev
-#           libxcb-xfixes0-dev libx11-xcb-dev libxcb1-dev \
-#           libx32gcc-4.8-dev libc6-dev-i386 lib32stdc++6 g++-multilib gcc-multilib \
-#           libmbedtls-dev:i386 libasound2-dev:i386 libavcodec-dev:i386 libavdevice-dev:i386 \
-#           libavfilter-dev:i386 libavformat-dev:i386 libavutil-dev:i386 libcurl4-openssl-dev:i386 libfdk-aac-dev:i386 libfontconfig-dev:i386 \
-#           libfreetype6-dev:i386 libgl1-mesa-dev:i386 libjack-jackd2-dev:i386 libjansson-dev libluajit-5.1-dev:i386 libpulse-dev:i386 \
-#           libqt5x11extras5-dev:i386 libspeexdsp-dev:i386 libswresample-dev:i386 libswscale-dev:i386 libudev-dev:i386 libv4l-dev:i386 \
-#           libvlc-dev:i386 libx11-dev:i386 libx264-dev:i386 libxcb-shm0-dev:i386 libxcb-xinerama0-dev:i386 libxcomposite-dev:i386 \
-#           libxinerama-dev:i386 qtbase5-dev:i386 libqt5svg5-dev:i386 libxcb-randr0-dev:i386 \
-#           libxcb-xfixes0-dev:i386 libx11-xcb-dev:i386 libxcb1-dev:i386
-      - name: 'Checkout OBS'
+      - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag }}'
+        uses: actions/checkout@v2.3.3
+        with:
+          path: 'plugin'
+          ref: '${{ needs.get_plugin_info.outputs.git_tag }}'
+          submodules: 'recursive'
+          
+      - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.git_tag }}'
         uses: actions/checkout@v2
         with:
           repository: obsproject/obs-studio
-          path: ${{ github.workspace }}/obs-studio
+          path: 'obs-studio'
+          ref: '${{ needs.get_obs_info.outputs.git_tag }}'
+          fetch-depth: 0
           submodules: 'recursive'
-      - name: 'Get OBS-Studio git info'
-        shell: bash
-        working-directory: ${{ github.workspace }}/obs-studio
-        run: |
-          git fetch --prune --unshallow
-          echo OBS_GIT_BRANCH=`git rev-parse --abbrev-ref HEAD` >> $GITHUB_ENV
-          echo OBS_GIT_HASH=`git rev-parse --short HEAD` >> $GITHUB_ENV
-          echo OBS_GIT_TAG=`git describe --tags --abbrev=0` >> $GITHUB_ENV
-      - name: 'Checkout last OBS-Studio release (${{ env.OBS_GIT_TAG }})'
-        shell: bash
-        working-directory: ${{ github.workspace }}/obs-studio
-        run: |
-          git checkout ${{ env.OBS_GIT_TAG }}
-          git submodule update
-      - name: 'Checkout obs-rtspserver'
-        uses: actions/checkout@v2
-        with:
-          path: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
-          submodules: 'recursive'
-      - name: 'Get obs-rtspserver tag'
-        shell: bash
-        run: |
-          export GIT_TAG=${GITHUB_REF/refs\/tags\//}
-          echo GIT_TAG=${GIT_TAG} >> $GITHUB_ENV
-          echo TAG_VERSION=${GIT_TAG#v} >> $GITHUB_ENV
-      - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
-        shell: bash
-        working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
-        run: |
-          git checkout ${{ env.GIT_TAG }}
-          git submodule update
-      - name: 'Add obs-rtspserver Subdirectory'
-        working-directory: ${{ github.workspace }}/obs-studio/plugins
-        run: echo "add_subdirectory(obs-rtspserver)" >> ./CMakeLists.txt
-#      - name: 'Configure OBS 32-bit'
-#        working-directory: ${{ github.workspace }}/obs-studio
-#        run: |
-#          mkdir ./build32
-#          cd ./build32
-#          cmake -D CMAKE_CXX_FLAGS=-m32 -D CMAKE_C_FLAGS=-m32 -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr ..
-#      - name: 'Build obs-rtspserver 32-bit'
-#        working-directory: ${{ github.workspace }}/obs-studio/build32/plugins/obs-rtspserver/
-#        run: |
-#          make -j4
-      - name: 'Configure OBS 64-bit'
-        working-directory: ${{ github.workspace }}/obs-studio
-        run: |
-          mkdir ./build64
-          cd ./build64
-          cmake -DENABLE_WAYLAND=OFF -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DDISABLE_PYTHON="ON" -DBUILD_BROWSER=OFF -DENABLE_PIPEWIRE=OFF ..
-      - name: 'Build obs-rtspserver 64-bit'
-        working-directory: ${{ github.workspace }}/obs-studio/build64/plugins/obs-rtspserver/
-        run: |
-          make -j4
-      - name: 'Set release filename'
-        shell: bash
-        run: |
-          FILENAME="obs-rtspserver-${{ env.GIT_TAG }}-linux"
-          echo LINUX_FILENAME=$FILENAME >> $GITHUB_ENV
-      - name: 'Package obs-rtspserver'
-        working-directory: ${{ github.workspace }}
-        run: |
-          mkdir -p build-package/obs-rtspserver/bin/64bit
-          mkdir -p build-package/obs-rtspserver/data
-          cp ./obs-studio/build64/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/obs-rtspserver/bin/64bit/
-          cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/obs-rtspserver/data/
-          mkdir release
-          tar zcvf "./release/${{ env.LINUX_FILENAME }}.tar.gz" -C "./build-package" .
-      - name: 'Publish files'
-        if: success()
+          
+      - name: "Install Dependencies"
+        working-directory: 'plugin'
+        run: CI/linux/01_install_dependencies.sh --disable-pipewire
+        
+      - name: 'Build libobs and obs-frontend-api'
+        if: steps.libobs-cache.outputs.cache-hit != 'true'
+        working-directory: 'plugin'
+        run: CI/linux/02_build_obs-libs.sh --disable-pipewire
+        
+      - name: 'Build plugin'
+        working-directory: 'plugin'
+        run: CI/linux/03_build_plugin.sh
+        
+      - name: 'Create build artifact'
+        working-directory: 'plugin'
+        if: success() && (github.event_name != 'pull_request' || env.SEEKING_TESTERS == '1')
+        run: CI/linux/04_package_plugin.sh
+
+      - name: 'Upload build Artifact'
+        if: success() && (github.event_name != 'pull_request' || env.SEEKING_TESTERS == '1')
         uses: actions/upload-artifact@v2
         with:
-          name: '${{ env.GIT_TAG }}-linux'
-          path: ${{ github.workspace }}/release/*
+          name: '${{ env.PRODUCT_NAME }}-linux-${{ matrix.ubuntu }}'
+          path: '${{ github.workspace }}/plugin/*.deb'
           
   macos_build:
     name: 'Mac OS 64bit'
