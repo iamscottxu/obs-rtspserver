@@ -11,7 +11,7 @@ set_target_properties(OBS::obs-frontend-api PROPERTIES
     )
 add_library(obs-frontend-api ALIAS OBS::obs-frontend-api)
 
-find_package(Libobs REQUIRED)
+find_package(libobs REQUIRED)
 add_library(OBS::libobs STATIC IMPORTED GLOBAL)
 set_target_properties(OBS::libobs PROPERTIES
     IMPORTED_LOCATION "${LIBOBS_LIB}"
