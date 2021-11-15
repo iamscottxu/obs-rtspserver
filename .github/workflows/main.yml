@@ -240,6 +240,7 @@ jobs:
         working-directory: 'plugin'
         run: |
           export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
+          chmod +x CI/linux/03_build_plugin.sh
           CI/linux/03_build_plugin.sh
         
       - name: 'Create build artifact'
