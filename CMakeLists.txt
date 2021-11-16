@@ -3,8 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 include(external/GitInfoHelper.cmake)
 get_git_version(OBS_RTSPSERVER_GIT_TAG OBS_RTSPSERVER_VERSION OBS_RTSPSERVER_SHORT_VERSION OBS_RTSPSERVER_LONG_VERSION)
 project(obs-rtspserver VERSION ${OBS_RTSPSERVER_LONG_VERSION})
-
-add_subdirectory(rtsp-server)
+set(LINUX_MAINTAINER_EMAIL "scottxu@scottxublog.com")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
@@ -15,6 +14,9 @@ set(OBS_FRONTEND_API_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/UI/obs-frontend-api")
 if (NOT COMMAND install_obs_plugin_with_data)
     include(external/BuildHelper.cmake)
 endif()
+
+add_subdirectory(rtsp-server)
+
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 
