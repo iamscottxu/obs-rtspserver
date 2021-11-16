@@ -9,9 +9,13 @@ function(get_git_version git_tag_name git_tag_version_name git_tag_short_version
     
 	string(REGEX MATCH "[0-9]+.[0-9]+.[0-9]+(-[a-z0-9]+)+$" git_tag_version "${git_tag}")
 	string(REGEX MATCH "^[0-9]+.[0-9]+.[0-9]+"  git_tag_short_version "${git_tag_version}")
-	set(_git_tag_tweak_version "0")
 	string(REGEX MATCH "-[0-9]+-g"  _git_tag_tweak_version_temp "${git_tag_version}")
 	string(REGEX MATCH "[0-9]+"  _git_tag_tweak_version "${_git_tag_tweak_version_temp}")
+	if(_git_tag_tweak_version MATCHES "[0-9]+")
+		string(REGEX MATCH "[0-9]+"  _git_tag_tweak_version "${_git_tag_tweak_version_temp}")
+	else()
+		set(_git_tag_tweak_version, "0")
+	endif()
 	set(git_tag_long_version "${git_tag_short_version}.${_git_tag_tweak_version}")
 
 	set(${git_tag_name} "${git_tag}" PARENT_SCOPE)
