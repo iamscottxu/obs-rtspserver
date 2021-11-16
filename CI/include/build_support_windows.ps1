@@ -107,8 +107,7 @@ function Install-Windows-Dependencies {
 
     $ObsBuildDependencies = @(
         @("7z", "7zip"),
-        @("cmake", "cmake --install-arguments 'ADD_CMAKE_TO_PATH=System'"),
-        @("iscc", "innosetup")
+        @("cmake", "cmake --install-arguments 'ADD_CMAKE_TO_PATH=System'")
     )
 
     if(!(Test-CommandExists "choco")) {

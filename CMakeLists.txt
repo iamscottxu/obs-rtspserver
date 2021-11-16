@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
-project(obs-rtspserver)
+
+include(external/GitInfoHelper.cmake)
+get_git_version(OBS_RTSPSERVER_GIT_TAG OBS_RTSPSERVER_VERSION OBS_RTSPSERVER_SHORT_VERSION OBS_RTSPSERVER_LONG_VERSION)
+project(obs-rtspserver VERSION ${OBS_RTSPSERVER_LONG_VERSION})
 
 add_subdirectory(rtsp-server)
 
@@ -47,11 +50,7 @@ target_link_libraries(obs-rtspserver PRIVATE
 	Qt5::Core
 	Qt5::Widgets)
 
-set(OBS_RTSPSERVER_VERSION_MAJOR 2)
-set(OBS_RTSPSERVER_VERSION_MINOR 2)
-set(OBS_RTSPSERVER_VERSION_PATCH 0)
-set(OBS_RTSPSERVER_VERSION_STRING "${OBS_RTSPSERVER_VERSION_MAJOR}.${OBS_RTSPSERVER_VERSION_MINOR}.${OBS_RTSPSERVER_VERSION_PATCH}")
-add_definitions(-DVERSION_STRING="${OBS_RTSPSERVER_VERSION_STRING}")
+add_definitions(-DVERSION_STRING="${OBS_RTSPSERVER_VERSION}")
 		
 if(WIN32)
 	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/rtspoutput.rc.in ${CMAKE_CURRENT_SOURCE_DIR}/rtspoutput.rc)
@@ -66,7 +65,7 @@ else()
 	set_target_properties(obs-rtspserver
 			PROPERTIES
 			FOLDER "plugins"
-			VERSION "${OBS_RTSPSERVER_VERSION_STRING}"
+			VERSION "${CMAKE_PROJECT_VERSION}"
 			PRODUCTNAME "OBS RTSP Server Plugin")
 endif()
 
