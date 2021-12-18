@@ -249,7 +249,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: '${{ env.PRODUCT_NAME }}-linux-${{ matrix.ubuntu }}'
-          path: '${{ github.workspace }}/plugin/build/${{ env.PRODUCT_NAME }}-*-linux.(deb|tar.gz)'
+          path: '${{ github.workspace }}/plugin/build/${{ env.PRODUCT_NAME }}-*-linux.*'
           
   macos_build:
     name: 'Mac OS 64bit'
