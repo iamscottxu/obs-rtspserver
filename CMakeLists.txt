@@ -68,7 +68,7 @@ else()
 	set_target_properties(obs-rtspserver
 			PROPERTIES
 			FOLDER "plugins"
-			VERSION "${CMAKE_PROJECT_VERSION}"
+			VERSION "${OBS_RTSPSERVER_VERSION}"
 			PRODUCTNAME "OBS RTSP Server Plugin")
 endif()
 

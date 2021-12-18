@@ -17,15 +17,21 @@ package_obs_plugin() {
 
     ensure_dir "${CHECKOUT_DIR}"
 
-    step "Package ${PRODUCT_NAME}..."
+    step "Configuring OBS plugin build system"
 
     cmake -S . -B ${BUILD_DIR} -DOBS_SOURCE_DIR="../obs-studio" -DOBS_PLUGIN_LINUX_PACK_GENERATOR="DEB" -G Ninja ${CMAKE_CCACHE_OPTIONS} ${QUIET:+-Wno-deprecated -Wno-dev --log-level=ERROR}
+
+    step "Package ${PRODUCT_NAME}..."
     
     cmake --build ${BUILD_DIR} -t package
 
     mv -f "${CHECKOUT_DIR}/${BUILD_DIR}/${ORIGINAL_FILE_NAME}.deb" "${CHECKOUT_DIR}/${BUILD_DIR}/${FILE_NAME}.deb"
 
+    step "Configuring OBS plugin build system"
+
     cmake -S . -B ${BUILD_DIR} -DOBS_SOURCE_DIR="../obs-studio" -DOBS_PLUGIN_LINUX_PACK_GENERATOR="TGZ" -G Ninja ${CMAKE_CCACHE_OPTIONS} ${QUIET:+-Wno-deprecated -Wno-dev --log-level=ERROR}
+
+    step "Package ${PRODUCT_NAME}..."
     
     cmake --build ${BUILD_DIR} -t package
 
@@ -44,7 +50,7 @@ package-plugin-standalone() {
 
     GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
     GIT_HASH=$(git rev-parse --short HEAD)
-    GIT_TAG=$(git describe --tags --always --dirty=-dev)
+    GIT_TAG=$(git describe --tags --always --dirty='-dev')
     GIT_VERSION=$(echo ${GIT_TAG} | grep -Eos '[0-9]+.[0-9]+.[0-9]+(-[a-z0-9]+)+$')
     ORIGINAL_FILE_NAME="${PRODUCT_NAME}-${GIT_VERSION}-Linux"
     FILE_NAME="${PRODUCT_NAME}-${GIT_TAG}-linux"

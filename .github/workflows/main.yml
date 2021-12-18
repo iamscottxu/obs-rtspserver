@@ -224,6 +224,7 @@ jobs:
       - name: "Install Dependencies"
         working-directory: 'plugin'
         run: |
+          git describe --tags --always --dirty='-dev' --debug
           export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
           chmod +x CI/linux/01_install_dependencies.sh
           CI/linux/01_install_dependencies.sh --disable-pipewire
@@ -232,6 +233,7 @@ jobs:
         if: steps.libobs-cache.outputs.cache-hit != 'true'
         working-directory: 'plugin'
         run: |
+          git describe --tags --always --dirty='-dev' --debug
           export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
           chmod +x CI/linux/02_build_obs_libs.sh
           CI/linux/02_build_obs_libs.sh --disable-pipewire
@@ -239,6 +241,7 @@ jobs:
       - name: 'Build plugin'
         working-directory: 'plugin'
         run: |
+          git describe --tags --always --dirty='-dev' --debug
           export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
           chmod +x CI/linux/03_build_plugin.sh
           CI/linux/03_build_plugin.sh
@@ -246,6 +249,7 @@ jobs:
       - name: 'Create build artifact'
         working-directory: 'plugin'
         run: |
+          git describe --tags --always --dirty='-dev' --debug
           export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
           chmod +x CI/linux/04_package_plugin.sh
           CI/linux/04_package_plugin.sh
@@ -254,7 +258,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: '${{ env.PRODUCT_NAME }}-linux-${{ matrix.ubuntu }}'
-          path: '${{ github.workspace }}/plugin/build/*.(deb|tar.gz)'
+          path: '${{ github.workspace }}/plugin/build/${{ env.PRODUCT_NAME }}-*-linux.(deb|tar.gz)'
           
   macos_build:
     name: 'Mac OS 64bit'
