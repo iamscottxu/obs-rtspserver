@@ -23,13 +23,13 @@ package_obs_plugin() {
     
     cmake --build ${BUILD_DIR} -t package
 
-    mv "./${BUILD_DIR}/*.deb" "./${BUILD_DIR}/${FILE_NAME}.deb"
+    mv "${CHECKOUT_DIR}/${BUILD_DIR}/*.deb" "${CHECKOUT_DIR}/${BUILD_DIR}/${FILE_NAME}.deb"
 
     cmake -S . -B ${BUILD_DIR} -DOBS_SOURCE_DIR="../obs-studio" -DOBS_PLUGIN_LINUX_PACK_GENERATOR="TGZ" -G Ninja ${CMAKE_CCACHE_OPTIONS} ${QUIET:+-Wno-deprecated -Wno-dev --log-level=ERROR}
     
     cmake --build ${BUILD_DIR} -t package
 
-    mv "./${BUILD_DIR}/*.tar.gz" "./${BUILD_DIR}/${FILE_NAME}.tar.gz"
+    mv "${CHECKOUT_DIR}/${BUILD_DIR}/*.tar.gz" "${CHECKOUT_DIR}/${BUILD_DIR}/${FILE_NAME}.tar.gz"
 
 }
 
