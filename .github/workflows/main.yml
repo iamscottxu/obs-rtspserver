@@ -54,7 +54,7 @@ jobs:
           echo ::set-output name=git_tag::${GIT_TAG}
           
   clang_check:
-    name: '02 - Code Format Check'
+    name: '02 - Code format check'
     runs-on: [ubuntu-latest]
     needs: [get_obs_info, get_plugin_info]
     steps:
@@ -145,7 +145,7 @@ jobs:
           path: '${{ github.workspace }}/plugin/*-windows-*.zip'
           
   windows_package:
-    name: '03 - Windows Installer'
+    name: '04 - Windows Installer'
     runs-on: [windows-latest]
     needs: [windows_build]
     steps:
@@ -195,7 +195,7 @@ jobs:
           path: '${{ github.workspace }}/plugin/${{ env.PRODUCT_NAME }}-*-windows-all*.*'
 
   linux_build:
-    name: '02 - Linux (Ubuntu)'
+    name: '03 - Linux (Ubuntu)'
     runs-on: ${{ matrix.ubuntu }}
     strategy:
       matrix:
@@ -355,7 +355,7 @@ jobs:
           path:  ${{ github.workspace }}/release/*
             
   make-release:
-    name: 'Upload release'
+    name: '05 - Upload release'
     runs-on: [ubuntu-latest]
     needs: [windows_package, linux_build, macos_build]
     steps:
