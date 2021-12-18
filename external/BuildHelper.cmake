@@ -5,6 +5,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/external
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/release")
 
+if(OS_LINUX)
+	set(CPACK_RPM_PACKAGE_LICENSE "GPL-2.0")
+    set(CPACK_SOURCE_PACKAGE_FILE_NAME "${OBS_PLUGIN_PACKAGE_FILE_NAME}")
+endif()
+
 find_package(obs-frontend-api REQUIRED)
 add_library(OBS::obs-frontend-api STATIC IMPORTED GLOBAL)
 set_target_properties(OBS::obs-frontend-api PROPERTIES

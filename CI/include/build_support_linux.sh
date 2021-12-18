@@ -10,7 +10,7 @@
 
 # Setup build environment
 
-CI_OBS_VERSION=$(cat "${CI_WORKFLOW}" | sed -En "s/[ ]+OBS_VERSION: '([0-9\.]+)'/\1/p")
+# CI_OBS_VERSION=$(cat "${CI_WORKFLOW}" | sed -En "s/[ ]+OBS_VERSION: '([0-9\.]+)'/\1/p")
 
 if [ "${TERM-}" -a -z "${CI}" ]; then
     COLOR_RED=$(tput setaf 1)

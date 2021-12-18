@@ -19,7 +19,7 @@ package_obs_plugin() {
 
     step "Package ${PRODUCT_NAME}..."
 
-    cmake --build ${BUILD_DIR} -t package
+    cmake --build ${BUILD_DIR} -DOBS_PLUGIN_LINUX_PACK_GENERATOR="DEB" -DOBS_PLUGIN_PACKAGE_FILE_NAME="${FILE_NAME}" -t package
 
 }
 
@@ -35,7 +35,7 @@ package-plugin-standalone() {
     GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
     GIT_HASH=$(git rev-parse --short HEAD)
     GIT_TAG=$(git describe --tags --abbrev=0 2&>/dev/null || true)
-    FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-0.0.1}-${GIT_HASH}.deb"
+    FILE_NAME="${PRODUCT_NAME}-${GIT_TAG}-linux.deb"
 
     package_obs_plugin
 }
