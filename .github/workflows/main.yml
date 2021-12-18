@@ -243,7 +243,7 @@ jobs:
         working-directory: 'plugin'
         run: |
           export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
-          source I/linux/04_package_plugin.sh
+          source CI/linux/04_package_plugin.sh
 
       - name: 'Upload build Artifact'
         uses: actions/upload-artifact@v2
