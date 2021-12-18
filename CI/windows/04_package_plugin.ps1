@@ -112,7 +112,7 @@ function Package-Plugin-Standalone {
     $GitBranch = git rev-parse --abbrev-ref HEAD
     $GitHash = git rev-parse --short HEAD
     $ErrorActionPreference = "SilentlyContiue"
-    $GitTag = git describe --tags --abbrev=0
+    $GitTag = git describe --tags --always --dirty=-dev
     $ErrorActionPreference = "Stop"
 
     if ($null -eq $GitTag) {

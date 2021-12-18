@@ -147,13 +147,13 @@ jobs:
   windows_package:
     name: '04 - Windows Installer'
     runs-on: [windows-latest]
-    needs: [windows_build]
+    needs: [get_plugin_info, windows_build]
     steps:
-      - name: 'Checkout plugin ${{ env.GIT_TAG }}'
+      - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag }}'
         uses: actions/checkout@v2.3.3
         with:
           path: 'plugin'
-          ref: '${{ env.GIT_TAG }}'
+          ref: '${{ needs.get_plugin_info.outputs.git_tag }}'
           submodules: 'recursive'
           
       - name: 'Download 64-bit artifact'
@@ -197,10 +197,10 @@ jobs:
   linux_build:
     name: '03 - Linux (Ubuntu)'
     runs-on: ${{ matrix.ubuntu }}
+    needs: [get_obs_info, get_plugin_info, clang_check]
     strategy:
       matrix:
         ubuntu: ['ubuntu-20.04']
-    needs: [get_obs_info, get_plugin_info, clang_check]
     defaults:
       run:
         shell: bash
@@ -259,7 +259,7 @@ jobs:
   macos_build:
     name: 'Mac OS 64bit'
     runs-on: [macos-latest]
-    needs: [clang_check]
+    needs: [get_obs_info, get_plugin_info, clang_check]
     steps:
       - name: 'Install brew'
         run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
@@ -357,13 +357,8 @@ jobs:
   make-release:
     name: '05 - Upload release'
     runs-on: [ubuntu-latest]
-    needs: [windows_package, linux_build, macos_build]
+    needs: [get_plugin_info, windows_package, linux_build, macos_build]
     steps:
-      - name: 'Get the version'
-        shell: bash
-        id: get_version
-        run: |
-          echo GIT_TAG=${GITHUB_REF/refs\/tags\//} >> $GITHUB_ENV
       - name: 'Download release artifacts'
         uses: actions/download-artifact@v2
       - name: 'Upload Windows .zip artifact to release'
@@ -372,8 +367,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-windows-release/${{ env.PRODUCT_NAME }}-${{ env.GIT_TAG }}-windows-all.zip
-          asset_name: ${{ env.PRODUCT_NAME }}-${{ env.GIT_TAG }}-windows.zip
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-windows-release/${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag }}-windows-all.zip
+          asset_name: ${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag }}-windows.zip
           asset_content_type: application/zip
       - name: 'Upload Windows .exe artifact to release'
         uses: actions/upload-release-asset@v1
@@ -381,8 +376,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-windows-release/${{ env.PRODUCT_NAME }}-${{ env.GIT_TAG }}-windows-all-installer.exe
-          asset_name: ${{ env.PRODUCT_NAME }}-${{ env.GIT_TAG }}-windows-installer.exe
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-windows-release/${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag }}-windows-all-installer.exe
+          asset_name: ${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag }}-windows-installer.exe
           asset_content_type: application/x-msdownload
       - name: 'Upload linux .tar.gz artifact to release'
         uses: actions/upload-release-asset@v1
@@ -390,8 +385,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.GIT_TAG }}-linux/obs-rtspserver-${{ env.GIT_TAG }}-linux.tar.gz
-          asset_name: obs-rtspserver-${{ env.GIT_TAG }}-linux.tar.gz
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-linux.tar.gz
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-linux.tar.gz
+          asset_content_type: application/x-tar
+      - name: 'Upload linux .deb artifact to release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-linux.deb
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-linux.tar.gz
           asset_content_type: application/x-tar
       - name: 'Upload macos .zip artifact to release'
         uses: actions/upload-release-asset@v1
@@ -399,8 +403,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.GIT_TAG }}-macos/obs-rtspserver-${{ env.GIT_TAG }}-macos.zip
-          asset_name: obs-rtspserver-${{ env.GIT_TAG }}-macos.zip
+          asset_path: ${{ github.workspace }}/${{ needs.get_plugin_info.outputs.git_tag }}-macos/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos.zip
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos.zip
           asset_content_type: application/zip
       - name: 'Upload macos .pkg artifact to release'
         uses: actions/upload-release-asset@v1
@@ -408,6 +412,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.GIT_TAG }}-macos/obs-rtspserver-${{ env.GIT_TAG }}-macos.pkg
-          asset_name: obs-rtspserver-${{ env.GIT_TAG }}-macos.pkg
+          asset_path: ${{ github.workspace }}/${{ needs.get_plugin_info.outputs.git_tag }}-macos/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos.pkg
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos.pkg
           asset_content_type: application/vnd.apple.installer+xml
