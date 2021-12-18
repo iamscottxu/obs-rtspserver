@@ -1,7 +1,7 @@
 
 
 function(get_git_version git_tag_name git_tag_version_name git_tag_short_version_name git_tag_long_version_name)
-	execute_process(COMMAND git describe --tags --always --dirty='-dev'
+	execute_process(COMMAND git describe --tags --always --dirty=-dev
 		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 		TIMEOUT 10
 		OUTPUT_VARIABLE git_tag
