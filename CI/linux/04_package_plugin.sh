@@ -44,7 +44,7 @@ package-plugin-standalone() {
 
     GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
     GIT_HASH=$(git rev-parse --short HEAD)
-    GIT_TAG=$(git describe --tags --abbrev=0 2&>/dev/null || true)
+    GIT_TAG=$(git describe --tags --always --dirty=-dev)
     ORIGINAL_FILE_NAME="${PRODUCT_NAME}-${GIT_TAG}-Linux"
     FILE_NAME="${PRODUCT_NAME}-${GIT_TAG}-linux"
 
