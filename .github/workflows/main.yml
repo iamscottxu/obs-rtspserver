@@ -230,7 +230,6 @@ jobs:
           CI/linux/01_install_dependencies.sh --disable-pipewire
         
       - name: 'Build libobs and obs-frontend-api'
-        if: steps.libobs-cache.outputs.cache-hit != 'true'
         working-directory: 'plugin'
         run: |
           git describe --tags --always --dirty='-dev' --debug
