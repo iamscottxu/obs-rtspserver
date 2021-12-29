@@ -260,7 +260,7 @@ jobs:
     needs: [get_obs_info, get_plugin_info, clang_check]
     env:
       MACOSX_DEPLOYMENT_TARGET: '10.13'
-      BLOCKED_FORMULAS: 'speexdsp curl php'
+      BLOCKED_FORMULAS: 'speexdsp'
     defaults:
       run:
         shell: bash
