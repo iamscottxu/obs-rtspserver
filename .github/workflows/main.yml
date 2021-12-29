@@ -311,7 +311,7 @@ jobs:
           export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
           export QT_HASH="${{ env.QT_HASH_MAC }}"
           export MACOSX_DEPLOYMENT_TARGET="${{ env.MACOSX_DEPLOYMENT_TARGET }}"
-          source CI/macos/02_build_obs-libs.sh --architecture "${{ matrix.arch }}"
+          source CI/macos/02_build_obs_libs.sh --architecture "${{ matrix.arch }}"
 
       - name: 'Build plugin'
         working-directory: 'plugin'
