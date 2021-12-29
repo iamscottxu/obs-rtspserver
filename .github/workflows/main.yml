@@ -294,6 +294,7 @@ jobs:
           fi
 
       - name: 'Install dependencies'
+        working-directory: 'plugin'
         run:  |
           export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
           export MACOS_DEPS_VERSION="${{ env.DEPS_VERSION_MAC }}"
@@ -323,7 +324,6 @@ jobs:
           source CI/macos/03_build_plugin.sh --codesign --architecture "${{ matrix.arch }}"
 
       - name: 'Create build artifact'
-        if: success() && (github.event_name != 'pull_request' || env.SEEKING_TESTERS == '1')
         working-directory: 'plugin'
         run:  |
           export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
@@ -334,7 +334,6 @@ jobs:
           source CI/macos/04_package_plugin.sh --codesign --architecture "${{ matrix.arch }}"
 
       - name: 'Upload build Artifact'
-        if: success() && (github.event_name != 'pull_request' || env.SEEKING_TESTERS == '1')
         uses: actions/upload-artifact@v2
         with:
           name: '${{ env.PRODUCT_NAME }}-macos-${{ matrix.arch }}'
