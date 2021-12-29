@@ -252,102 +252,93 @@ jobs:
           path: '${{ github.workspace }}/plugin/build/${{ env.PRODUCT_NAME }}-*-linux.*'
           
   macos_build:
-    name: 'Mac OS 64bit'
+    name: '03 - macOS (Latest)'
     runs-on: [macos-latest]
+    strategy:
+      matrix:
+        arch: ['x86_64']
     needs: [get_obs_info, get_plugin_info, clang_check]
+    env:
+      MACOSX_DEPLOYMENT_TARGET: '10.13'
+      BLOCKED_FORMULAS: 'speexdsp curl php'
+    defaults:
+      run:
+        shell: bash
     steps:
-      - name: 'Install brew'
-        run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-      - name: 'Install prerequisite'
-        run: |
-            rm -rf '/usr/local/bin/2to3'
-            brew install ffmpeg x264 qt5 packages
-      - name: 'Checkout OBS'
+      - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag }}'
+        uses: actions/checkout@v2.3.3
+        with:
+          path: 'plugin'
+          ref: '${{ needs.get_plugin_info.outputs.git_tag }}'
+          submodules: 'recursive'
+          
+      - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.git_tag }}'
         uses: actions/checkout@v2
         with:
           repository: obsproject/obs-studio
-          path: ${{ github.workspace }}/obs-studio
+          path: 'obs-studio'
+          ref: '${{ needs.get_obs_info.outputs.git_tag }}'
+          fetch-depth: 0
           submodules: 'recursive'
-      - name: 'Get OBS-Studio git info'
-        shell: bash
-        working-directory: ${{ github.workspace }}/obs-studio
+
+      - name: 'Setup build environment'
         run: |
-          git fetch --prune --unshallow
-          echo OBS_GIT_BRANCH=`git rev-parse --abbrev-ref HEAD` >> $GITHUB_ENV
-          echo OBS_GIT_HASH=`git rev-parse --short HEAD` >> $GITHUB_ENV
-          echo OBS_GIT_TAG=`git describe --tags --abbrev=0` >> $GITHUB_ENV
-      - name: 'Checkout last OBS-Studio release (${{ env.OBS_GIT_TAG }})'
-        shell: bash
-        working-directory: ${{ github.workspace }}/obs-studio
-        run: |
-          git checkout ${{ env.OBS_GIT_TAG }}
-          git submodule update
-      - name: 'Checkout obs-rtspserver'
-        uses: actions/checkout@v2
-        with:
-          path: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
-          submodules: 'recursive'
-      - name: 'Get obs-rtspserver tag'
-        shell: bash
-        run: |
-          export GIT_TAG=${GITHUB_REF/refs\/tags\//}
-          echo GIT_TAG=${GIT_TAG} >> $GITHUB_ENV
-          echo TAG_VERSION=${GIT_TAG#v} >> $GITHUB_ENV
-      - name: 'Checkout obs-rtspserver release (${{ env.GIT_TAG }})'
-        shell: bash
-        working-directory: ${{ github.workspace }}/obs-studio/plugins/obs-rtspserver
-        run: |
-          git checkout ${{ env.GIT_TAG }}
-          git submodule update
-      - name: 'Add obs-rtspserver Subdirectory'
-        working-directory: ${{ github.workspace }}/obs-studio/plugins
-        run: echo "add_subdirectory(obs-rtspserver)" >> ./CMakeLists.txt
-      - name: 'Configure OBS 64-bit'
-        working-directory: ${{ github.workspace }}/obs-studio
-        run: |
-          mkdir ./build64
-          cd ./build64
-          cmake -DQTDIR="/usr/local/opt/qt@5" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DDISABLE_PYTHON="ON" -DBUILD_BROWSER=OFF ..
-      - name: 'Build obs-rtspserver 64-bit'
-        working-directory: ${{ github.workspace }}/obs-studio/build64/plugins/obs-rtspserver/
-        run: |
-          make -j4
-      - name: 'Set release filename'
-        shell: bash
-        run: |
-          FILENAME="obs-rtspserver-${{ env.GIT_TAG }}-macos"
-          echo MACOS_FILENAME=$FILENAME >> $GITHUB_ENV
-      - name: 'Package obs-rtspserver'
-        working-directory: ${{ github.workspace }}
-        run: |
-          mkdir -p build-package/obs-rtspserver/bin
-          mkdir -p build-package/obs-rtspserver/data
-          cp ./obs-studio/build64/plugins/obs-rtspserver/obs-rtspserver.so ./build-package/obs-rtspserver/bin/
-          cp -r ./obs-studio/plugins/obs-rtspserver/data/* ./build-package/obs-rtspserver/data/
-          cp -r ./obs-studio/plugins/obs-rtspserver/pkg ./pkg
-          cp ./obs-studio/plugins/obs-rtspserver/LICENSE ./pkg/LICENSE.txt
-          mkdir release
-          cd ./build-package
-          install_name_tool \
-            -change /usr/local/opt/ffmpeg/lib/libavutil.56.dylib @rpath/libavutil.56.dylib \
-            -change /usr/local/opt/ffmpeg/lib/libavfilter.7.dylib @rpath/libavfilter.7.dylib \
-            -change /usr/local/opt/qt@5/lib/QtWidgets.framework/Versions/5/QtWidgets @rpath/QtWidgets.framework/Versions/5/QtWidgets \
-            -change /usr/local/opt/qt@5/lib/QtGui.framework/Versions/5/QtGui @rpath/QtGui.framework/Versions/5/QtGui \
-            -change /usr/local/opt/qt@5/lib/QtCore.framework/Versions/5/QtCore @rpath/QtCore.framework/Versions/5/QtCore \
-            ./obs-rtspserver/bin/obs-rtspserver.so
-          zip -r "../release/${{ env.MACOS_FILENAME }}.zip" "./"
-      - name: 'Build obs-rtspserver package'
-        working-directory: ${{ github.workspace }}/pkg
-        run: |
-            sed -i "" 's/%{VERSION}/${{ env.TAG_VERSION }}/g' ./obs-rtspserver.pkgproj
-            packagesbuild -v --package-version "${{ env.TAG_VERSION }}" ./obs-rtspserver.pkgproj
-            mv ./build/obs-rtspserver.pkg ../release/${{ env.MACOS_FILENAME }}.pkg
-      - name: 'Publish files'
-        if: success()
+          REMOVE_FORMULAS=""
+          for FORMULA in ${{ env.BLOCKED_FORMULAS }}; do
+            if [ -d "/usr/local/opt/${FORMULA}" ]; then
+              REMOVE_FORMULAS="${REMOVE_FORMULAS}${FORMULA} "
+            fi
+          done
+          if [ -n "${REMOVE_FORMULAS}" ]; then
+            brew uninstall ${REMOVE_FORMULAS}
+          fi
+
+      - name: 'Install dependencies'
+        run:  |
+          export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
+          export MACOS_DEPS_VERSION="${{ env.DEPS_VERSION_MAC }}"
+          export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
+          export QT_HASH="${{ env.QT_HASH_MAC }}"
+          export MACOSX_DEPLOYMENT_TARGET="${{ env.MACOSX_DEPLOYMENT_TARGET }}"
+          source CI/macos/01_install_dependencies.sh --architecture "${{ matrix.arch }}"
+
+      - name: 'Build libobs and obs-frontend-api'
+        working-directory: 'plugin'
+        run:  |
+          export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
+          export MACOS_DEPS_VERSION="${{ env.DEPS_VERSION_MAC }}"
+          export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
+          export QT_HASH="${{ env.QT_HASH_MAC }}"
+          export MACOSX_DEPLOYMENT_TARGET="${{ env.MACOSX_DEPLOYMENT_TARGET }}"
+          source CI/macos/02_build_obs-libs.sh --architecture "${{ matrix.arch }}"
+
+      - name: 'Build plugin'
+        working-directory: 'plugin'
+        run:  |
+          export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
+          export MACOS_DEPS_VERSION="${{ env.DEPS_VERSION_MAC }}"
+          export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
+          export QT_HASH="${{ env.QT_HASH_MAC }}"
+          export MACOSX_DEPLOYMENT_TARGET="${{ env.MACOSX_DEPLOYMENT_TARGET }}"
+          source CI/macos/03_build_plugin.sh --codesign --architecture "${{ matrix.arch }}"
+
+      - name: 'Create build artifact'
+        if: success() && (github.event_name != 'pull_request' || env.SEEKING_TESTERS == '1')
+        working-directory: 'plugin'
+        run:  |
+          export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
+          export MACOS_DEPS_VERSION="${{ env.DEPS_VERSION_MAC }}"
+          export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
+          export QT_HASH="${{ env.QT_HASH_MAC }}"
+          export MACOSX_DEPLOYMENT_TARGET="${{ env.MACOSX_DEPLOYMENT_TARGET }}"
+          source CI/macos/04_package_plugin.sh --codesign --architecture "${{ matrix.arch }}"
+
+      - name: 'Upload build Artifact'
+        if: success() && (github.event_name != 'pull_request' || env.SEEKING_TESTERS == '1')
         uses: actions/upload-artifact@v2
         with:
-          name: '${{ env.GIT_TAG }}-macos'
-          path:  ${{ github.workspace }}/release/*
+          name: '${{ env.PRODUCT_NAME }}-macos-${{ matrix.arch }}'
+          path: '${{ github.workspace }}/plugin/*-macos.pkg'
             
   make-release:
     name: '05 - Upload release files'

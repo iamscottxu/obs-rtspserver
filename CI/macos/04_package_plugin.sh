@@ -42,7 +42,7 @@ package_obs_plugin() {
     fi
 
     step "Package ${PRODUCT_NAME}..."
-    packagesbuild ./bundle/installer-macOS.generated.pkgproj
+    packagesbuild ./bundle/installer-macos.generated.pkgproj
 
     step "Codesigning installer package..."
     read_codesign_ident_installer
@@ -100,11 +100,11 @@ package-plugin-standalone() {
     check_archs
 
     if [ "${ARCH}" = "arm64" ]; then
-        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-${GIT_HASH}-macOS-Apple.pkg"
+        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-${GIT_HASH}-macos-apple.pkg"
     elif [ "${ARCH}" = "x86_64" ]; then
-        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-${GIT_HASH}-macOS-Intel.pkg"
+        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-${GIT_HASH}-macos-intel.pkg"
     else
-        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-${GIT_HASH}-macOS-Universal.pkg"
+        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-${GIT_HASH}-macos-universal.pkg"
     fi
 
     check_curl
