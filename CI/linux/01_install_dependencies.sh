@@ -60,6 +60,7 @@ install_linux_dependencies() {
         libx11-xcb-dev \
         libmbedtls-dev \
         libgl1-mesa-dev \
+        libpci-dev \
         pkg-config \
         libcurl4-openssl-dev
 
