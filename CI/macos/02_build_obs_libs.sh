@@ -40,6 +40,7 @@ build-obs-libs-standalone() {
         source "${CHECKOUT_DIR}/CI/include/build_environment.sh"
     fi
     PRODUCT_NAME="${PRODUCT_NAME:-obs-plugin}"
+    DEPS_BUILD_DIR="${CHECKOUT_DIR}/../obs-build-dependencies"
     OBS_BUILD_DIR="${CHECKOUT_DIR}/../obs-studio"
     source "${CHECKOUT_DIR}/CI/include/build_support.sh"
     source "${CHECKOUT_DIR}/CI/include/build_support_macos.sh"
