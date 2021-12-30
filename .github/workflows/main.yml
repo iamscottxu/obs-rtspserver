@@ -321,7 +321,7 @@ jobs:
           export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
           export QT_HASH="${{ env.QT_HASH_MAC }}"
           export MACOSX_DEPLOYMENT_TARGET="${{ env.MACOSX_DEPLOYMENT_TARGET }}"
-          source CI/macos/03_build_plugin.sh --codesign --architecture "${{ matrix.arch }}"
+          source CI/macos/03_build_plugin.sh --architecture "${{ matrix.arch }}"
 
       - name: 'Create build artifact'
         working-directory: 'plugin'
@@ -331,7 +331,7 @@ jobs:
           export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
           export QT_HASH="${{ env.QT_HASH_MAC }}"
           export MACOSX_DEPLOYMENT_TARGET="${{ env.MACOSX_DEPLOYMENT_TARGET }}"
-          source CI/macos/04_package_plugin.sh --codesign --architecture "${{ matrix.arch }}"
+          source CI/macos/04_package_plugin.sh --architecture "${{ matrix.arch }}"
 
       - name: 'Upload build Artifact'
         uses: actions/upload-artifact@v2
