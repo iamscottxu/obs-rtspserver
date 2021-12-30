@@ -84,7 +84,6 @@ notarize_obs_plugin() {
 
 package-plugin-standalone() {
     CHECKOUT_DIR="$(/usr/bin/git rev-parse --show-toplevel)"
-    ensure_dir "${CHECKOUT_DIR}"
     if [ -f "${CHECKOUT_DIR}/CI/include/build_environment.sh" ]; then
         source "${CHECKOUT_DIR}/CI/include/build_environment.sh"
     fi
@@ -94,17 +93,18 @@ package-plugin-standalone() {
 
     GIT_BRANCH=$(/usr/bin/git rev-parse --abbrev-ref HEAD)
     GIT_HASH=$(/usr/bin/git rev-parse --short HEAD)
-    GIT_TAG=$(/usr/bin/git describe --tags --abbrev=0 2&>/dev/null || true)
+    GIT_TAG=$(/usr/bin/git describe --tags --always --dirty='-dev')
+    GIT_VERSION=$(echo ${GIT_TAG} | grep -Eos '[0-9]+.[0-9]+.[0-9]+(-[a-z0-9]+)+$')
 
     check_macos_version
     check_archs
 
     if [ "${ARCH}" = "arm64" ]; then
-        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-${GIT_HASH}-macos-apple.pkg"
+        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-macos-apple.pkg"
     elif [ "${ARCH}" = "x86_64" ]; then
-        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-${GIT_HASH}-macos-intel.pkg"
+        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-macos-intel.pkg"
     else
-        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-${GIT_HASH}-macos-universal.pkg"
+        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-macos-universal.pkg"
     fi
 
     check_curl
