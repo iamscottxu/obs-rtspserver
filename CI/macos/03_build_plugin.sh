@@ -30,6 +30,7 @@ build_obs_plugin() {
         -DCMAKE_BUILD_TYPE=${BUILD_CONFIG} \
         -DOBS_BUNDLE_CODESIGN_IDENTITY="${CODESIGN_IDENT:--}" \
         -DCMAKE_PREFIX_PATH="${DEPS_BUILD_DIR}/obs-deps" \
+        -DOBS_SOURCE_DIR="${OBS_BUILD_DIR}" \
         ${QUIET:+-Wno-deprecated -Wno-dev --log-level=ERROR}
 
     step "Building OBS plugin"
@@ -44,6 +45,7 @@ build-plugin-standalone() {
     fi
     PRODUCT_NAME="${PRODUCT_NAME:-obs-plugin}"
     DEPS_BUILD_DIR="${CHECKOUT_DIR}/../obs-build-dependencies"
+    OBS_BUILD_DIR="${CHECKOUT_DIR}/../obs-studio"
     source "${CHECKOUT_DIR}/CI/include/build_support.sh"
     source "${CHECKOUT_DIR}/CI/include/build_support_macos.sh"
 
