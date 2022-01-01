@@ -5,3 +5,6 @@ resource.h
 bundle/installer-macos.generated.pkgproj
 bundle/LICENSE.txt
 bundle/macOS/Plugin-Info.plist
+*.pkg
+release/
+debug/
