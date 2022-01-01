@@ -11,7 +11,7 @@ BEGIN
       VALUE "InternalName", "obs-rtspserver"
       VALUE "OriginalFilename", "obs-rtspserver.dll"
       VALUE "ProductName", "OBS Studio"
-      VALUE "ProductVersion", "${OBS_RTSPSERVER_VERSION}"
+      VALUE "ProductVersion", "${OBS_PLUGUIN_VERSION}"
       VALUE "Comments", "RTSP server for OBS"
     END
   END
