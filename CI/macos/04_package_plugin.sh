@@ -21,8 +21,11 @@ package_obs_plugin() {
 
     ensure_dir "${CHECKOUT_DIR}"
 
-    if [ -d "${BUILD_DIR}/release/${PRODUCT_NAME}.plugin" ]; then
-        rm -rf "${BUILD_DIR}/release/${PRODUCT_NAME}.plugin"
+    # if [ -d "${BUILD_DIR}/rundir/${PRODUCT_NAME}.plugin" ]; then
+    #     rm -rf "${BUILD_DIR}/rundir/${PRODUCT_NAME}.plugin"
+    # fi
+    if [ -d "${CHECKOUT_DIR}/release" ]; then
+        rm -rf "${CHECKOUT_DIR}/release"
     fi
 
     cmake --install ${BUILD_DIR}
@@ -44,15 +47,15 @@ package_obs_plugin() {
     step "Package ${PRODUCT_NAME}..."
     cp "${CHECKOUT_DIR}/LICENSE" "${CHECKOUT_DIR}/bundle/LICENSE.txt"
     packagesbuild ./bundle/installer-macos.generated.pkgproj
-    zip -r -o "${FILE_NAME}.zip" "${BUILD_DIR}/release"
+    zip -r -o "${FILE_NAME}.zip" "${CHECKOUT_DIR}/release"
 
     if [ "${CODESIGN}" ]; then
         step "Codesigning installer package..."
         read_codesign_ident_installer
 
-        /usr/bin/productsign --sign "${CODESIGN_IDENT_INSTALLER}" "${BUILD_DIR}/${PRODUCT_NAME}.pkg" "${FILE_NAME}.pkg"
+        /usr/bin/productsign --sign "${CODESIGN_IDENT_INSTALLER}" "${BUILD_DIR}/${PRODUCT_NAME}.pkg" "${BUILD_DIR}/${FILE_NAME}.pkg"
     else
-        mv "${BUILD_DIR}/${PRODUCT_NAME}.pkg" "${FILE_NAME}.pkg"
+        mv "${BUILD_DIR}/${PRODUCT_NAME}.pkg" "${BUILD_DIR}/${FILE_NAME}.pkg"
     fi
 }
 
