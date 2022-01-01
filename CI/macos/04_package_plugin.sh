@@ -42,7 +42,7 @@ package_obs_plugin() {
     fi
 
     step "Package ${PRODUCT_NAME}..."
-    sed -i "" 's/%{VERSION}/${{ env.TAG_VERSION }}/g' ./bundle/installer-macos.generated.pkgproj
+    cp "${CHECKOUT_DIR}/LICENSE" "${CHECKOUT_DIR}/LICENSE.txt"
     packagesbuild ./bundle/installer-macos.generated.pkgproj
 
     step "Codesigning installer package..."
