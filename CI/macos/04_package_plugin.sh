@@ -42,7 +42,7 @@ package_obs_plugin() {
     fi
 
     step "Package ${PRODUCT_NAME}..."
-    cp "${CHECKOUT_DIR}/LICENSE" "${CHECKOUT_DIR}/LICENSE.txt"
+    cp "${CHECKOUT_DIR}/LICENSE" "${CHECKOUT_DIR}/bundle/LICENSE.txt"
     packagesbuild ./bundle/installer-macos.generated.pkgproj
 
     step "Codesigning installer package..."
