@@ -337,7 +337,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: '${{ env.PRODUCT_NAME }}-macos-${{ matrix.arch }}'
-          path: '${{ github.workspace }}/plugin/*-macos.pkg'
+          path: '${{ github.workspace }}/plugin/*-macos-*.pkg'
             
   make-release:
     name: '05 - Upload release files'
