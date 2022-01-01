@@ -393,7 +393,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ needs.get_plugin_info.outputs.git_tag }}-macos/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-universal.zip
+          asset_path: ${{ github.workspace }}/${{ needs.get_plugin_info.outputs.git_tag }}-macos-universal/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-universal.zip
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-universal.zip
           asset_content_type: application/zip
 
