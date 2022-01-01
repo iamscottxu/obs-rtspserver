@@ -1,15 +1,12 @@
 cmake_minimum_required(VERSION 3.5)
 
 include(external/GitInfoHelper.cmake)
-get_git_version(OBS_RTSPSERVER_GIT_TAG OBS_RTSPSERVER_VERSION OBS_RTSPSERVER_SHORT_VERSION OBS_RTSPSERVER_LONG_VERSION)
+get_git_version(OBS_PLUGUN_GIT_TAG OBS_PLUGUN_VERSION OBS_PLUGUN_SHORT_VERSION OBS_PLUGUN_LONG_VERSION)
 project(obs-rtspserver VERSION ${OBS_RTSPSERVER_LONG_VERSION})
 set(LINUX_MAINTAINER_EMAIL "scottxu@scottxublog.com")
-set(CMAKE_PROJECT_VERSION "${OBS_RTSPSERVER_VERSION}")
-if(APPLE)
+set(CMAKE_PROJECT_VERSION "${OBS_PLUGUN_VERSION}")
+if(OS_MACOS)
 	set(MACOS_BUNDLEID "com.scottxu.obs-rtspserver")
-    set(MACOSX_PLUGIN_GUI_IDENTIFIER "${MACOS_BUNDLEID}")
-    set(MACOSX_PLUGIN_BUNDLE_VERSION "${OBS_RTSPSERVER_LONG_VERSION}")
-    set(MACOSX_PLUGIN_SHORT_VERSION_STRING "${OBS_RTSPSERVER_VERSION}")
 endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -59,7 +56,7 @@ target_link_libraries(obs-rtspserver PRIVATE
 	Qt5::Core
 	Qt5::Widgets)
 
-add_definitions(-DVERSION_STRING="${OBS_RTSPSERVER_VERSION}")
+add_definitions(-DVERSION_STRING="${OBS_PLUGUN_VERSION}")
 		
 if(WIN32)
 	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/rtspoutput.rc.in ${CMAKE_CURRENT_SOURCE_DIR}/rtspoutput.rc)
@@ -74,7 +71,7 @@ else()
 	set_target_properties(obs-rtspserver
 			PROPERTIES
 			FOLDER "plugins"
-			VERSION "${OBS_RTSPSERVER_VERSION}"
+			VERSION "${OBS_PLUGUN_VERSION}"
 			PRODUCTNAME "OBS RTSP Server Plugin")
 endif()
 

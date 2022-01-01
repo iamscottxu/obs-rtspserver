@@ -8,6 +8,13 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/release")
 if(OS_LINUX)
 	set(CPACK_RPM_PACKAGE_LICENSE "GPL-2.0")
     #set(CPACK_SOURCE_PACKAGE_FILE_NAME "${OBS_PLUGIN_PACKAGE_FILE_NAME}")
+elseif(OS_MACOS)
+    set(MACOSX_PLUGIN_GUI_IDENTIFIER "${MACOS_BUNDLEID}")
+    set(MACOSX_PLUGIN_BUNDLE_VERSION "${OBS_PLUGUN_LONG_VERSION}")
+    set(MACOSX_PLUGIN_SHORT_VERSION_STRING "${OBS_PLUGUN_VERSION}")
+    configure_file(
+		bundle/installer-macos.pkgproj.in
+		${CMAKE_SOURCE_DIR}/bundle/installer-macos.generated.pkgproj)
 endif()
 
 find_package(obs-frontend-api REQUIRED)
