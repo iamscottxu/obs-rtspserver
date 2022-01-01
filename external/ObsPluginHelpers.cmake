@@ -180,8 +180,8 @@ else()
 
 			set(CPACK_GENERATOR "${OBS_PLUGIN_LINUX_PACK_GENERATOR}")
 			set(CPACK_DEBIAN_PACKAGE_DEPENDS
-				"obs-studio (>= 27.0.0), libqt5core5a (>= 5.9.0~beta), \
-				libqt5gui5 (>= 5.3.0), libqt5widgets5 (>= 5.7.0)")
+				"obs-studio (>= 27.0.0), libqt5core5a (>= 5.9.0~beta), libqt5gui5 (>= 5.3.0), libqt5widgets5 (>= 5.7.0)")
+			set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
 
 			if(NOT LINUX_PORTABLE)
 				set(CPACK_SET_DESTDIR ON)
