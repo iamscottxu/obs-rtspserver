@@ -49,7 +49,7 @@ package_obs_plugin() {
     packagesbuild ./bundle/installer-macos.generated.pkgproj
 
     ensure_dir "${CHECKOUT_DIR}/release"
-    zip -r -o -X "${BUILD_DIR}/${FILE_NAME}.zip" "${PRODUCT_NAME}.plugin"
+    zip -r -o -X "${BUILD_DIR}/${FILE_NAME}.zip" "./${PRODUCT_NAME}.plugin"
 
     ensure_dir "${CHECKOUT_DIR}"
 
