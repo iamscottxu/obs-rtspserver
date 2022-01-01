@@ -256,7 +256,7 @@ jobs:
     runs-on: [macos-latest]
     strategy:
       matrix:
-        arch: ['x86_64']
+        arch: ['universal']
     needs: [get_obs_info, get_plugin_info, clang_check]
     env:
       MACOSX_DEPLOYMENT_TARGET: '10.13'
@@ -337,7 +337,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: '${{ env.PRODUCT_NAME }}-macos-${{ matrix.arch }}'
-          path: '${{ github.workspace }}/plugin/*-macos-*.pkg'
+          path: '${{ github.workspace }}/plugin/*-macos-${{ matrix.arch }}.*'
             
   make-release:
     name: '05 - Upload release files'
@@ -346,6 +346,7 @@ jobs:
     steps:
       - name: 'Download release artifacts'
         uses: actions/download-artifact@v2
+
       - name: 'Upload Windows .zip artifact to release'
         uses: actions/upload-release-asset@v1
         env:
@@ -355,6 +356,7 @@ jobs:
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-windows-release/${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag }}-windows-all.zip
           asset_name: ${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag }}-windows.zip
           asset_content_type: application/zip
+
       - name: 'Upload Windows .exe artifact to release'
         uses: actions/upload-release-asset@v1
         env:
@@ -364,6 +366,7 @@ jobs:
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-windows-release/${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag }}-windows-all-installer.exe
           asset_name: ${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag }}-windows-installer.exe
           asset_content_type: application/x-msdownload
+
       - name: 'Upload linux .tar.gz artifact to release'
         uses: actions/upload-release-asset@v1
         env:
@@ -373,6 +376,7 @@ jobs:
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-linux.tar.gz
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-linux.tar.gz
           asset_content_type: application/x-gzip
+
       - name: 'Upload linux .deb artifact to release'
         uses: actions/upload-release-asset@v1
         env:
@@ -382,21 +386,23 @@ jobs:
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-linux.deb
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-linux.deb
           asset_content_type: application/vnd.debian.binary-package
+
       - name: 'Upload macos .zip artifact to release'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ needs.get_plugin_info.outputs.git_tag }}-macos/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos.zip
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos.zip
+          asset_path: ${{ github.workspace }}/${{ needs.get_plugin_info.outputs.git_tag }}-macos/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-universal.zip
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-universal.zip
           asset_content_type: application/zip
+
       - name: 'Upload macos .pkg artifact to release'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ needs.get_plugin_info.outputs.git_tag }}-macos/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos.pkg
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos.pkg
+          asset_path: ${{ github.workspace }}/${{ needs.get_plugin_info.outputs.git_tag }}-macos/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-universal.pkg
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-universal.pkg
           asset_content_type: application/vnd.apple.installer+xml

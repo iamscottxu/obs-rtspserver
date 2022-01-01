@@ -44,6 +44,7 @@ package_obs_plugin() {
     step "Package ${PRODUCT_NAME}..."
     cp "${CHECKOUT_DIR}/LICENSE" "${CHECKOUT_DIR}/bundle/LICENSE.txt"
     packagesbuild ./bundle/installer-macos.generated.pkgproj
+    zip -r -o "${FILE_NAME}.zip" "${BUILD_DIR}"
 
     if [ "${CODESIGN}" ]; then
         step "Codesigning installer package..."
@@ -104,13 +105,7 @@ package-plugin-standalone() {
     check_macos_version
     check_archs
 
-    if [ "${ARCH}" = "arm64" ]; then
-        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-macos-apple"
-    elif [ "${ARCH}" = "x86_64" ]; then
-        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-macos-intel"
-    else
-        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-macos-universal"
-    fi
+    FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-macos-${ARCH}"
 
     check_curl
     package_obs_plugin
