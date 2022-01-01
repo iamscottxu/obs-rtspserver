@@ -178,7 +178,7 @@ else()
 			set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${LINUX_MAINTAINER_EMAIL}")
 			set(CPACK_PACKAGE_VERSION "${CMAKE_PROJECT_VERSION}")
 
-			set(CPACK_GENERATOR "DEB TGZ")
+			set(CPACK_GENERATOR "DEB" "TGZ")
 			set(CPACK_DEBIAN_PACKAGE_DEPENDS
 				"obs-studio (>= 27.0.0), libqt5core5a (>= 5.9.0~beta), libqt5gui5 (>= 5.3.0), libqt5widgets5 (>= 5.7.0)")
 
