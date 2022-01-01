@@ -45,10 +45,14 @@ package_obs_plugin() {
     cp "${CHECKOUT_DIR}/LICENSE" "${CHECKOUT_DIR}/bundle/LICENSE.txt"
     packagesbuild ./bundle/installer-macos.generated.pkgproj
 
-    step "Codesigning installer package..."
-    read_codesign_ident_installer
+    if [ "${CODESIGN}" ]; then
+        step "Codesigning installer package..."
+        read_codesign_ident_installer
 
-    /usr/bin/productsign --sign "${CODESIGN_IDENT_INSTALLER}" "${BUILD_DIR}/${PRODUCT_NAME}.pkg" "${FILE_NAME}"
+        /usr/bin/productsign --sign "${CODESIGN_IDENT_INSTALLER}" "${BUILD_DIR}/${PRODUCT_NAME}.pkg" "${FILE_NAME}.pkg"
+    else
+        mv "${BUILD_DIR}/${PRODUCT_NAME}.pkg" "${FILE_NAME}.pkg"
+    fi
 }
 
 notarize_obs_plugin() {
@@ -101,11 +105,11 @@ package-plugin-standalone() {
     check_archs
 
     if [ "${ARCH}" = "arm64" ]; then
-        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-macos-apple.pkg"
+        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-macos-apple"
     elif [ "${ARCH}" = "x86_64" ]; then
-        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-macos-intel.pkg"
+        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-macos-intel"
     else
-        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-macos-universal.pkg"
+        FILE_NAME="${PRODUCT_NAME}-${GIT_TAG:-${PRODUCT_VERSION}}-macos-universal"
     fi
 
     check_curl
