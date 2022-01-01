@@ -21,8 +21,8 @@ package_obs_plugin() {
 
     ensure_dir "${CHECKOUT_DIR}"
 
-    if [ -d "${BUILD_DIR}/rundir/${PRODUCT_NAME}.plugin" ]; then
-        rm -rf "${BUILD_DIR}/rundir/${PRODUCT_NAME}.plugin"
+    if [ -d "${BUILD_DIR}/release/${PRODUCT_NAME}.plugin" ]; then
+        rm -rf "${BUILD_DIR}/release/${PRODUCT_NAME}.plugin"
     fi
 
     cmake --install ${BUILD_DIR}
@@ -44,7 +44,7 @@ package_obs_plugin() {
     step "Package ${PRODUCT_NAME}..."
     cp "${CHECKOUT_DIR}/LICENSE" "${CHECKOUT_DIR}/bundle/LICENSE.txt"
     packagesbuild ./bundle/installer-macos.generated.pkgproj
-    zip -r -o "${FILE_NAME}.zip" "${BUILD_DIR}/rundir"
+    zip -r -o "${FILE_NAME}.zip" "${BUILD_DIR}/release"
 
     if [ "${CODESIGN}" ]; then
         step "Codesigning installer package..."
