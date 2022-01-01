@@ -256,7 +256,7 @@ jobs:
     runs-on: [macos-latest]
     strategy:
       matrix:
-        arch: ['universal']
+        arch: ['universal', 'x86_64', 'arm64']
     needs: [get_obs_info, get_plugin_info, clang_check]
     env:
       MACOSX_DEPLOYMENT_TARGET: '10.13'
