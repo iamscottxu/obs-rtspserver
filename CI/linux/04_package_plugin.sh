@@ -17,23 +17,11 @@ package_obs_plugin() {
 
     ensure_dir "${CHECKOUT_DIR}"
 
-    step "Configuring OBS plugin build system"
-
-    cmake -S . -B ${BUILD_DIR} -DOBS_SOURCE_DIR="../obs-studio" -DOBS_PLUGIN_LINUX_PACK_GENERATOR="DEB" -G Ninja ${CMAKE_CCACHE_OPTIONS} ${QUIET:+-Wno-deprecated -Wno-dev --log-level=ERROR}
-
     step "Package ${PRODUCT_NAME}..."
     
-    cmake --build ${BUILD_DIR} -t package
+    cmake --build "/usr" -t package
 
     mv -f "${CHECKOUT_DIR}/${BUILD_DIR}/${ORIGINAL_FILE_NAME}.deb" "${CHECKOUT_DIR}/${BUILD_DIR}/${FILE_NAME}.deb"
-
-    step "Configuring OBS plugin build system"
-
-    cmake -S . -B ${BUILD_DIR} -DOBS_SOURCE_DIR="../obs-studio" -DOBS_PLUGIN_LINUX_PACK_GENERATOR="TGZ" -G Ninja ${CMAKE_CCACHE_OPTIONS} ${QUIET:+-Wno-deprecated -Wno-dev --log-level=ERROR}
-
-    step "Package ${PRODUCT_NAME}..."
-    
-    cmake --build ${BUILD_DIR} -t package
 
     mv -f "${CHECKOUT_DIR}/${BUILD_DIR}/${ORIGINAL_FILE_NAME}.tar.gz" "${CHECKOUT_DIR}/${BUILD_DIR}/${FILE_NAME}.tar.gz"
 

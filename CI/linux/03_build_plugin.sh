@@ -20,7 +20,9 @@ build_obs_plugin() {
     step "Configuring OBS plugin build system"
     check_ccache
 
-    cmake -S . -B ${BUILD_DIR} -DOBS_SOURCE_DIR="${OBS_BUILD_DIR}" -G Ninja ${CMAKE_CCACHE_OPTIONS} ${QUIET:+-Wno-deprecated -Wno-dev --log-level=ERROR}
+    cmake -S . -B ${BUILD_DIR} -G Ninja ${CMAKE_CCACHE_OPTIONS} \
+        -DOBS_SOURCE_DIR="${OBS_BUILD_DIR}" \
+        ${QUIET:+-Wno-deprecated -Wno-dev --log-level=ERROR}
 
     step "Building OBS plugin"
     cmake --build ${BUILD_DIR}
