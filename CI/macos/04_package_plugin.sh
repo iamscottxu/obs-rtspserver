@@ -47,7 +47,7 @@ package_obs_plugin() {
     step "Package ${PRODUCT_NAME}..."
     cp "${CHECKOUT_DIR}/LICENSE" "${CHECKOUT_DIR}/bundle/LICENSE.txt"
     packagesbuild ./bundle/installer-macos.generated.pkgproj
-    zip -r -o "${FILE_NAME}.zip" "${CHECKOUT_DIR}/release"
+    zip -r -o "${BUILD_DIR}/${FILE_NAME}.zip" "${CHECKOUT_DIR}/release"
 
     if [ "${CODESIGN}" ]; then
         step "Codesigning installer package..."
