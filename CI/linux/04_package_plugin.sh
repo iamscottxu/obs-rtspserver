@@ -19,7 +19,7 @@ package_obs_plugin() {
 
     step "Package ${PRODUCT_NAME}..."
     
-    cmake --build "/usr" -t package
+    cmake --build "${BUILD_DIR}" -t package
 
     mv -f "${CHECKOUT_DIR}/${BUILD_DIR}/${ORIGINAL_FILE_NAME}.deb" "${CHECKOUT_DIR}/${BUILD_DIR}/${FILE_NAME}.deb"
 
