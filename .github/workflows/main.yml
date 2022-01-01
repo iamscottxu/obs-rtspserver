@@ -387,7 +387,7 @@ jobs:
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-linux.deb
           asset_content_type: application/vnd.debian.binary-package
 
-      - name: 'Upload macos .zip artifact to release'
+      - name: 'Upload macos universal .zip artifact to release'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -397,7 +397,7 @@ jobs:
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-universal.zip
           asset_content_type: application/zip
 
-      - name: 'Upload macos .pkg artifact to release'
+      - name: 'Upload macos universal .pkg artifact to release'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -405,4 +405,44 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-universal/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-universal.pkg
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-universal.pkg
+          asset_content_type: application/vnd.apple.installer+xml
+      
+      - name: 'Upload macos x86_64 .zip artifact to release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-x86_64/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-x86_64.zip
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-x86_64.zip
+          asset_content_type: application/zip
+
+      - name: 'Upload macos x86_64 .pkg artifact to release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-x86_64/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-x86_64.pkg
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-x86_64.pkg
+          asset_content_type: application/vnd.apple.installer+xml
+
+      - name: 'Upload macos arm64 .zip artifact to release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-arm64/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-arm64.zip
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-arm64.zip
+          asset_content_type: application/zip
+
+      - name: 'Upload macos arm64 .pkg artifact to release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-arm64/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-arm64.pkg
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-arm64.pkg
           asset_content_type: application/vnd.apple.installer+xml
