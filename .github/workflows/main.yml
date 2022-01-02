@@ -105,6 +105,7 @@ jobs:
       - name: "Install Dependencies"
         working-directory: 'plugin'
         run: |
+          $env:CI = "true"
           $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
           $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
@@ -114,6 +115,7 @@ jobs:
       - name: 'Build libobs and obs-frontend-api'
         working-directory: 'plugin'
         run: |
+          $env:CI = "true"
           $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
           $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
@@ -132,6 +134,7 @@ jobs:
       - name: 'Create build artifact'
         working-directory: 'plugin'
         run: |
+          $env:CI = "true"
           $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
           $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
@@ -171,6 +174,7 @@ jobs:
       - name: "Install Dependencies"
         working-directory: 'plugin'
         run: |
+          $env:CI = "true"
           $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
           $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
@@ -180,6 +184,7 @@ jobs:
       - name: 'Build NSIS installer'
         working-directory: 'plugin'
         run: |
+          $env:CI = "true"
           $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
           $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
@@ -224,24 +229,28 @@ jobs:
       - name: "Install Dependencies"
         working-directory: 'plugin'
         run: |
+          export CI="true"
           export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
           source CI/linux/01_install_dependencies.sh --disable-pipewire
         
       - name: 'Build libobs and obs-frontend-api'
         working-directory: 'plugin'
         run: |
+          export CI="true"
           export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
           source CI/linux/02_build_obs_libs.sh --disable-pipewire
         
       - name: 'Build plugin'
         working-directory: 'plugin'
         run: |
+          export CI="true"
           export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
           source CI/linux/03_build_plugin.sh
         
       - name: 'Create build artifact'
         working-directory: 'plugin'
         run: |
+          export CI="true"
           export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
           source CI/linux/04_package_plugin.sh
 
@@ -296,6 +305,7 @@ jobs:
       - name: 'Install dependencies'
         working-directory: 'plugin'
         run:  |
+          export CI="true"
           export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
           export MACOS_DEPS_VERSION="${{ env.DEPS_VERSION_MAC }}"
           export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
@@ -306,6 +316,7 @@ jobs:
       - name: 'Build libobs and obs-frontend-api'
         working-directory: 'plugin'
         run:  |
+          export CI="true"
           export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
           export MACOS_DEPS_VERSION="${{ env.DEPS_VERSION_MAC }}"
           export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
@@ -316,6 +327,7 @@ jobs:
       - name: 'Build plugin'
         working-directory: 'plugin'
         run:  |
+          export CI="true"
           export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
           export MACOS_DEPS_VERSION="${{ env.DEPS_VERSION_MAC }}"
           export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
@@ -326,6 +338,7 @@ jobs:
       - name: 'Create build artifact'
         working-directory: 'plugin'
         run:  |
+          export CI="true"
           export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
           export MACOS_DEPS_VERSION="${{ env.DEPS_VERSION_MAC }}"
           export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
