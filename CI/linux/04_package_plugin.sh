@@ -19,8 +19,7 @@ package_obs_plugin() {
 
     step "Package ${PRODUCT_NAME}..."
     
-    #cmake --build "${BUILD_DIR}" -t package
-    cpack -G "DEB" "TGZ"
+    cmake --build "${BUILD_DIR}" -t package
 }
 
 package-plugin-standalone() {
