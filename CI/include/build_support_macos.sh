@@ -28,11 +28,16 @@ if [ "${TERM-}" -a -z "${CI}" ]; then
     COLOR_ORANGE=$(/usr/bin/tput setaf 3)
     COLOR_RESET=$(/usr/bin/tput sgr0)
 else
-    COLOR_RED=""
-    COLOR_GREEN=""
-    COLOR_BLUE=""
-    COLOR_ORANGE=""
-    COLOR_RESET=""
+    #COLOR_RED=""
+    #COLOR_GREEN=""
+    #COLOR_BLUE=""
+    #COLOR_ORANGE=""
+    #COLOR_RESET=""
+    COLOR_RED="::error:: "
+    COLOR_GREEN="::endgroup::\n::group:: "
+    COLOR_BLUE=$(/usr/bin/tput setaf 4)
+    COLOR_ORANGE="::warning:: "
+    COLOR_RESET=$(/usr/bin/tput sgr0)
 fi
 
 ## DEFINE UTILITIES ##
