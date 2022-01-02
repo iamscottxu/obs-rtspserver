@@ -19,7 +19,8 @@ package_obs_plugin() {
 
     step "Package ${PRODUCT_NAME}..."
     
-    cmake --build "${BUILD_DIR}" -t package
+    #cmake --build "${BUILD_DIR}" -t package
+    cpack
 }
 
 package-plugin-standalone() {
