@@ -20,11 +20,6 @@ package_obs_plugin() {
     step "Package ${PRODUCT_NAME}..."
     
     cmake --build "${BUILD_DIR}" -t package
-
-    mv -f "${CHECKOUT_DIR}/${BUILD_DIR}/${ORIGINAL_FILE_NAME}.deb" "${CHECKOUT_DIR}/${BUILD_DIR}/${FILE_NAME}.deb"
-
-    mv -f "${CHECKOUT_DIR}/${BUILD_DIR}/${ORIGINAL_FILE_NAME}.tar.gz" "${CHECKOUT_DIR}/${BUILD_DIR}/${FILE_NAME}.tar.gz"
-
 }
 
 package-plugin-standalone() {
@@ -36,12 +31,11 @@ package-plugin-standalone() {
     source "${CHECKOUT_DIR}/CI/include/build_support.sh"
     source "${CHECKOUT_DIR}/CI/include/build_support_linux.sh"
 
-    GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-    GIT_HASH=$(git rev-parse --short HEAD)
-    GIT_TAG=$(git describe --tags --always --dirty='-dev')
-    GIT_VERSION=$(echo ${GIT_TAG} | grep -Eos '[0-9]+.[0-9]+.[0-9]+(-[a-z0-9]+)+$')
-    ORIGINAL_FILE_NAME="${PRODUCT_NAME}-${GIT_VERSION}-Linux"
-    FILE_NAME="${PRODUCT_NAME}-${GIT_TAG}-linux"
+    #GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    #GIT_HASH=$(git rev-parse --short HEAD)
+    #GIT_TAG=$(git describe --tags --always --dirty='-dev')
+    #GIT_VERSION=$(echo ${GIT_TAG} | grep -Eos '[0-9]+.[0-9]+.[0-9]+(-[a-z0-9]+)+$')
+    #FILE_NAME="${PRODUCT_NAME}-${GIT_TAG}-linux"
 
     package_obs_plugin
 }
