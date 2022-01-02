@@ -49,7 +49,7 @@ package_obs_plugin() {
     packagesbuild ./bundle/installer-macos.generated.pkgproj
 
     ensure_dir "${CHECKOUT_DIR}/release"
-    zip -r9 "${BUILD_DIR}/${FILE_NAME}.zip" .
+    zip -r9 "${CHECKOUT_DIR}/${BUILD_DIR}/${FILE_NAME}.zip" .
     ensure_dir "${CHECKOUT_DIR}"
 
     if [ "${CODESIGN}" ]; then
