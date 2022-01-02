@@ -19,11 +19,6 @@ if [ "${TERM-}" -a -z "${CI}" ]; then
     COLOR_ORANGE=$(tput setaf 3)
     COLOR_RESET=$(tput sgr0)
 else
-    #COLOR_RED=""
-    #COLOR_GREEN=""
-    #COLOR_BLUE=""
-    #COLOR_ORANGE=""
-    #COLOR_RESET=""
     COLOR_RED=$(echo -e '\033[31m')
     COLOR_GREEN=$(echo -e '\033[32m')
     COLOR_BLUE=$(echo -e '\033[34m')

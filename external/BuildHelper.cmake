@@ -6,6 +6,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/external
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/release")
 
 set(CPACK_RPM_PACKAGE_LICENSE "GPL-2.0")
+set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${OBS_PLUGUN_GIT_TAG}-linux")
 #set(CPACK_SOURCE_PACKAGE_FILE_NAME "${OBS_PLUGIN_PACKAGE_FILE_NAME}")
 set(MACOSX_PLUGIN_GUI_IDENTIFIER "${MACOS_BUNDLEID}")
 set(MACOSX_PLUGIN_BUNDLE_VERSION "${OBS_PLUGUN_LONG_VERSION}")
@@ -27,9 +28,7 @@ add_library(libobs ALIAS OBS::libobs)
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/external/ObsPluginHelpers.cmake")
 
-if(OS_LINUX)
-    set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${OBS_PLUGUN_GIT_TAG}-linux")
-elseif(OS_MACOS)
+if(OS_MACOS)
     configure_file(
 		bundle/installer-macos.pkgproj.in
 		${CMAKE_SOURCE_DIR}/bundle/installer-macos.generated.pkgproj)
