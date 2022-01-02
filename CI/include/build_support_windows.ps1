@@ -7,7 +7,7 @@ function Write-Status {
     if (!($Quiet.isPresent)) {
         if (Test-Path env:CI) {
             #Write-Host "[${ProductName}] ${output}"
-            Write-Host -ForegroundColor blue "[${ProductName}] ${output}"
+            Write-Output "`e[33;34m[${ProductName}] ${output}`e[33;0m"
         } else {
             Write-Host -ForegroundColor blue "[${ProductName}] ${output}"
         }
@@ -23,7 +23,7 @@ function Write-Info {
     if (!($Quiet.isPresent)) {
         if (Test-Path env:CI) {
             #Write-Host " + ${output}"
-            Write-Host -ForegroundColor DarkYellow "::warning:: + ${output}"
+            Write-Output "`e[33;33m + ${output}`e[33;0m"
         } else {
             Write-Host -ForegroundColor DarkYellow " + ${output}"
         }
@@ -39,8 +39,7 @@ function Write-Step {
     if (!($Quiet.isPresent)) {
         if (Test-Path env:CI) {
             #Write-Host " + ${output}"
-            Write-Host "::endgroup::"
-            Write-Host "::group:: ${output}"
+            Write-Output "e[33;32m + ${output}`e[33;0m"
         } else {
             Write-Host -ForegroundColor green " + ${output}"
         }
@@ -55,7 +54,7 @@ function Write-Error {
 
     if (Test-Path env:CI) {
         #Write-Host " + ${output}"
-        "::error::  + ${output}"
+        Write-Output "e[33;31m + ${output}`e[33;0m"
     } else {
         Write-Host -ForegroundColor red " + ${output}"
     }

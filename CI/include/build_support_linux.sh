@@ -24,11 +24,11 @@ else
     #COLOR_BLUE=""
     #COLOR_ORANGE=""
     #COLOR_RESET=""
-    COLOR_RED="::error:: "
-    COLOR_GREEN="::endgroup::\n::group:: "
-    COLOR_BLUE=$(tput setaf 4)
-    COLOR_ORANGE="::warning:: "
-    COLOR_RESET=$(tput sgr0)
+    COLOR_RED$(echo -e '\033[31m')
+    COLOR_GREEN=$(echo -e '\033[32m')
+    COLOR_BLUE=$(echo -e '\033[34m')
+    COLOR_ORANGE=$(echo -e '\033[33m')
+    COLOR_RESET=$(echo -e '\033[0m')
 fi
 
 if [ "${CI}" -o "${QUIET}" ]; then
