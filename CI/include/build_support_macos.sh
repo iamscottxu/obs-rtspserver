@@ -33,7 +33,7 @@ else
     #COLOR_BLUE=""
     #COLOR_ORANGE=""
     #COLOR_RESET=""
-    COLOR_RED$(echo -e '\033[31m')
+    COLOR_RED=$(echo -e '\033[31m')
     COLOR_GREEN=$(echo -e '\033[32m')
     COLOR_BLUE=$(echo -e '\033[34m')
     COLOR_ORANGE=$(echo -e '\033[33m')

@@ -39,7 +39,7 @@ function Write-Step {
     if (!($Quiet.isPresent)) {
         if (Test-Path env:CI) {
             #Write-Host " + ${output}"
-            Write-Output "e[33;32m + ${output}`e[33;0m"
+            Write-Output "`e[33;32m + ${output}`e[33;0m"
         } else {
             Write-Host -ForegroundColor green " + ${output}"
         }
