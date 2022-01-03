@@ -304,15 +304,23 @@ jobs:
         id: prerelease_test
         with:
           search_string: ${{ needs.get_plugin_info.outputs.git_tag_name }}
-          regex_pattern: "^v[1-9][0-9]*.[0-9]+.[0-9]+(-[a-z0-9]+)?$"
+          regex_pattern: "^v[1-9][0-9]*.[0-9]+.[0-9]+-[a-z0-9]+$"
+
+      - name: 'Get last release info'
+        id: get_last_release
+        uses: kaliber5/action-get-release@v1
+        with:
+          token: ${{ github.token }}
+          latest: true
 
       - name: 'Create release ${{ needs.get_plugin_info.outputs.git_tag_name }}'
         uses: ncipollo/release-action@v1
         id: create_release
         with:
           #bodyFile: "body.md"
+          body: "**Full Changelog**: https://github.com/iamscottxu/obs-rtspserver/compare/${{ steps.get_last_release.outputs.tag_name }}...${{ needs.get_plugin_info.outputs.git_tag_name }}"
           draft: true
-          prerelease: ${{ steps.prerelease_test.matched }}
+          prerelease: ${{ steps.prerelease_test.outputs.matched }}
           name: "${{ env.PRODUCT_NAME }} ${{ needs.get_plugin_info.outputs.git_tag_name }}"
           token: ${{ secrets.GITHUB_TOKEN }}
 
