@@ -77,7 +77,7 @@ jobs:
     strategy:
       matrix:
         arch: [64, 32]
-    default:
+    defaults:
       env:
         #CMAKE_GENERATOR: "Visual Studio 16 2019"
         #CMAKE_SYSTEM_VERSION: "10.0.18363.657"
