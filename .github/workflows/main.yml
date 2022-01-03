@@ -59,6 +59,7 @@ jobs:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
         uses: actions/checkout@v2.3.3
         with:
+          path: 'plugin'
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
 
