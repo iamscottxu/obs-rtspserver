@@ -311,7 +311,7 @@ jobs:
         id: get_last_release
         uses: kaliber5/action-get-release@v1
         with:
-         token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           latest: true
       
       - name: 'Create changelog text'
