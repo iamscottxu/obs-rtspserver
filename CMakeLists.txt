@@ -2,9 +2,11 @@ cmake_minimum_required(VERSION 3.5)
 
 include(external/GitInfoHelper.cmake)
 get_git_version(OBS_PLUGUN_GIT_TAG OBS_PLUGUIN_VERSION OBS_PLUGUIN_SHORT_VERSION OBS_PLUGUIN_LONG_VERSION)
-project(obs-rtspserver VERSION ${OBS_PLUGUIN_LONG_VERSION})
+project(obs-rtspserver VERSION ${OBS_PLUGUIN_LONG_VERSION} 
+	HOMEPAGE_URL "https://obsproject.com/forum/resources/obs-rtspserver.1037"
+	DESCRIPTION "RTSP server plugin for obs-studio")
 set(LINUX_MAINTAINER_EMAIL "scottxu@scottxublog.com")
-set(CMAKE_PROJECT_VERSION "${OBS_PLUGUIN_VERSION}")
+set(LINUX_MAINTAINER "scottxu")
 set(MACOS_BUNDLEID "com.scottxu.obs-rtspserver")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
