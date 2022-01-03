@@ -37,7 +37,8 @@ install_obs-studio() {
     if [ "${OBS_BRANCH}" ]; then
         CHECKOUT_REF="${OBS_BRANCH}"
     else
-        CHECKOUT_REF="tags/${OBS_VERSION:-${CI_OBS_VERSION}}"
+        #CHECKOUT_REF="tags/${OBS_VERSION:-${CI_OBS_VERSION}}"
+        CHECKOUT_REF="tags/${OBS_VERSION}"
     fi
 
     ensure_dir "${OBS_BUILD_DIR}"
@@ -60,9 +61,12 @@ install_dependencies() {
     trap "caught_error 'install_dependencies'" ERR
 
     BUILD_DEPS=(
-        "obs-deps ${MACOS_DEPS_VERSION:-${CI_DEPS_VERSION}} ${MACOS_DEPS_HASH:-${CI_DEPS_HASH}}"
-        "qt-deps ${MACOS_DEPS_VERSION:-${CI_DEPS_VERSION}} ${QT_HASH:-${CI_QT_HASH}}"
-        "obs-studio ${OBS_VERSION:-${CI_OBS_VERSION}}"
+        #"obs-deps ${MACOS_DEPS_VERSION:-${CI_DEPS_VERSION}} ${MACOS_DEPS_HASH:-${CI_DEPS_HASH}}"
+        "obs-deps ${MACOS_DEPS_VERSION} ${MACOS_DEPS_HASH}"
+        #"qt-deps ${MACOS_DEPS_VERSION:-${CI_DEPS_VERSION}} ${QT_HASH:-${CI_QT_HASH}}"
+        "qt-deps ${MACOS_DEPS_VERSION} ${QT_HASH}"
+        #"obs-studio ${OBS_VERSION:-${CI_OBS_VERSION}}"
+        "obs-studio ${OBS_VERSION}"
     )
 
     install_homebrew_deps

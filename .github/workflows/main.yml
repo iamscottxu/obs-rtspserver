@@ -37,6 +37,7 @@ jobs:
           owner: 'obsproject'
           repo: 'obs-studio'
           latest: true
+          tag_name: null
           
   get_plugin_info:
     name: '01 - Get plugin git info'
@@ -175,6 +176,8 @@ jobs:
     strategy:
       matrix:
         ubuntu: ['ubuntu-20.04']
+    env:
+      OBS_VERSION: "${{ needs.get_obs_info.outputs.latest_tag_name }}"
     defaults:
       run:
         shell: bash
@@ -197,31 +200,19 @@ jobs:
           
       - name: "Install Dependencies"
         working-directory: 'plugin'
-        run: |
-          export CI="true"
-          export OBS_VERSION="${{ needs.get_obs_info.outputs.latest_tag_name }}"
-          source CI/linux/01_install_dependencies.sh --disable-pipewire
+        run: CI/linux/01_install_dependencies.sh --disable-pipewire
         
       - name: 'Build libobs and obs-frontend-api'
         working-directory: 'plugin'
-        run: |
-          export CI="true"
-          export OBS_VERSION="${{ needs.get_obs_info.outputs.latest_tag_name }}"
-          source CI/linux/02_build_obs_libs.sh --disable-pipewire
+        run: CI/linux/02_build_obs_libs.sh --disable-pipewire
         
       - name: 'Build plugin'
         working-directory: 'plugin'
-        run: |
-          export CI="true"
-          export OBS_VERSION="${{ needs.get_obs_info.outputs.latest_tag_name }}"
-          source CI/linux/03_build_plugin.sh
+        run: CI/linux/03_build_plugin.sh
         
       - name: 'Create build artifact'
         working-directory: 'plugin'
-        run: |
-          export CI="true"
-          export OBS_VERSION="${{ needs.get_obs_info.outputs.latest_tag_name }}"
-          source CI/linux/04_package_plugin.sh
+        run: CI/linux/04_package_plugin.sh
 
       - name: 'Upload build Artifact'
         uses: actions/upload-artifact@v2
@@ -239,6 +230,7 @@ jobs:
     env:
       MACOSX_DEPLOYMENT_TARGET: '10.13'
       BLOCKED_FORMULAS: 'speexdsp'
+      OBS_VERSION: "${{ needs.get_obs_info.outputs.latest_tag_name }}"
     defaults:
       run:
         shell: bash
@@ -273,47 +265,19 @@ jobs:
 
       - name: 'Install dependencies'
         working-directory: 'plugin'
-        run:  |
-          export CI="true"
-          export OBS_VERSION="${{ needs.get_obs_info.outputs.latest_tag_name }}"
-          export MACOS_DEPS_VERSION="${{ env.DEPS_VERSION_MAC }}"
-          export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
-          export QT_HASH="${{ env.QT_HASH_MAC }}"
-          export MACOSX_DEPLOYMENT_TARGET="${{ env.MACOSX_DEPLOYMENT_TARGET }}"
-          source CI/macos/01_install_dependencies.sh --architecture "${{ matrix.arch }}"
+        run:  CI/macos/01_install_dependencies.sh --architecture "${{ matrix.arch }}"
 
       - name: 'Build libobs and obs-frontend-api'
         working-directory: 'plugin'
-        run:  |
-          export CI="true"
-          export OBS_VERSION="${{ needs.get_obs_info.outputs.latest_tag_name }}"
-          export MACOS_DEPS_VERSION="${{ env.DEPS_VERSION_MAC }}"
-          export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
-          export QT_HASH="${{ env.QT_HASH_MAC }}"
-          export MACOSX_DEPLOYMENT_TARGET="${{ env.MACOSX_DEPLOYMENT_TARGET }}"
-          source CI/macos/02_build_obs_libs.sh --architecture "${{ matrix.arch }}"
+        run:  CI/macos/02_build_obs_libs.sh --architecture "${{ matrix.arch }}"
 
       - name: 'Build plugin'
         working-directory: 'plugin'
-        run:  |
-          export CI="true"
-          export OBS_VERSION="${{ needs.get_obs_info.outputs.latest_tag_name }}"
-          export MACOS_DEPS_VERSION="${{ env.DEPS_VERSION_MAC }}"
-          export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
-          export QT_HASH="${{ env.QT_HASH_MAC }}"
-          export MACOSX_DEPLOYMENT_TARGET="${{ env.MACOSX_DEPLOYMENT_TARGET }}"
-          source CI/macos/03_build_plugin.sh --architecture "${{ matrix.arch }}"
+        run:  CI/macos/03_build_plugin.sh --architecture "${{ matrix.arch }}"
 
       - name: 'Create build artifact'
         working-directory: 'plugin'
-        run:  |
-          export CI="true"
-          export OBS_VERSION="${{ needs.get_obs_info.outputs.latest_tag_name }}"
-          export MACOS_DEPS_VERSION="${{ env.DEPS_VERSION_MAC }}"
-          export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
-          export QT_HASH="${{ env.QT_HASH_MAC }}"
-          export MACOSX_DEPLOYMENT_TARGET="${{ env.MACOSX_DEPLOYMENT_TARGET }}"
-          source CI/macos/04_package_plugin.sh --architecture "${{ matrix.arch }}"
+        run:  CI/macos/04_package_plugin.sh --architecture "${{ matrix.arch }}"
 
       - name: 'Upload build Artifact'
         uses: actions/upload-artifact@v2

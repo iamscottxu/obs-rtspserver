@@ -15,7 +15,8 @@ install_obs-studio() {
     if [ -n "${OBS_BRANCH}" ]; then
         CHECKOUT_REF="${OBS_BRANCH}"
     else
-        CHECKOUT_REF="tags/${OBS_VERSION:-${CI_OBS_VERSION}}"
+        #CHECKOUT_REF="tags/${OBS_VERSION:-${CI_OBS_VERSION}}"
+        CHECKOUT_REF="tags/${OBS_VERSION}"
     fi
 
     ensure_dir "${OBS_BUILD_DIR}"
@@ -74,7 +75,8 @@ install_dependencies() {
     trap "caught_error 'install_dependencies'" ERR
 
     BUILD_DEPS=(
-        "obs-studio ${OBS_VERSION:-${CI_OBS_VERSION}}"
+        #"obs-studio ${OBS_VERSION:-${CI_OBS_VERSION}}"
+        "obs-studio ${OBS_VERSION}"
     )
 
     install_linux_dependencies

@@ -10,12 +10,16 @@
 
 # Setup build environment
 
-CI_DEPS_VERSION=$(/bin/cat "${CI_WORKFLOW}" | /usr/bin/sed -En "s/[ ]+DEPS_VERSION_MAC: '([0-9\-]+)'/\1/p")
-CI_DEPS_HASH=$(/bin/cat "${CI_WORKFLOW}" | /usr/bin/sed -En "s/[ ]+DEPS_HASH_MAC: '([0-9a-f]+)'/\1/p")
-CI_QT_VERSION=$(/bin/cat "${CI_WORKFLOW}" | /usr/bin/sed -En "s/[ ]+QT_VERSION_MAC: '([0-9\.]+)'/\1/p" | /usr/bin/head -1)
-CI_QT_HASH=$(/bin/cat "${CI_WORKFLOW}" | /usr/bin/sed -En "s/[ ]+QT_HASH_MAC: '([0-9a-f]+)'/\1/p")
-CI_MACOSX_DEPLOYMENT_TARGET=$(/bin/cat "${CI_WORKFLOW}" | /usr/bin/sed -En "s/[ ]+MACOSX_DEPLOYMENT_TARGET: '([0-9\.]+)'/\1/p")
-CI_OBS_VERSION=$(/bin/cat "${CI_WORKFLOW}" | /usr/bin/sed -En "s/[ ]+OBS_VERSION: '([0-9\.]+)'/\1/p")
+#CI_DEPS_VERSION=$(/bin/cat "${CI_WORKFLOW}" | /usr/bin/sed -En "s/[ ]+DEPS_VERSION_MAC: '([0-9\-]+)'/\1/p")
+#CI_DEPS_HASH=$(/bin/cat "${CI_WORKFLOW}" | /usr/bin/sed -En "s/[ ]+DEPS_HASH_MAC: '([0-9a-f]+)'/\1/p")
+#CI_QT_VERSION=$(/bin/cat "${CI_WORKFLOW}" | /usr/bin/sed -En "s/[ ]+QT_VERSION_MAC: '([0-9\.]+)'/\1/p" | /usr/bin/head -1)
+#CI_QT_HASH=$(/bin/cat "${CI_WORKFLOW}" | /usr/bin/sed -En "s/[ ]+QT_HASH_MAC: '([0-9a-f]+)'/\1/p")
+#CI_MACOSX_DEPLOYMENT_TARGET=$(/bin/cat "${CI_WORKFLOW}" | /usr/bin/sed -En "s/[ ]+MACOSX_DEPLOYMENT_TARGET: '([0-9\.]+)'/\1/p")
+#CI_OBS_VERSION=$(/bin/cat "${CI_WORKFLOW}" | /usr/bin/sed -En "s/[ ]+OBS_VERSION: '([0-9\.]+)'/\1/p")
+MACOS_DEPS_VERSION=${MACOS_DEPS_VERSION:-${DEPS_VERSION_MAC}}
+MACOS_DEPS_HASH=${MACOS_DEPS_HASH:-${DEPS_HASH_MAC}}
+MACOS_DEPS_HASH=${MACOS_DEPS_HASH:-${DEPS_HASH_MAC}}
+QT_HASH=${QT_HASH:-${QT_HASH_MAC}}
 
 MACOS_VERSION="$(/usr/bin/sw_vers -productVersion)"
 MACOS_MAJOR="$(echo ${MACOS_VERSION} | /usr/bin/cut -d '.' -f 1)"
@@ -38,7 +42,8 @@ fi
 ## DEFINE UTILITIES ##
 check_macos_version() {
     step "Check macOS version..."
-    MIN_VERSION=${MACOSX_DEPLOYMENT_TARGET:-${CI_MACOSX_DEPLOYMENT_TARGET}}
+    #MIN_VERSION=${MACOSX_DEPLOYMENT_TARGET:-${CI_MACOSX_DEPLOYMENT_TARGET}}
+    MIN_VERSION=${MACOSX_DEPLOYMENT_TARGET}
     MIN_MAJOR=$(echo ${MIN_VERSION} | /usr/bin/cut -d '.' -f 1)
     MIN_MINOR=$(echo ${MIN_VERSION} | /usr/bin/cut -d '.' -f 2)
 

@@ -67,9 +67,13 @@ caught_error() {
 
 BUILD_DIR="${BUILD_DIR:-build}"
 BUILD_CONFIG="${BUILD_CONFIG:-RelWithDebInfo}"
-CI_WORKFLOW="${CHECKOUT_DIR}/.github/workflows/main.yml"
+#CI_WORKFLOW="${CHECKOUT_DIR}/.github/workflows/main.yml"
 CURRENT_ARCH=$(uname -m)
 CURRENT_DATE="$(date +"%Y-%m-%d")"
+
+if [${GITHUB_ACTIONS} -eq "true"]; then
+    ${CI}="true"
+fi
 
 ## Utility functions ##
 
