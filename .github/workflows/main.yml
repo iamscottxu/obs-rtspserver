@@ -8,10 +8,9 @@ on:
     tags:
       - v[1-9].[0-9]+.[0-9]+
       - v[1-9][0-9]+.[0-9]+.[0-9]+
-      - v[1-9].[0-9]+.[0-9]+-[a-z]+[1-9]
-      - v[1-9].[0-9]+.[0-9]+-[a-z]+[1-9][0-9]+
-      - v[1-9][0-9]+.[0-9]+.[0-9]+-[a-z]+[1-9]
-      - v[1-9][0-9]+.[0-9]+.[0-9]+-[a-z]+[1-9][0-9]+
+
+      - v[1-9].[0-9]+.[0-9]+-[a-z0-9]+
+      - v[1-9][0-9]+.[0-9]+.[0-9]+-[a-z0-9]+
 
 env:
   PRODUCT_NAME: 'obs-rtspserver'
@@ -305,7 +304,7 @@ jobs:
         id: prerelease_test
         with:
           search_string: ${{ needs.get_plugin_info.outputs.git_tag_name }}
-          regex_pattern: "^v[1-9][0-9]*.[0-9]+.[0-9]+(-[a-z]+[1-9][0-9]*)?$"
+          regex_pattern: "^v[1-9][0-9]*.[0-9]+.[0-9]+(-[a-z0-9]+)?$"
 
       - name: 'Create release ${{ needs.get_plugin_info.outputs.git_tag_name }}'
         uses: ncipollo/release-action@v1
