@@ -47,7 +47,7 @@ jobs:
       - name: 'Get plugin git tag'
         uses: little-core-labs/get-git-tag@v3.0.1
         id: tag_name
-        with:
+        #with:
           #tagRegex: "foobar-(.*)"  # Optional. Returns specified group text as tag name. Full tag string is returned if regex is not defined.
           #tagRegexGroup: 1 # Optional. Default is 1.
           
