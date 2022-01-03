@@ -292,11 +292,34 @@ jobs:
         with:
           name: '${{ env.PRODUCT_NAME }}-macos-${{ matrix.arch }}'
           path: '${{ github.workspace }}/plugin/build/*-macos-${{ matrix.arch }}.*'
-            
-  create-release:
+
+  create_changelog:
+    name: '02 - Create Changelog'
+    runs-on: [ubuntu-latest]
+    needs: [get_plugin_info]
+    outputs:
+      changelog: "${{ steps.create_changelog_text.outputs.changelog }}\n**Full Changelog**: https://github.com/iamscottxu/obs-rtspserver/compare/${{ steps.get_last_release.outputs.tag_name }}...${{ needs.get_plugin_info.outputs.git_tag_name }}"
+
+    steps:
+      - name: 'Get last release info'
+        id: get_last_release
+        uses: kaliber5/action-get-release@v1
+        with:
+          token: ${{ github.token }}
+          latest: true
+      
+      - name: Create changelog text
+        id: create_changelog_text
+        uses: loopwerk/tag-changelog@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          exclude_types: other,doc,chore
+
+
+  create_release:
     name: '05 - Create release'
     runs-on: [ubuntu-latest]
-    needs: [get_plugin_info, windows_package, linux_build, macos_build]
+    needs: [get_plugin_info, windows_package, linux_build, macos_build, create-changelog]
 
     steps:
       - name: 'Check whether the version is prerelease'
@@ -306,19 +329,12 @@ jobs:
           search_string: ${{ needs.get_plugin_info.outputs.git_tag_name }}
           regex_pattern: "^v[1-9][0-9]*.[0-9]+.[0-9]+-[a-z0-9]+$"
 
-      - name: 'Get last release info'
-        id: get_last_release
-        uses: kaliber5/action-get-release@v1
-        with:
-          token: ${{ github.token }}
-          latest: true
-
       - name: 'Create release ${{ needs.get_plugin_info.outputs.git_tag_name }}'
         uses: ncipollo/release-action@v1
         id: create_release
         with:
           #bodyFile: "body.md"
-          body: "**Full Changelog**: https://github.com/iamscottxu/obs-rtspserver/compare/${{ steps.get_last_release.outputs.tag_name }}...${{ needs.get_plugin_info.outputs.git_tag_name }}"
+          body: "{{ needs.create_changelog.outputs.changelog }}"
           draft: true
           prerelease: ${{ steps.prerelease_test.outputs.matched }}
           name: "${{ env.PRODUCT_NAME }} ${{ needs.get_plugin_info.outputs.git_tag_name }}"
