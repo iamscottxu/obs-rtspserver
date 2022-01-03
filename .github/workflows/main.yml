@@ -320,7 +320,7 @@ jobs:
         with:
           from: "${{ steps.get_last_release.outputs.tag_name }}"
           to: "${{ needs.get_plugin_info.outputs.git_tag_name }}"
-          config-file: ".github/workflows/changelogConfig.json"
+          config-file: "${{ github.workspace }}/.github/workflows/changelogConfig.json"
 
 
   create_release:
