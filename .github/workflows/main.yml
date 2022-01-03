@@ -77,15 +77,10 @@ jobs:
     strategy:
       matrix:
         arch: [64, 32]
-    defaults:
-      env:
-        #CMAKE_GENERATOR: "Visual Studio 16 2019"
-        #CMAKE_SYSTEM_VERSION: "10.0.18363.657"
-        CI: "true"
-        WindowsDepsVersion: ${{ env.DEPS_VERSION_WIN }}
-        WindowsQtVersion: ${{ env.QT_VERSION_WIN }}
-        ObsVersion: "${{ needs.get_obs_info.outputs.latest_tag_name }}"
-        NSISVersion: "${{ env.NSIS_VERSION_WIN }}"
+    env:
+      #CMAKE_GENERATOR: "Visual Studio 16 2019"
+      CMAKE_SYSTEM_VERSION: "10.0.18363.657"
+      OBS_VERSION: "${{ needs.get_obs_info.outputs.latest_tag_name }}"
     steps:
       - name: 'Add msbuild to PATH'
         uses: microsoft/setup-msbuild@v1.0.2
@@ -132,6 +127,10 @@ jobs:
     name: '04 - Windows Installer'
     runs-on: [windows-latest]
     needs: [get_plugin_info, windows_build]
+    env:
+      #CMAKE_GENERATOR: "Visual Studio 16 2019"
+      CMAKE_SYSTEM_VERSION: "10.0.18363.657"
+      OBS_VERSION: "${{ needs.get_obs_info.outputs.latest_tag_name }}"
     steps:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
         uses: actions/checkout@v2.3.3
@@ -154,22 +153,11 @@ jobs:
           
       - name: "Install Dependencies"
         working-directory: 'plugin'
-        run: |
-          $env:CI = "true"
-          $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
-          $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
-          $env:ObsVersion = "${{ needs.get_obs_info.outputs.latest_tag_name }}"
-          $env:NSISVersion = "${{ env.NSIS_VERSION_WIN }}"
-          CI/windows/01_install_dependencies.ps1 -BuildArch 64-bit -NoChoco -InstallList "nsis"
+        run: CI/windows/01_install_dependencies.ps1 -BuildArch 64-bit -NoChoco -InstallList "nsis"
           
       - name: 'Build NSIS installer'
         working-directory: 'plugin'
         run: |
-          $env:CI = "true"
-          $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
-          $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
-          $env:ObsVersion = "${{ needs.get_obs_info.outputs.latest_tag_name }}"
-          $env:NSISVersion = "${{ env.NSIS_VERSION_WIN }}"
           Get-ChildItem -Filter "*-windows-x86.zip" -File | Expand-Archive -Force -DestinationPath ./release/
           Get-ChildItem -Filter "*-windows-x64.zip" -File | Expand-Archive -Force -DestinationPath ./release/
           CI/windows/04_package_plugin.ps1 -BuildArch 64-bit -BuildInstaller -CombinedArchs

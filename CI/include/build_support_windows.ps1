@@ -96,11 +96,20 @@ $BuildDirectory = "$(if (Test-Path Env:BuildDirectory) { $env:BuildDirectory } e
 $BuildConfiguration = "$(if (Test-Path Env:BuildConfiguration) { $env:BuildConfiguration } else { $BuildConfiguration })"
 $BuildArch = "$(if (Test-Path Env:BuildArch) { $env:BuildArch } else { $BuildArch })"
 $OBSBranch = "$(if (Test-Path Env:OBSBranch) { $env:OBSBranch } else { $OBSBranch })"
-$WindowsDepsVersion = "$(if (Test-Path Env:WindowsDepsVersion ) { $env:WindowsDepsVersion } else { "2019" })"
-$WindowsQtVersion = "$(if (Test-Path Env:WindowsQtVersion ) { $env:WindowsQtVersion } else { "5.15.2" })"
+#$WindowsDepsVersion = "$(if (Test-Path Env:WindowsDepsVersion ) { $env:WindowsDepsVersion } else { "2019" })"
+$WindowsDepsVersion = "$(if (Test-Path Env:WindowsDepsVersion ) { $env:DEPS_VERSION_WIN } else { "2019" })"
+#$WindowsQtVersion = "$(if (Test-Path Env:WindowsQtVersion ) { $env:WindowsQtVersion } else { "5.15.2" })"
+$WindowsQtVersion = "$(if (Test-Path Env:WindowsQtVersion ) { $env:QT_VERSION_WIN } else { "5.15.2" })"
 $CmakeSystemVersion = "$(if (Test-Path Env:CMAKE_SYSTEM_VERSION) { $Env:CMAKE_SYSTEM_VERSION } else { "10.0.18363.657" })"
-$OBSVersion = "$(if ( Test-Path Env:OBSVersion ) { $env:ObsVersion } else { "27.1.3" })"
-$NSISVersion = "$(if ( Test-Path Env:NSISVersion ) { $env:NSISVersion } else { "3.08" })"
+#$OBSVersion = "$(if ( Test-Path Env:OBSVersion ) { $env:ObsVersion } else { "27.1.3" })"
+$OBSVersion = "$(if ( Test-Path Env:OBSVersion ) { $env:OBS_VERSION } else { "27.1.3" })"
+#$NSISVersion = "$(if ( Test-Path Env:NSISVersion ) { $env:NSISVersion } else { "3.08" })"
+$NSISVersion = "$(if ( Test-Path Env:NSISVersion ) { $env:NSIS_VERSION_WIN } else { "3.08" })"
+
+if ($env:GITHUB_ACTIONS -eq "true")
+{
+    $env:CI = "true"
+}
 
 function Install-Windows-Dependencies {
     Write-Status "Checking Windows build dependencies"
