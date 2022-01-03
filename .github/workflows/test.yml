@@ -6,8 +6,8 @@ on:
   push:
     tags:
       - test[0-9]+
-
-create-release:
+jobs:
+  create-release:
     name: '05 - Create release'
     runs-on: [ubuntu-latest]
     
