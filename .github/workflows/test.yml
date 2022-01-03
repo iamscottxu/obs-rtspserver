@@ -20,9 +20,8 @@ jobs:
         id: create_release
         with:
           #bodyFile: "body.md"
-          omitBody: true
-          omitBodyDuringUpdate: true
+          #omitBody: true
+          #omitBodyDuringUpdate: true
           draft: true
           prerelease: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          owner: "Github Actions"
