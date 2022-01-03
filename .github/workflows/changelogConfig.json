@@ -1,0 +1,33 @@
+{
+    "typeLabels": [
+      { "types": ["breaking"], "title": "⚡️ Breaking Changes" },
+      { "types": ["feat", "feature"], "title": "🚀 New Features" },
+      { "types": ["fix", "bugfix"], "title": "💊 Bugfixes" },
+      { "types": ["improvements", "enhancement"], "title": "🔨 Improvements" },
+      { "types": ["perf"], "title": "🏎️ Performance Improvements" },
+      { "types": ["build", "ci"], "title": "🏗️ Build System" },
+      { "types": ["refactor"], "title": "🪚 Refactors" },
+      { "types": ["doc", "docs"], "title": "📚 Documentation Changes" },
+      { "types": ["test", "tests"], "title": "🔍 Tests" },
+      { "types": ["style"], "title": "💅 Code Style Changes" },
+      { "types": ["chore"], "title": "🧹 Chores" },
+      { "types": ["other"], "title": "Other Changes" }
+    ],
+    "bumpLabels": [
+      {
+        "title": "major",
+        "types": ["breaking"]
+      },
+      {
+        "title": "minor",
+        "types": ["feat", "feature"]
+      },
+      {
+        "title": "patch",
+        "types": []
+      }
+    ],
+    "issuesUrl": "",
+    "sortOrder": "desc",
+    "emptyMessage": "No changes"
+  }

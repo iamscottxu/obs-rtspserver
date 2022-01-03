@@ -40,7 +40,7 @@ jobs:
         id: latest_release
         uses: kaliber5/action-get-release@v1
         with:
-          token: ${{ github.token }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           owner: 'obsproject'
           repo: 'obs-studio'
           latest: true
@@ -298,22 +298,29 @@ jobs:
     runs-on: [ubuntu-latest]
     needs: [get_plugin_info]
     outputs:
-      changelog: "${{ steps.create_changelog_text.outputs.changes }}\n\n**Full Changelog**: https://github.com/iamscottxu/obs-rtspserver/compare/${{ steps.get_last_release.outputs.tag_name }}...${{ needs.get_plugin_info.outputs.git_tag_name }}"
+      changelog: "${{ steps.create_changelog_text.outputs.body }}\n\n**Full Changelog**: https://github.com/iamscottxu/obs-rtspserver/compare/${{ steps.get_last_release.outputs.tag_name }}...${{ needs.get_plugin_info.outputs.git_tag_name }}"
 
     steps:
+      - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
+        uses: actions/checkout@v2.3.3
+        with:
+          ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
+          submodules: 'recursive'
+
       - name: 'Get last release info'
         id: get_last_release
         uses: kaliber5/action-get-release@v1
         with:
-          token: ${{ github.token }}
+         token: ${{ secrets.GITHUB_TOKEN }}
           latest: true
       
-      - name: Create changelog text
+      - name: 'Create changelog text'
         id: create_changelog_text
-        uses: loopwerk/tag-changelog@v1
+        uses: dlavrenuek/conventional-changelog-action@v1.1.0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          exclude_types: other,doc,chore
+          from: "${{ steps.get_last_release.outputs.tag_name }}"
+          to: "${{ needs.get_plugin_info.outputs.git_tag_name }}"
+          config-file: "${{ env.GITHUB_WORKSPACE }}/.github/workflows/changelogConfig.json"
 
 
   create_release:
