@@ -1,0 +1,23 @@
+name: 'test'
+
+on:
+    #release:
+    #  types: [published]
+  push:
+    tags:
+      - test[0-9]+
+
+create-release:
+    name: '05 - Create release'
+    runs-on: [ubuntu-latest]
+    
+    steps:
+      - name: 'Create release ${{ needs.get_plugin_info.outputs.git_tag_name }}'
+        uses: ncipollo/release-action@v1
+        id: create_release
+        with:
+          #bodyFile: "body.md"
+          draft: true
+          prerelease: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          owner: "Github Actions"
