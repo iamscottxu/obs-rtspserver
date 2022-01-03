@@ -315,7 +315,6 @@ jobs:
           prerelease: ${{ steps.prerelease_test.matched }}
           name: "${{ env.PRODUCT_NAME }} ${{ needs.get_plugin_info.outputs.git_tag_name }}"
           token: ${{ secrets.GITHUB_TOKEN }}
-          owner: "Github Actions"
 
       - name: 'Download release artifacts'
         uses: actions/download-artifact@v2
