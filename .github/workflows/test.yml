@@ -14,12 +14,14 @@ jobs:
     steps:
       - name: 'Checkout plugin'
         uses: actions/checkout@v2.3.3
-        
+
       - name: 'Create release ${{ needs.get_plugin_info.outputs.git_tag_name }}'
         uses: ncipollo/release-action@v1
         id: create_release
         with:
           #bodyFile: "body.md"
+          omitBody: true
+          omitBodyDuringUpdate: true
           draft: true
           prerelease: true
           token: ${{ secrets.GITHUB_TOKEN }}
