@@ -6,7 +6,7 @@ project(obs-rtspserver VERSION ${OBS_PLUGUIN_LONG_VERSION}
 	HOMEPAGE_URL "https://obsproject.com/forum/resources/obs-rtspserver.1037"
 	DESCRIPTION "RTSP server plugin for obs-studio")
 set(LINUX_MAINTAINER_EMAIL "scottxu@scottxublog.com")
-set(LINUX_MAINTAINER "scottxu")
+set(LINUX_MAINTAINER "Scott Xu")
 set(MACOS_BUNDLEID "com.scottxu.obs-rtspserver")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
