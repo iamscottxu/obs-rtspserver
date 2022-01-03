@@ -71,7 +71,7 @@ BUILD_CONFIG="${BUILD_CONFIG:-RelWithDebInfo}"
 CURRENT_ARCH=$(uname -m)
 CURRENT_DATE="$(date +"%Y-%m-%d")"
 
-if [${GITHUB_ACTIONS}="true"]; then
+if [ "${GITHUB_ACTIONS}"=="true" ]; then
     ${CI}="true"
 fi
 
