@@ -37,7 +37,6 @@ jobs:
           owner: 'obsproject'
           repo: 'obs-studio'
           latest: true
-          tag_name: null
           
   get_plugin_info:
     name: '01 - Get plugin git info'
@@ -66,10 +65,11 @@ jobs:
       - name: 'Install clang-format'
         run: sudo apt-get install -y clang-format-12
 
-      #- name: 'Run clang-format'
-      #  run: |
-      #    ./CI/formatcode.sh
-      #    ./CI/check-format.sh
+      - name: 'Run clang-format'
+        working-directory: 'plugin'
+        run: |
+          source CI/utility/formatcode.sh
+          source CI/utility/check-format.sh
           
   windows_build:
     name: '03 - Windows (Latest)'
@@ -200,19 +200,19 @@ jobs:
           
       - name: "Install Dependencies"
         working-directory: 'plugin'
-        run: CI/linux/01_install_dependencies.sh --disable-pipewire
+        run: source CI/linux/01_install_dependencies.sh --disable-pipewire
         
       - name: 'Build libobs and obs-frontend-api'
         working-directory: 'plugin'
-        run: CI/linux/02_build_obs_libs.sh --disable-pipewire
+        run: source CI/linux/02_build_obs_libs.sh --disable-pipewire
         
       - name: 'Build plugin'
         working-directory: 'plugin'
-        run: CI/linux/03_build_plugin.sh
+        run: source CI/linux/03_build_plugin.sh
         
       - name: 'Create build artifact'
         working-directory: 'plugin'
-        run: CI/linux/04_package_plugin.sh
+        run: source CI/linux/04_package_plugin.sh
 
       - name: 'Upload build Artifact'
         uses: actions/upload-artifact@v2
@@ -265,19 +265,19 @@ jobs:
 
       - name: 'Install dependencies'
         working-directory: 'plugin'
-        run:  CI/macos/01_install_dependencies.sh --architecture "${{ matrix.arch }}"
+        run: source CI/macos/01_install_dependencies.sh --architecture "${{ matrix.arch }}"
 
       - name: 'Build libobs and obs-frontend-api'
         working-directory: 'plugin'
-        run:  CI/macos/02_build_obs_libs.sh --architecture "${{ matrix.arch }}"
+        run: source CI/macos/02_build_obs_libs.sh --architecture "${{ matrix.arch }}"
 
       - name: 'Build plugin'
         working-directory: 'plugin'
-        run:  CI/macos/03_build_plugin.sh --architecture "${{ matrix.arch }}"
+        run: source CI/macos/03_build_plugin.sh --architecture "${{ matrix.arch }}"
 
       - name: 'Create build artifact'
         working-directory: 'plugin'
-        run:  CI/macos/04_package_plugin.sh --architecture "${{ matrix.arch }}"
+        run: source CI/macos/04_package_plugin.sh --architecture "${{ matrix.arch }}"
 
       - name: 'Upload build Artifact'
         uses: actions/upload-artifact@v2
