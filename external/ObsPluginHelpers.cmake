@@ -188,7 +188,7 @@ else()
 			set(CPACK_RPM_PACKAGE_LICENSE "GPL-2.0")
 
 			if(NOT LINUX_PORTABLE)
-				set(CPACK_SET_DESTDIR ON)
+				#set(CPACK_SET_DESTDIR ON)
 			endif()
 			include(CPack)
 		endif()
