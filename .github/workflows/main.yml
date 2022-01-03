@@ -16,52 +16,50 @@ env:
   NSIS_VERSION_WIN: '3.08'
 jobs:
   get_obs_info:
-    name: '01 - Get obs-studio git info'
+    name: '01 - Get obs-studio last release info'
     runs-on: [ubuntu-latest]
     outputs:
-      git_branch: ${{ steps.get_info.outputs.git_branch }}
-      git_hash: ${{ steps.get_info.outputs.git_hash }}
-      git_tag: ${{ steps.get_info.outputs.git_tag }}
+      latest_id: ${{ steps.latest_release.outputs.id }}
+      latest_url: ${{ steps.latest_release.outputs.url }}
+      latest_html_url: ${{ steps.latest_release.outputs.html_url }}
+      latest_upload_url: ${{ steps.latest_release.outputs.upload_url }}
+      latest_name: ${{ steps.latest_release.outputs.name }}
+      latest_tag_name: ${{ steps.latest_release.outputs.tag_name }}
+      latest_target_commitish: ${{ steps.latest_release.outputs.target_commitish }}
+      latest_created_at: ${{ steps.latest_release.outputs.created_at }}
+      latest_published_at: ${{ steps.latest_release.outputs.published_at }}
     steps:
-      - name: 'Checkout OBS'
-        uses: actions/checkout@v2
+      - name: Get latest release info
+        id: latest_release
+        uses: kaliber5/action-get-release@v1
         with:
-          repository: obsproject/obs-studio
-          path: 'obs-studio'
-          fetch-depth: 0
-          submodules: 'recursive'
-          
-      - name: 'Get OBS-Studio git info'
-        id: get_info
-        shell: bash
-        working-directory: 'obs-studio'
-        run: |
-          echo ::set-output name=git_branch::`git rev-parse --abbrev-ref HEAD`
-          echo ::set-output name=git_hash::`git rev-parse --short HEAD`
-          echo ::set-output name=git_tag::`git describe --tags --abbrev=0`
+          token: ${{ github.token }}
+          owner: 'obsproject'
+          repo: 'obs-studio'
+          latest: true
           
   get_plugin_info:
     name: '01 - Get plugin git info'
     runs-on: [ubuntu-latest]
     outputs:
-      git_tag: ${{ steps.get_info.outputs.git_tag }}
-    steps:    
-      - name: 'Get plugin git info'
-        id: get_info
-        shell: bash
-        run: |
-          export GIT_TAG=${GITHUB_REF/refs\/tags\//}
-          echo ::set-output name=git_tag::${GIT_TAG}
+      git_tag_name: ${{ steps.tag_name.outputs.tag }}
+    steps:
+      - name: 'Get plugin git tag'
+        uses: little-core-labs/get-git-tag@v3.0.1
+        id: tag_name
+        with:
+          #tagRegex: "foobar-(.*)"  # Optional. Returns specified group text as tag name. Full tag string is returned if regex is not defined.
+          #tagRegexGroup: 1 # Optional. Default is 1.
           
   clang_check:
     name: '02 - Code format check'
     runs-on: [ubuntu-latest]
     needs: [get_obs_info, get_plugin_info]
     steps:
-      - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag }}'
+      - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
         uses: actions/checkout@v2.3.3
         with:
-          ref: '${{ needs.get_plugin_info.outputs.git_tag }}'
+          ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
 
       - name: 'Install clang-format'
@@ -80,66 +78,48 @@ jobs:
       matrix:
         arch: [64, 32]
     env:
-      CMAKE_GENERATOR: "Visual Studio 16 2019"
-      CMAKE_SYSTEM_VERSION: "10.0.18363.657"
+      #CMAKE_GENERATOR: "Visual Studio 16 2019"
+      #CMAKE_SYSTEM_VERSION: "10.0.18363.657"
+      CI: "true"
+      WindowsDepsVersion: ${{ env.DEPS_VERSION_WIN }}
+      WindowsQtVersion: ${{ env.QT_VERSION_WIN }}
+      ObsVersion: "${{ needs.get_obs_info.outputs.latest_tag_name }}"
+      NSISVersion: "${{ env.NSIS_VERSION_WIN }}"
     steps:
       - name: 'Add msbuild to PATH'
         uses: microsoft/setup-msbuild@v1.0.2
 
-      - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag }}'
+      - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
         uses: actions/checkout@v2.3.3
         with:
           path: 'plugin'
-          ref: '${{ needs.get_plugin_info.outputs.git_tag }}'
+          ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
           
-      - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.git_tag }}'
+      - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.latest_tag_name }}'
         uses: actions/checkout@v2
         with:
           repository: obsproject/obs-studio
           path: 'obs-studio'
-          ref: '${{ needs.get_obs_info.outputs.git_tag }}'
+          ref: '${{ needs.get_obs_info.outputs.latest_tag_name }}'
           fetch-depth: 0
           submodules: 'recursive'
       
       - name: "Install Dependencies"
         working-directory: 'plugin'
-        run: |
-          $env:CI = "true"
-          $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
-          $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
-          $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
-          $env:NSISVersion = "${{ env.NSIS_VERSION_WIN }}"
-          CI/windows/01_install_dependencies.ps1 -BuildArch ${{ matrix.arch }}-bit -NoChoco -InstallList "obs-deps","qt-deps","obs-studio"
+        run: CI/windows/01_install_dependencies.ps1 -BuildArch ${{ matrix.arch }}-bit -NoChoco -InstallList "obs-deps","qt-deps","obs-studio"
         
       - name: 'Build libobs and obs-frontend-api'
         working-directory: 'plugin'
-        run: |
-          $env:CI = "true"
-          $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
-          $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
-          $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
-          $env:NSISVersion = "${{ env.NSIS_VERSION_WIN }}"
-          CI/windows/02_build_obs_libs.ps1 -BuildArch "${{ matrix.arch }}-bit"
+        run: CI/windows/02_build_obs_libs.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Build plugin'
         working-directory: 'plugin'
-        run: |
-          $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
-          $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
-          $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
-          $env:NSISVersion = "${{ env.NSIS_VERSION_WIN }}"
-          CI/windows/03_build_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
+        run: CI/windows/03_build_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Create build artifact'
         working-directory: 'plugin'
-        run: |
-          $env:CI = "true"
-          $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
-          $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
-          $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
-          $env:NSISVersion = "${{ env.NSIS_VERSION_WIN }}"
-          CI/windows/04_package_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
+        run: CI/windows/04_package_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Upload build Artifact'
         uses: actions/upload-artifact@v2
@@ -152,11 +132,11 @@ jobs:
     runs-on: [windows-latest]
     needs: [get_plugin_info, windows_build]
     steps:
-      - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag }}'
+      - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
         uses: actions/checkout@v2.3.3
         with:
           path: 'plugin'
-          ref: '${{ needs.get_plugin_info.outputs.git_tag }}'
+          ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
           
       - name: 'Download 64-bit artifact'
@@ -177,7 +157,7 @@ jobs:
           $env:CI = "true"
           $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
-          $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
+          $env:ObsVersion = "${{ needs.get_obs_info.outputs.latest_tag_name }}"
           $env:NSISVersion = "${{ env.NSIS_VERSION_WIN }}"
           CI/windows/01_install_dependencies.ps1 -BuildArch 64-bit -NoChoco -InstallList "nsis"
           
@@ -187,7 +167,7 @@ jobs:
           $env:CI = "true"
           $env:WindowsDepsVersion = "${{ env.DEPS_VERSION_WIN }}"
           $env:WindowsQtVersion = "${{ env.QT_VERSION_WIN }}"
-          $env:ObsVersion = "${{ needs.get_obs_info.outputs.git_tag }}"
+          $env:ObsVersion = "${{ needs.get_obs_info.outputs.latest_tag_name }}"
           $env:NSISVersion = "${{ env.NSIS_VERSION_WIN }}"
           Get-ChildItem -Filter "*-windows-x86.zip" -File | Expand-Archive -Force -DestinationPath ./release/
           Get-ChildItem -Filter "*-windows-x64.zip" -File | Expand-Archive -Force -DestinationPath ./release/
@@ -210,19 +190,19 @@ jobs:
       run:
         shell: bash
     steps:
-      - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag }}'
+      - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
         uses: actions/checkout@v2.3.3
         with:
           path: 'plugin'
-          ref: '${{ needs.get_plugin_info.outputs.git_tag }}'
+          ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
           
-      - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.git_tag }}'
+      - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.latest_tag_name }}'
         uses: actions/checkout@v2
         with:
           repository: obsproject/obs-studio
           path: 'obs-studio'
-          ref: '${{ needs.get_obs_info.outputs.git_tag }}'
+          ref: '${{ needs.get_obs_info.outputs.latest_tag_name }}'
           fetch-depth: 0
           submodules: 'recursive'
           
@@ -230,28 +210,28 @@ jobs:
         working-directory: 'plugin'
         run: |
           export CI="true"
-          export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
+          export OBS_VERSION="${{ needs.get_obs_info.outputs.latest_tag_name }}"
           source CI/linux/01_install_dependencies.sh --disable-pipewire
         
       - name: 'Build libobs and obs-frontend-api'
         working-directory: 'plugin'
         run: |
           export CI="true"
-          export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
+          export OBS_VERSION="${{ needs.get_obs_info.outputs.latest_tag_name }}"
           source CI/linux/02_build_obs_libs.sh --disable-pipewire
         
       - name: 'Build plugin'
         working-directory: 'plugin'
         run: |
           export CI="true"
-          export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
+          export OBS_VERSION="${{ needs.get_obs_info.outputs.latest_tag_name }}"
           source CI/linux/03_build_plugin.sh
         
       - name: 'Create build artifact'
         working-directory: 'plugin'
         run: |
           export CI="true"
-          export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
+          export OBS_VERSION="${{ needs.get_obs_info.outputs.latest_tag_name }}"
           source CI/linux/04_package_plugin.sh
 
       - name: 'Upload build Artifact'
@@ -274,19 +254,19 @@ jobs:
       run:
         shell: bash
     steps:
-      - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag }}'
+      - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
         uses: actions/checkout@v2.3.3
         with:
           path: 'plugin'
-          ref: '${{ needs.get_plugin_info.outputs.git_tag }}'
+          ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
           
-      - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.git_tag }}'
+      - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.latest_tag_name }}'
         uses: actions/checkout@v2
         with:
           repository: obsproject/obs-studio
           path: 'obs-studio'
-          ref: '${{ needs.get_obs_info.outputs.git_tag }}'
+          ref: '${{ needs.get_obs_info.outputs.latest_tag_name }}'
           fetch-depth: 0
           submodules: 'recursive'
 
@@ -306,7 +286,7 @@ jobs:
         working-directory: 'plugin'
         run:  |
           export CI="true"
-          export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
+          export OBS_VERSION="${{ needs.get_obs_info.outputs.latest_tag_name }}"
           export MACOS_DEPS_VERSION="${{ env.DEPS_VERSION_MAC }}"
           export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
           export QT_HASH="${{ env.QT_HASH_MAC }}"
@@ -317,7 +297,7 @@ jobs:
         working-directory: 'plugin'
         run:  |
           export CI="true"
-          export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
+          export OBS_VERSION="${{ needs.get_obs_info.outputs.latest_tag_name }}"
           export MACOS_DEPS_VERSION="${{ env.DEPS_VERSION_MAC }}"
           export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
           export QT_HASH="${{ env.QT_HASH_MAC }}"
@@ -328,7 +308,7 @@ jobs:
         working-directory: 'plugin'
         run:  |
           export CI="true"
-          export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
+          export OBS_VERSION="${{ needs.get_obs_info.outputs.latest_tag_name }}"
           export MACOS_DEPS_VERSION="${{ env.DEPS_VERSION_MAC }}"
           export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
           export QT_HASH="${{ env.QT_HASH_MAC }}"
@@ -339,7 +319,7 @@ jobs:
         working-directory: 'plugin'
         run:  |
           export CI="true"
-          export OBS_VERSION="${{ needs.get_obs_info.outputs.git_tag }}"
+          export OBS_VERSION="${{ needs.get_obs_info.outputs.latest_tag_name }}"
           export MACOS_DEPS_VERSION="${{ env.DEPS_VERSION_MAC }}"
           export MACOS_DEPS_HASH="${{ env.DEPS_HASH_MAC }}"
           export QT_HASH="${{ env.QT_HASH_MAC }}"
@@ -366,8 +346,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-windows-release/${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag }}-windows-all.zip
-          asset_name: ${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag }}-windows.zip
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-windows-release/${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag_name }}-windows-all.zip
+          asset_name: ${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag_name }}-windows.zip
           asset_content_type: application/zip
 
       - name: 'Upload Windows .exe artifact to release'
@@ -376,8 +356,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-windows-release/${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag }}-windows-all-installer.exe
-          asset_name: ${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag }}-windows-installer.exe
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-windows-release/${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag_name }}-windows-all-installer.exe
+          asset_name: ${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag_name }}-windows-installer.exe
           asset_content_type: application/x-msdownload
 
       - name: 'Upload linux .tar.gz artifact to release'
@@ -386,8 +366,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-linux.tar.gz
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-linux.tar.gz
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.tar.gz
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.tar.gz
           asset_content_type: application/x-gzip
 
       - name: 'Upload linux .deb artifact to release'
@@ -396,8 +376,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-linux.deb
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-linux.deb
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.deb
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.deb
           asset_content_type: application/vnd.debian.binary-package
 
       - name: 'Upload macos universal .zip artifact to release'
@@ -406,8 +386,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-universal/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-universal.zip
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-universal.zip
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-universal/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-universal.zip
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-universal.zip
           asset_content_type: application/zip
 
       - name: 'Upload macos universal .pkg artifact to release'
@@ -416,8 +396,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-universal/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-universal.pkg
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-universal.pkg
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-universal/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-universal.pkg
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-universal.pkg
           asset_content_type: application/vnd.apple.installer+xml
       
       - name: 'Upload macos x86_64 .zip artifact to release'
@@ -426,8 +406,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-x86_64/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-x86_64.zip
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-x86_64.zip
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-x86_64/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-x86_64.zip
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-x86_64.zip
           asset_content_type: application/zip
 
       - name: 'Upload macos x86_64 .pkg artifact to release'
@@ -436,8 +416,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-x86_64/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-x86_64.pkg
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-x86_64.pkg
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-x86_64/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-x86_64.pkg
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-x86_64.pkg
           asset_content_type: application/vnd.apple.installer+xml
 
       - name: 'Upload macos arm64 .zip artifact to release'
@@ -446,8 +426,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-arm64/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-arm64.zip
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-arm64.zip
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-arm64/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-arm64.zip
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-arm64.zip
           asset_content_type: application/zip
 
       - name: 'Upload macos arm64 .pkg artifact to release'
@@ -456,6 +436,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-arm64/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-arm64.pkg
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag }}-macos-arm64.pkg
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-arm64/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-arm64.pkg
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-arm64.pkg
           asset_content_type: application/vnd.apple.installer+xml
