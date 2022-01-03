@@ -72,7 +72,7 @@ CURRENT_ARCH=$(uname -m)
 CURRENT_DATE="$(date +"%Y-%m-%d")"
 
 if [ "${GITHUB_ACTIONS}" = "true" ]; then
-    ${CI}="true"
+    CI="true"
 fi
 
 ## Utility functions ##
