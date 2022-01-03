@@ -334,7 +334,7 @@ jobs:
         id: create_release
         with:
           #bodyFile: "body.md"
-          body: "{{ needs.create_changelog.outputs.changelog }}"
+          body: "${{ needs.create_changelog.outputs.changelog }}"
           draft: true
           prerelease: ${{ steps.prerelease_test.outputs.matched }}
           name: "${{ env.PRODUCT_NAME }} ${{ needs.get_plugin_info.outputs.git_tag_name }}"
