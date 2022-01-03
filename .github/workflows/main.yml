@@ -319,7 +319,7 @@ jobs:
   create_release:
     name: '05 - Create release'
     runs-on: [ubuntu-latest]
-    needs: [get_plugin_info, windows_package, linux_build, macos_build, create-changelog]
+    needs: [get_plugin_info, windows_package, linux_build, macos_build, create_changelog]
 
     steps:
       - name: 'Check whether the version is prerelease'
