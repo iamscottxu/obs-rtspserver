@@ -334,6 +334,16 @@ jobs:
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.deb
           asset_content_type: application/vnd.debian.binary-package
 
+      - name: 'Upload linux .rpm artifact to release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.rpm
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.rpm
+          asset_content_type: application/vnd.debian.binary-package
+
       - name: 'Upload macos universal .zip artifact to release'
         uses: actions/upload-release-asset@v1
         env:
