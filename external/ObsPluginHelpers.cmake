@@ -215,6 +215,12 @@ else()
 				COMPONENT ${target}_Runtime
 				NAMELINK_COMPONENT ${target}_Development)
 
+		if(OS_WINDOWS)
+			install(FILES 
+				"$<TARGET_PDB_FILE:${PROJECT_NAME}>" DESTINATION "${OBS_PLUGIN_DESTINATION}" 
+				OPTIONAL)
+		endif()
+
 		add_custom_command(TARGET ${target} POST_BUILD
 			COMMAND "${CMAKE_COMMAND}" -E copy
 				"$<TARGET_FILE:${target}>"
@@ -225,7 +231,7 @@ else()
 			add_custom_command(TARGET ${target} POST_BUILD
 				COMMAND "${CMAKE_COMMAND}" -E "$<IF:$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>,copy,true>"
 					"$<TARGET_PDB_FILE:${target}>"
-					"${OBS_OUTPUT_DIR}/$<CONFIG>/${OBS_PLUGIN_DESTINATION}/"
+					"${OBS_OUTPUT_DIR}/$<CONFIG>/${OBS_PLUGIN_DESTINATION}/$<TARGET_FILE_NAME:${target}>"
 				VERBATIM)
 		endif()
 
