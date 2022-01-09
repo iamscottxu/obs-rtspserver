@@ -38,21 +38,54 @@ If the operating system version is Windows 10 1709 or later and [app-installer](
 winget install iamscottxu.obs-rtspserver
 ```
 
-## macOS
+## MacOS
 You can use the .pkg installer to install and the installer can be found in [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases) if use macOS.
 
 ## Linux (Only x64)
-* Download the latest release from the [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases).
-* mkdir -p $HOME/.config/obs-studio/plugins
-* Untar, e.g.: tar -xzvf obs-rtspserver-v2.0.5-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
+### Ubuntu/Debian DEB Package
+Download the deb package from the [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases) and install it.
+
+```bash
+wget -O obs-rtspserver-linux.deb https://github.com/iamscottxu/obs-rtspserver/releases/download/{version}/obs-rtspserver-{version}-linux.deb
+apt install -y obs-rtspserver-linux.deb
+```
+* Replace {version} with last release version, e.g.: v2.2.0
+
+### Red-Hat RPM Package
+Download the rpm package from the [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases) and install it.
+
+```bash
+wget -O obs-rtspserver-linux.rpm https://github.com/iamscottxu/obs-rtspserver/releases/download/{version}/obs-rtspserver-{version}-linux.rpm
+rpm -ivh obs-rtspserver-linux.rpm
+```
+* Replace {version} with last release version, e.g.: v2.2.0
 
 ### ArchLinux AUR Package
 obs-rtspserver is also available as an [AUR Package](https://aur.archlinux.org/packages/?O=0&K=obs-rtspserver)
 If you use [yay](https://github.com/Jguer/yay) just run this to install it:
 
-```shell
+```bash
 yay -S obs-rtspserver
 ```
+
+### Other
+Download the tar.gz archive from the [Release Page](https://github.com/iamscottxu/obs-rtspserver/releases) and unpack to "/".
+
+```bash
+wget -O obs-rtspserver-linux.tar.gz https://github.com/iamscottxu/obs-rtspserver/releases/download/{version}/obs-rtspserver-{version}-linux.tar.gz
+#For all user
+tar -xzvf obs-rtspserver-linux.tar.gz -C /
+#For local user
+mkdir -p ~/.config/obs-studio/plugins/obs-rtspserver/bin/64bit/
+mkdir -p ~/.config/obs-studio/plugins/obs-rtspserver/data/
+mkdir -p ~/obs-rtspserver-linux
+tar -xzvf obs-rtspserver-linux.tar.gz -C ~/obs-rtspserver-linux/
+mv ~/obs-rtspserver-linux/usr/lib/obs-plugins/obs-rtspserver.so ~/.config/obs-studio/plugins/obs-rtspserver/bin/64bit/obs-rtspserver.so
+mv ~/obs-rtspserver-linux/usr/share/obs/obs-plugins/obs-rtspserver/locale ~/.config/obs-studio/plugins/obs-rtspserver/data/locale
+rm -rf ~/obs-rtspserver-linux
+```
+* Replace {version} with last release version, e.g.: v2.2.0
+
 
 # Build
 * Install cmake, visual studio(only windows) and qt.
