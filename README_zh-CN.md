@@ -24,17 +24,51 @@ winget install iamscottxu.obs-rtspserver
 ## macOS
 如果你使用的是 macOS 操作系统，您可以使用安装程序进行安装，安装程序 .pkg 可以在发布页面中找到。
 
+
 ## Linux (仅 x64)
-* 从[发布页面](https://github.com/iamscottxu/obs-rtspserver/releases)下载最新发布版本。
-* mkdir -p $HOME/.config/obs-studio/plugins
-* 解压压缩包。例如：tar -xzvf obs-rtspserver-v2.0.1-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
+### Ubuntu/Debian DEB 软件包
+在[发布页面](https://github.com/iamscottxu/obs-rtspserver/releases)下载 deb 软件包并安装。
+
+```bash
+wget -O obs-rtspserver-linux.deb https://github.com/iamscottxu/obs-rtspserver/releases/download/{version}/obs-rtspserver-{version}-linux.deb
+apt install -y obs-rtspserver-linux.deb
+```
+* 将 {version} 替换成最新发布版本号，例如：v2.2.0
+
+### Red-Hat RPM 软件包
+在[发布页面](https://github.com/iamscottxu/obs-rtspserver/releases)下载 rpm 软件包并安装。
+
+```bash
+wget -O obs-rtspserver-linux.rpm https://github.com/iamscottxu/obs-rtspserver/releases/download/{version}/obs-rtspserver-{version}-linux.rpm
+rpm -ivh obs-rtspserver-linux.rpm
+```
+* 将 {version} 替换成最新发布版本号，例如：v2.2.0
 
 ### ArchLinux AUR 软件包
 obs-rtspserver也可以作为[AUR软件包](https://aur.archlinux.org/packages/?O=0&K=obs-rtspserver)提供。如果您使用[yay](https://github.com/Jguer/yay)，请运行以下命令进行安装：
 
-```shell
+```bash
 yay -S obs-rtspserver
 ```
+
+### Other
+在[发布页面](https://github.com/iamscottxu/obs-rtspserver/releases)下载 tar.gz 压缩包并解压到 "/"。
+
+```bash
+wget -O obs-rtspserver-linux.tar.gz https://github.com/iamscottxu/obs-rtspserver/releases/download/{version}/obs-rtspserver-{version}-linux.tar.gz
+#For all user
+tar -xzvf obs-rtspserver-linux.tar.gz -C /
+#For local user
+mkdir -p ~/.config/obs-studio/plugins/obs-rtspserver/bin/64bit/
+mkdir -p ~/.config/obs-studio/plugins/obs-rtspserver/data/
+mkdir -p ~/obs-rtspserver-linux
+tar -xzvf obs-rtspserver-linux.tar.gz -C ~/obs-rtspserver-linux/
+mv ~/obs-rtspserver-linux/usr/lib/obs-plugins/obs-rtspserver.so ~/.config/obs-studio/plugins/obs-rtspserver/bin/64bit/obs-rtspserver.so
+mv ~/obs-rtspserver-linux/usr/share/obs/obs-plugins/obs-rtspserver/locale ~/.config/obs-studio/plugins/obs-rtspserver/data/locale
+rm -rf ~/obs-rtspserver-linux
+```
+* 将 {version} 替换成最新发布版本号，例如：v2.2.0
+
 
 # 生成
 * 安装 cmake 、 visual studio （仅 Windows ）和 qt ；
