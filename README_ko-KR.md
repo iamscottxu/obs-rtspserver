@@ -1,21 +1,3 @@
-
-![Latest Release](https://img.shields.io/github/v/release/iamscottxu/obs-rtspserver.svg)
-![CI Release](https://github.com/iamscottxu/obs-rtspserver/workflows/CI%20Release/badge.svg)
-![Contributors](https://img.shields.io/github/contributors/iamscottxu/obs-rtspserver.svg)
-![Total Downloads](https://img.shields.io/github/downloads/iamscottxu/obs-rtspserver/total.svg)
-![License](https://img.shields.io/github/license/iamscottxu/obs-rtspserver.svg)
-
-
-🇨🇳 [简体中文](//github.com/iamscottxu/obs-rtspserver/blob/master/README_zh-CN.md)
-🇯🇵 [日本語](//github.com/iamscottxu/obs-rtspserver/blob/master/README_ja-JP.md)
-🇰🇷 [한국어](//github.com/iamscottxu/obs-rtspserver/blob/master/README_ko-KR.md)
-🇪🇦 [Español](//github.com/iamscottxu/obs-rtspserver/blob/master/README_es-ES.md)
-🇫🇷 [Français](//github.com/iamscottxu/obs-rtspserver/blob/master/README_fr-FR.md)
-🇮🇹 [Italiano](//github.com/iamscottxu/obs-rtspserver/blob/master/README_it-IT.md)
-🇩🇪 [Deutsch](//github.com/iamscottxu/obs-rtspserver/blob/master/README_de-DE.md)
-🇳🇱 [Nederlands](//github.com/iamscottxu/obs-rtspserver/blob/master/README_nl-NL.md)
-
-
 # OBS-RTSPServer
 
 이 플러그인은 obs-studio에서 RTSP스트림을 인코딩 및 배포하는 플러그인입니다.
