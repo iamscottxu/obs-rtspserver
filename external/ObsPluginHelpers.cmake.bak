@@ -84,15 +84,28 @@ if(OS_MACOS)
 	set(CMAKE_INSTALL_RPATH "@executable_path/../Frameworks/")
 	set(CMAKE_INSTALL_RPATH_USE_LINK_PATH OFF)
 
-	set(OBS_PLUGIN_DESTINATION "bin")
-	set(OBS_DATA_DESTINATION "data")
-
 	function(setup_plugin_target target)
+		if(NOT DEFINED MACOSX_PLUGIN_GUI_IDENTIFIER)
+			message(FATAL_ERROR "No 'MACOSX_PLUGIN_GUI_IDENTIFIER' set, but is required to build plugin bundles on macOS - example: 'com.yourname.pluginname'")
+		endif()
+
+		if(NOT DEFINED MACOSX_PLUGIN_BUNDLE_VERSION)
+			message(FATAL_ERROR "No 'MACOSX_PLUGIN_BUNDLE_VERSION' set, but is required to build plugin bundles on macOS - example: '25'")
+		endif()
+
+		if(NOT DEFINED MACOSX_PLUGIN_SHORT_VERSION_STRING)
+			message(FATAL_ERROR "No 'MACOSX_PLUGIN_SHORT_VERSION_STRING' set, but is required to build plugin bundles on macOS - example: '1.0.2'")
+		endif()
+
+		set(MACOSX_PLUGIN_BUNDLE_NAME "${target}" PARENT_SCOPE)
+		set(MACOSX_PLUGIN_BUNDLE_VERSION "${MACOSX_BUNDLE_BUNDLE_VERSION}" PARENT_SCOPE)
+		set(MACOSX_PLUGIN_SHORT_VERSION_STRING "${MACOSX_BUNDLE_SHORT_VERSION_STRING}" PARENT_SCOPE)
+		set(MACOSX_PLUGIN_EXECUTABLE_NAME "${target}" PARENT_SCOPE)
+		set(MACOSX_PLUGIN_BUNDLE_TYPE "BNDL" PARENT_SCOPE)
+
 		install(TARGETS ${target}
-			RUNTIME DESTINATION "${target}/${OBS_PLUGIN_DESTINATION}"
-				COMPONENT ${target}_Runtime
-			LIBRARY DESTINATION "${target}/${OBS_PLUGIN_DESTINATION}"
-				COMPONENT ${target}_Runtime
+			LIBRARY DESTINATION "."
+				COMPONENT obs_plugins
 				NAMELINK_COMPONENT ${target}_Development)
 
 		install(CODE
@@ -100,19 +113,43 @@ if(OS_MACOS)
 			-change ${CMAKE_PREFIX_PATH}/lib/QtWidgets.framework/Versions/5/QtWidgets @rpath/QtWidgets.framework/Versions/5/QtWidgets \\
 			-change ${CMAKE_PREFIX_PATH}/lib/QtCore.framework/Versions/5/QtCore @rpath/QtCore.framework/Versions/5/QtCore \\
 			-change ${CMAKE_PREFIX_PATH}/lib/QtGui.framework/Versions/5/QtGui @rpath/QtGui.framework/Versions/5/QtGui \\
-			${CMAKE_INSTALL_PREFIX}/${target}/bin\")")
+			${CMAKE_INSTALL_PREFIX}/${target}.plugin/Contents/MacOS/${target}\")")
 
-		install(CODE
-			"execute_process(COMMAND /bin/sh -c \"/usr/bin/codesign --force --sign \\\"${OBS_BUNDLE_CODESIGN_IDENTITY}\\\" --options runtime --entitlements ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../bundle/macOS/entitlements.plist ${CMAKE_INSTALL_PREFIX}/${target}.plugin\")")
+		if(NOT XCODE)
+			install(CODE
+				"execute_process(COMMAND /bin/sh -c \"/usr/bin/codesign --force --sign \\\"${OBS_BUNDLE_CODESIGN_IDENTITY}\\\" --options runtime --entitlements ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../bundle/macOS/entitlements.plist ${CMAKE_INSTALL_PREFIX}/${target}.plugin\")")
+		endif()
 
-		setup_target_resources("${target}" "${target}")
+		set_target_properties(${target} PROPERTIES
+			BUNDLE ON
+			BUNDLE_EXTENSION "plugin"
+			OUTPUT_NAME ${target}
+			MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../bundle/macOS/Plugin-Info.plist.in"
+			XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "${MACOSX_PLUGIN_GUI_IDENTIFIER}"
+			XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "${OBS_BUNDLE_CODESIGN_IDENTITY}"
+			XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../bundle/macOS/entitlements.plist")
+
+		add_custom_command(TARGET ${target} POST_BUILD
+			COMMAND /bin/sh -c "codesign --force --sign \"-\" $<$<BOOL:${OBS_CODESIGN_LINKER}>:--options linker-signed >\"$<TARGET_BUNDLE_DIR:${target}>\""
+			COMMENT "Codesigning ${target}"
+			VERBATIM)
+
+		install_bundle_resources(${target})
 	endfunction()
 
-	function(setup_target_resources target destination)
+	function(install_bundle_resources target)
 		if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/data")
-			install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data/"
-				DESTINATION "${destination}/${OBS_DATA_DESTINATION}"
-				USE_SOURCE_PERMISSIONS)
+			file(GLOB_RECURSE _DATA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/data/*")
+			foreach(_DATA_FILE IN LISTS _DATA_FILES)
+				file(RELATIVE_PATH _RELATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/data/ ${_DATA_FILE})
+				get_filename_component(_RELATIVE_PATH "${_RELATIVE_PATH}" PATH)
+				target_sources(${target}
+					PRIVATE ${_DATA_FILE})
+				set_source_files_properties(${_DATA_FILE} PROPERTIES
+					MACOSX_PACKAGE_LOCATION "Resources/${_RELATIVE_PATH}")
+				string(REPLACE "\\" "\\\\" _GROUP_NAME "${_RELATIVE_PATH}")
+				source_group("Resources\\${_GROUP_NAME}" FILES ${_DATA_FILE})
+			endforeach()
 		endif()
 	endfunction()
 else()
