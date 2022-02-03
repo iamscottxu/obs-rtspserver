@@ -6,6 +6,7 @@
 !ifndef APPVERSION
 !define APPVERSION ${FVERSION}
 !define SHORTVERSION ${VERSION}
+!define PLANTFORMNAME ${PLANTFORM}
 !endif
 !define APPNAMEANDVERSION "${DISPLAYNAME} v${SHORTVERSION}"
 
@@ -13,7 +14,7 @@
 Name "${APPNAMEANDVERSION}"
 InstallDir "$PROGRAMFILES64\obs-studio"
 InstallDirRegKey HKLM "Software\OBS Studio" ""
-OutFile "..\release\obs-rtspserver-v${SHORTVERSION}-windows-installer.exe"
+OutFile "..\obs-rtspserver-v${SHORTVERSION}-windows-${PLANTFORMNAME}-installer.exe"
 
 ; Use compression
 SetCompressor LZMA
@@ -73,7 +74,7 @@ Section "!OBS RTSP Server"
 	SetOverwrite on
 	; Set Section Files and Shortcuts
 	SetOutPath "$INSTDIR\"
-	File /r "..\build-package\"
+	File /r "..\release\"
 	
 SectionEnd
 

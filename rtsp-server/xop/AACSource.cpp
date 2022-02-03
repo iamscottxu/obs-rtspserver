@@ -101,28 +101,29 @@ bool AACSource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 	uint8_t *frame_buf = frame.buffer.get() + adts_size;
 	size_t frame_size = frame.size - adts_size;
 
-	char AU[AU_SIZE] = {0};
-	AU[0] = 0x00;
-	AU[1] = 0x10;
-	AU[2] = (frame_size & 0x1fe0) >> 5;
-	AU[3] = (frame_size & 0x1f) << 3;
+	char AU[AU_SIZE] = {
+		0x00,
+		0x10,
+		static_cast<char>((frame_size & 0x1fe0) >> 5),
+		static_cast<char>((frame_size & 0x1f) << 3)
+	};
 
-	RtpPacket rtpPkt;
-	rtpPkt.type = frame.type;
-	rtpPkt.timestamp = frame.timestamp;
-	rtpPkt.size = frame_size + 4 + RTP_HEADER_SIZE + AU_SIZE;
-	rtpPkt.last = 1;
+	RtpPacket rtp_pkt;
+	rtp_pkt.type = frame.type;
+	rtp_pkt.timestamp = frame.timestamp;
+	rtp_pkt.size = frame_size + 4 + RTP_HEADER_SIZE + AU_SIZE;
+	rtp_pkt.last = 1;
+	uint8_t *rtp_pkt_data = rtp_pkt.data.get() + RTP_HEADER_SIZE + 4;
 
-	rtpPkt.data.get()[4 + RTP_HEADER_SIZE + 0] = AU[0];
-	rtpPkt.data.get()[4 + RTP_HEADER_SIZE + 1] = AU[1];
-	rtpPkt.data.get()[4 + RTP_HEADER_SIZE + 2] = AU[2];
-	rtpPkt.data.get()[4 + RTP_HEADER_SIZE + 3] = AU[3];
+	*(rtp_pkt_data++) = AU[0];
+	*(rtp_pkt_data++) = AU[1];
+	*(rtp_pkt_data++) = AU[2];
+	*(rtp_pkt_data++) = AU[3];
 
-	memcpy(rtpPkt.data.get() + 4 + RTP_HEADER_SIZE + AU_SIZE, frame_buf,
-	       frame_size);
+	memcpy(rtp_pkt_data++, frame_buf, frame_size);
 
 	if (send_frame_callback_) {
-		send_frame_callback_(channel_id, rtpPkt);
+		send_frame_callback_(channel_id, rtp_pkt);
 	}
 
 	return true;

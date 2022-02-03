@@ -188,7 +188,7 @@
       <property name="labelAlignment">
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
       </property>
-      <item row="0" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="labelAddress">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -216,7 +216,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
+      <item row="2" column="1">
        <widget class="QWidget" name="widgetAddress" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -303,9 +303,17 @@
         <zorder>lineEditUrlSuffix</zorder>
        </widget>
       </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="checkBoxEnableMulticast">
+        <property name="text">
+         <string>RtspServer.Properties.Target.Multicast</string>
+        </property>
+       </widget>
+      </item>
      </layout>
      <zorder>widgetAddress</zorder>
      <zorder>labelAddress</zorder>
+     <zorder>checkBoxEnableMulticast</zorder>
     </widget>
    </item>
    <item>
@@ -665,6 +673,7 @@
   <tabstop>checkBoxAudioTrack4</tabstop>
   <tabstop>checkBoxAudioTrack5</tabstop>
   <tabstop>checkBoxAudioTrack6</tabstop>
+  <tabstop>checkBoxEnableMulticast</tabstop>
   <tabstop>spinBoxPort</tabstop>
   <tabstop>lineEditUrlSuffix</tabstop>
   <tabstop>pushButtonAddressCopy</tabstop>

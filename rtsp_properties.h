@@ -24,6 +24,7 @@ private Q_SLOTS:
 	void onPushButtonStartClicked();
 	void onPushButtonStopClicked();
 	void onPushButtonAddressCopyClicked();
+	void onCheckBoxEnableMulticastClicked(int checked);
 	void onSpinBoxPortValueChanged(int value);
 	void onLineEditUrlSuffixValueChanged(const QString value);
 	void onCheckBoxEnableAuthenticationClicked(bool checked);

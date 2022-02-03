@@ -89,46 +89,43 @@ string H264Source::GetAttribute()
 
 bool H264Source::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 {
-    uint8_t* frame_buf  = frame.buffer.get();
+    uint8_t *frame_buf  = frame.buffer.get();
     size_t frame_size = frame.size;
+    RtpPacket rtp_pkt;
 
-	if (frame.timestamp == 0) {
-		frame.timestamp = GetTimestamp();
-	}    
+	rtp_pkt.type = frame.type;
+	//rtp_pkt.timestamp = frame.timestamp == 0 ? GetTimestamp() : frame.timestamp;
+	rtp_pkt.timestamp = frame.timestamp;
 
     if (frame_size <= MAX_RTP_PAYLOAD_SIZE) {
-        RtpPacket rtp_pkt;
-		rtp_pkt.type = frame.type;
-		rtp_pkt.timestamp = frame.timestamp;
 		rtp_pkt.size = frame_size + 4 + RTP_HEADER_SIZE;
 		rtp_pkt.last = 1;
-        memcpy(rtp_pkt.data.get()+4+RTP_HEADER_SIZE, frame_buf, frame_size); 
+
+        memcpy(rtp_pkt.data.get() + 4 + RTP_HEADER_SIZE, frame_buf, frame_size); 
 
         if (send_frame_callback_) {
 			if (!send_frame_callback_(channel_id, rtp_pkt)) {
 				return false;
-			}               
+			}        
         }
     }
     else {
-        char FU_A[2] = {0};
-
-        FU_A[0] = (frame_buf[0] & 0xE0) | 28;
-        FU_A[1] = 0x80 | (frame_buf[0] & 0x1f);
+	    char FU_A[2] = {
+		    static_cast<char>((frame_buf[0] & 0xE0) | 28),
+		    static_cast<char>(0x80 | (frame_buf[0] & 0x1f))
+	    };
 
         frame_buf  += 1;
         frame_size -= 1;
 
         while (frame_size + 2 > MAX_RTP_PAYLOAD_SIZE) {
-            RtpPacket rtp_pkt;
-            rtp_pkt.type = frame.type;
-            rtp_pkt.timestamp = frame.timestamp;
             rtp_pkt.size = 4 + RTP_HEADER_SIZE + MAX_RTP_PAYLOAD_SIZE;
             rtp_pkt.last = 0;
+	        uint8_t *rtp_pkt_data = rtp_pkt.data.get() + RTP_HEADER_SIZE + 4;
 
-            rtp_pkt.data.get()[RTP_HEADER_SIZE+4] = FU_A[0];
-            rtp_pkt.data.get()[RTP_HEADER_SIZE+5] = FU_A[1];
-            memcpy(rtp_pkt.data.get()+4+RTP_HEADER_SIZE+2, frame_buf, MAX_RTP_PAYLOAD_SIZE-2);
+            *(rtp_pkt_data++) = FU_A[0];
+            *(rtp_pkt_data++) = FU_A[1];
+            memcpy(rtp_pkt_data++, frame_buf, MAX_RTP_PAYLOAD_SIZE - 2);
 
             if (send_frame_callback_) {
                 if (!send_frame_callback_(channel_id, rtp_pkt))
@@ -142,21 +139,19 @@ bool H264Source::HandleFrame(MediaChannelId channel_id, AVFrame frame)
         }
 
         {
-            RtpPacket rtp_pkt;
-            rtp_pkt.type = frame.type;
-            rtp_pkt.timestamp = frame.timestamp;
             rtp_pkt.size = 4 + RTP_HEADER_SIZE + 2 + frame_size;
             rtp_pkt.last = 1;
+	        uint8_t *rtp_pkt_data = rtp_pkt.data.get() + RTP_HEADER_SIZE + 4;
 
             FU_A[1] |= 0x40;
-            rtp_pkt.data.get()[RTP_HEADER_SIZE+4] = FU_A[0];
-            rtp_pkt.data.get()[RTP_HEADER_SIZE+5] = FU_A[1];
-            memcpy(rtp_pkt.data.get()+4+RTP_HEADER_SIZE+2, frame_buf, frame_size);
+            *(rtp_pkt_data++) = FU_A[0];
+            *(rtp_pkt_data++) = FU_A[1];
+            memcpy(rtp_pkt_data++, frame_buf, frame_size);
 
             if (send_frame_callback_) {
 				if (!send_frame_callback_(channel_id, rtp_pkt)) {
 					return false;
-				}              
+				}
             }
         }
     }

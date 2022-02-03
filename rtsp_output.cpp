@@ -15,6 +15,7 @@
 #define ERROR_BEGIN_DATA_CAPTURE 1
 #define ERROR_INIT_ENCODERS 2
 #define ERROR_START_RTSP_SERVER 3
+#define ERROR_START_MULTICAST 4
 #define ERROR_ENCODE OBS_OUTPUT_ENCODE_ERROR
 
 struct queue_frame {
@@ -157,6 +158,10 @@ static void set_output_error(rtsp_out_data *out_data, int code, ...)
 	case ERROR_START_RTSP_SERVER:
 		message = "starting RTSP server failed on port '%d'";
 		lookup_string = "RtspOutput.Error.StartRtspServer";
+		break;
+	case ERROR_START_MULTICAST:
+		message = "starting multicast failed";
+		lookup_string = "RtspOutput.Error.StartMulticast";
 		break;
 	case ERROR_ENCODE:
 		message = "encode error";
@@ -309,6 +314,26 @@ static bool rtsp_output_start(void *data)
 			    out_data->channel_ids[index])) {
 			return false;
 		}
+	}
+
+	const auto multicast = obs_data_get_bool(settings, "multicast");
+	const auto multicastStatus = session->StartMulticast();
+	if (multicastStatus) {
+		blog(LOG_INFO,
+		     "------------------------------------------------");
+		blog(LOG_INFO, "rtsp multicast info:");
+		blog(LOG_INFO, "\tip address:        \t%s",
+		     session->GetMulticastIp().c_str());
+		for (auto i = 0; i < enabled_channels_count + 1; i++) {
+			blog(LOG_INFO, "\tchannel %d port: \t%d", i,
+			     session->GetMulticastPort(
+				     static_cast<xop::MediaChannelId>(i)));
+		}
+		blog(LOG_INFO,
+		     "------------------------------------------------");
+	} else {
+		set_output_error(out_data, ERROR_START_MULTICAST);
+		return false;
 	}
 
 	out_data->frame_queue =
@@ -488,6 +513,7 @@ static void rtsp_output_data(void *data, struct encoder_packet *packet)
 
 static void rtsp_output_defaults(obs_data_t *defaults)
 {
+	obs_data_set_default_bool(defaults, "multicast", false);
 #if defined(__APPLE__) || defined(__MACH__)
 	// On osx the application will run using a non-priviliged user.
 	// Opening ports below 1024 is not possible.
@@ -536,6 +562,9 @@ static obs_properties_t *rtsp_output_properties(void *data)
 	obs_properties_t *props = obs_properties_create();
 	obs_properties_set_flags(props, OBS_PROPERTIES_DEFER_UPDATE);
 
+	obs_properties_add_bool(
+		props, "multicast",
+		obs_module_text("RtspOutput.Properties.Multicast"));
 	obs_properties_add_int(props, "port",
 			       obs_module_text("RtspOutput.Properties.Port"), 1,
 			       65535, 1);

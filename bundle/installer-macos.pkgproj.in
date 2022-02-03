@@ -51,7 +51,7 @@
 															<key>GID</key>
 															<integer>80</integer>
 															<key>PATH</key>
-															<string>../build-package/obs-rtspserver</string>
+															<string>../@RELATIVE_INSTALL_PATH@/@CMAKE_PROJECT_NAME@</string>
 															<key>PATH_TYPE</key>
 															<integer>1</integer>
 															<key>PERMISSIONS</key>
@@ -505,11 +505,11 @@
 				<key>FOLLOW_SYMBOLIC_LINKS</key>
 				<false/>
 				<key>IDENTIFIER</key>
-				<string>com.scottxu.pkg.obs-rtspserver</string>
+				<string>@MACOS_BUNDLEID@</string>
 				<key>LOCATION</key>
 				<integer>0</integer>
 				<key>NAME</key>
-				<string>obs-rtspserver</string>
+				<string>@CMAKE_PROJECT_NAME@</string>
 				<key>OVERWRITE_PERMISSIONS</key>
 				<false/>
 				<key>PAYLOAD_SIZE</key>
@@ -521,7 +521,7 @@
 				<key>USE_HFS+_COMPRESSION</key>
 				<false/>
 				<key>VERSION</key>
-				<string>%{VERSION}</string>
+				<string>@PROJECT_VERSION@</string>
 			</dict>
 			<key>TYPE</key>
 			<integer>0</integer>
@@ -751,7 +751,58 @@
 		<key>PROJECT_REQUIREMENTS</key>
 		<dict>
 			<key>LIST</key>
-			<array/>
+			<array>
+				<dict>
+					<key>BEHAVIOR</key>
+					<integer>3</integer>
+					<key>DICTIONARY</key>
+					<dict>
+						<key>IC_REQUIREMENT_FILES_CONDITION</key>
+						<integer>0</integer>
+						<key>IC_REQUIREMENT_FILES_DISK_TYPE</key>
+						<integer>0</integer>
+						<key>IC_REQUIREMENT_FILES_LIST</key>
+						<array>
+							<string>/Applications/OBS.app</string>
+						</array>
+						<key>IC_REQUIREMENT_FILES_SELECTOR</key>
+						<integer>0</integer>
+					</dict>
+					<key>IC_REQUIREMENT_CHECK_TYPE</key>
+					<integer>1</integer>
+					<key>IDENTIFIER</key>
+					<string>fr.whitebox.Packages.requirement.files</string>
+					<key>MESSAGE</key>
+					<array/>
+					<key>NAME</key>
+					<string>Files</string>
+					<key>STATE</key>
+					<true/>
+				</dict>
+				<dict>
+					<key>BEHAVIOR</key>
+					<integer>3</integer>
+					<key>DICTIONARY</key>
+					<dict>
+						<key>IC_REQUIREMENT_OS_DISK_TYPE</key>
+						<integer>1</integer>
+						<key>IC_REQUIREMENT_OS_DISTRIBUTION_TYPE</key>
+						<integer>0</integer>
+						<key>IC_REQUIREMENT_OS_MINIMUM_VERSION</key>
+						<integer>101300</integer>
+					</dict>
+					<key>IC_REQUIREMENT_CHECK_TYPE</key>
+					<integer>0</integer>
+					<key>IDENTIFIER</key>
+					<string>fr.whitebox.Packages.requirement.os</string>
+					<key>MESSAGE</key>
+					<array/>
+					<key>NAME</key>
+					<string>Operating System</string>
+					<key>STATE</key>
+					<true/>
+				</dict>
+			</array>
 			<key>RESOURCES</key>
 			<array/>
 			<key>ROOT_VOLUME_ONLY</key>
@@ -771,7 +822,7 @@
 			<key>BUILD_PATH</key>
 			<dict>
 				<key>PATH</key>
-				<string></string>
+				<string>../@RELATIVE_BUILD_PATH@</string>
 				<key>PATH_TYPE</key>
 				<integer>1</integer>
 			</dict>
@@ -944,7 +995,7 @@
 				</dict>
 			</array>
 			<key>NAME</key>
-			<string>obs-rtspserver</string>
+			<string>@CMAKE_PROJECT_NAME@</string>
 			<key>PAYLOAD_ONLY</key>
 			<false/>
 			<key>TREAT_MISSING_PRESENTATION_DOCUMENTS_AS_WARNING</key>

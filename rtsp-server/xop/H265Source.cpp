@@ -54,19 +54,17 @@ bool H265Source::HandleFrame(MediaChannelId channelId, AVFrame frame)
 {
 	uint8_t *frame_buf  = frame.buffer.get();
 	size_t frame_size = frame.size;
+	RtpPacket rtp_pkt;
 
-	if (frame.timestamp == 0) {
-		frame.timestamp = GetTimestamp();
-	}
+	rtp_pkt.type = frame.type;
+	//rtp_pkt.timestamp = frame.timestamp == 0 ? GetTimestamp() : frame.timestamp;
+	rtp_pkt.timestamp = frame.timestamp;
         
 	if (frame_size <= MAX_RTP_PAYLOAD_SIZE) {
-		RtpPacket rtp_pkt;
-		rtp_pkt.type = frame.type;
-		rtp_pkt.timestamp = frame.timestamp;
 		rtp_pkt.size = frame_size + 4 + RTP_HEADER_SIZE;
 		rtp_pkt.last = 1;
 
-		memcpy(rtp_pkt.data.get()+4+RTP_HEADER_SIZE, frame_buf, frame_size);
+		memcpy(rtp_pkt.data.get() + 4 + RTP_HEADER_SIZE, frame_buf, frame_size);
         
 		if (send_frame_callback_) {
 			if (!send_frame_callback_(channelId, rtp_pkt)) {
@@ -74,27 +72,26 @@ bool H265Source::HandleFrame(MediaChannelId channelId, AVFrame frame)
 			}          
 		}
 	}	
-    else {	
-		char FU[3] = {0};	
+    else {
 		char nalUnitType = (frame_buf[0] & 0x7E) >> 1; 
-		FU[0] = (frame_buf[0] & 0x81) | (49<<1); 
-		FU[1] = frame_buf[1]; 
-		FU[2] = (0x80 | nalUnitType); 
+		char FU[3] = {
+			static_cast<char>((frame_buf[0] & 0x81) | (49 << 1)),
+			static_cast<char>(frame_buf[1]),
+			static_cast<char>(0x80 | nalUnitType)
+		};
         
 		frame_buf  += 2;
 		frame_size -= 2;
         
 		while (frame_size + 3 > MAX_RTP_PAYLOAD_SIZE) {
-			RtpPacket rtp_pkt;
-			rtp_pkt.type = frame.type;
-			rtp_pkt.timestamp = frame.timestamp;
 			rtp_pkt.size = 4 + RTP_HEADER_SIZE + MAX_RTP_PAYLOAD_SIZE;
 			rtp_pkt.last = 0;
+			uint8_t *rtp_pkt_data = rtp_pkt.data.get() + RTP_HEADER_SIZE + 4;
 
-			rtp_pkt.data.get()[RTP_HEADER_SIZE+4] = FU[0];
-			rtp_pkt.data.get()[RTP_HEADER_SIZE+5] = FU[1];
-			rtp_pkt.data.get()[RTP_HEADER_SIZE+6] = FU[2];
-			memcpy(rtp_pkt.data.get()+4+RTP_HEADER_SIZE+3, frame_buf, MAX_RTP_PAYLOAD_SIZE-3);
+			*(rtp_pkt_data++) = FU[0];
+			*(rtp_pkt_data++) = FU[1];
+			*(rtp_pkt_data++) = FU[2];
+			memcpy(rtp_pkt_data++, frame_buf, MAX_RTP_PAYLOAD_SIZE - 3);
             
 			if (send_frame_callback_) {
 				if (!send_frame_callback_(channelId, rtp_pkt)) {
@@ -109,17 +106,15 @@ bool H265Source::HandleFrame(MediaChannelId channelId, AVFrame frame)
 		}
         
 		{
-			RtpPacket rtp_pkt;
-			rtp_pkt.type = frame.type;
-			rtp_pkt.timestamp = frame.timestamp;
 			rtp_pkt.size = 4 + RTP_HEADER_SIZE + 3 + frame_size;
 			rtp_pkt.last = 1;
+			uint8_t *rtp_pkt_data = rtp_pkt.data.get() + RTP_HEADER_SIZE + 4;
 
 			FU[2] |= 0x40;
-			rtp_pkt.data.get()[RTP_HEADER_SIZE+4] = FU[0];
-			rtp_pkt.data.get()[RTP_HEADER_SIZE+5] = FU[1];
-			rtp_pkt.data.get()[RTP_HEADER_SIZE+6] = FU[2];
-			memcpy(rtp_pkt.data.get()+4+RTP_HEADER_SIZE+3, frame_buf, frame_size);
+			*(rtp_pkt_data++) = FU[0];
+			*(rtp_pkt_data++) = FU[1];
+			*(rtp_pkt_data++) = FU[2];
+			memcpy(rtp_pkt_data++, frame_buf, frame_size);
             
 			if (send_frame_callback_) {
 				if (!send_frame_callback_(channelId, rtp_pkt)) {

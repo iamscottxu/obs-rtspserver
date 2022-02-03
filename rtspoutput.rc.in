@@ -1,5 +1,5 @@
 1 VERSIONINFO
-FILEVERSION ${OBS_RTSPSERVER_VERSION_MAJOR},${OBS_RTSPSERVER_VERSION_MINOR},${OBS_RTSPSERVER_VERSION_PATCH},0
+FILEVERSION ${PROJECT_VERSION_MAJOR},${PROJECT_VERSION_MINOR},${PROJECT_VERSION_PATCH},${PROJECT_VERSION_TWEAK}
 BEGIN
   BLOCK "StringFileInfo"
   BEGIN
@@ -7,11 +7,11 @@ BEGIN
     BEGIN
       VALUE "CompanyName", "OBS"
       VALUE "FileDescription", "OBS RTSP Server Plugin"
-      VALUE "FileVersion", "${OBS_RTSPSERVER_VERSION_STRING}"
+      VALUE "FileVersion", "${PROJECT_VERSION}"
       VALUE "InternalName", "obs-rtspserver"
       VALUE "OriginalFilename", "obs-rtspserver.dll"
       VALUE "ProductName", "OBS Studio"
-      VALUE "ProductVersion", "${OBS_RTSPSERVER_VERSION_STRING}"
+      VALUE "ProductVersion", "${OBS_PLUGUIN_VERSION}"
       VALUE "Comments", "RTSP server for OBS"
     END
   END
