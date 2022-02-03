@@ -108,7 +108,7 @@ package-plugin-standalone() {
     GIT_BRANCH=$(/usr/bin/git rev-parse --abbrev-ref HEAD)
     GIT_HASH=$(/usr/bin/git rev-parse --short HEAD)
     GIT_TAG=$(/usr/bin/git describe --tags --always --dirty='-dev')
-    GIT_VERSION=$(echo ${GIT_TAG} | grep -Eos '[0-9]+.[0-9]+.[0-9]+(-[a-z0-9]+)+$')
+    GIT_VERSION=$(echo ${GIT_TAG} | grep -Eos '[0-9]+.[0-9]+.[0-9]+(-[a-z0-9]+)*$')
 
     check_macos_version
     check_archs

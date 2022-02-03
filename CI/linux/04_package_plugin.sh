@@ -34,7 +34,7 @@ package-plugin-standalone() {
     #GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
     #GIT_HASH=$(git rev-parse --short HEAD)
     #GIT_TAG=$(git describe --tags --always --dirty='-dev')
-    #GIT_VERSION=$(echo ${GIT_TAG} | grep -Eos '[0-9]+.[0-9]+.[0-9]+(-[a-z0-9]+)+$')
+    #GIT_VERSION=$(echo ${GIT_TAG} | grep -Eos '[0-9]+.[0-9]+.[0-9]+(-[a-z0-9]+)*$')
     #FILE_NAME="${PRODUCT_NAME}-${GIT_TAG}-linux"
 
     package_obs_plugin

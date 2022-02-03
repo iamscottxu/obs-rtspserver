@@ -117,7 +117,7 @@ function Package-Plugin-Standalone {
 
     if ($null -eq $GitTag) {
         $GitTag="v$ProductVersion"
-    } elseif ($GitTag -match "[0-9]+.[0-9]+.[0-9]+(-[a-z0-9]+)+$") {
+    } elseif ($GitTag -match "[0-9]+.[0-9]+.[0-9]+(-[a-z0-9]+)*$") {
         $ProductVersion = $Matches[0]
     }
 
