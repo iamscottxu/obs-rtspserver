@@ -316,9 +316,9 @@ static bool rtsp_output_start(void *data)
 		}
 	}
 
-	const auto multicast = obs_data_get_bool(settings, "multicast");
-	const auto multicastStatus = session->StartMulticast();
-	if (multicastStatus) {
+	auto multicast = obs_data_get_bool(settings, "multicast");
+	if (multicast) multicast = session->StartMulticast();
+	if (multicast) {
 		blog(LOG_INFO,
 		     "------------------------------------------------");
 		blog(LOG_INFO, "rtsp multicast info:");
