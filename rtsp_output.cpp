@@ -317,23 +317,25 @@ static bool rtsp_output_start(void *data)
 	}
 
 	auto multicast = obs_data_get_bool(settings, "multicast");
-	if (multicast) multicast = session->StartMulticast();
 	if (multicast) {
-		blog(LOG_INFO,
-		     "------------------------------------------------");
-		blog(LOG_INFO, "rtsp multicast info:");
-		blog(LOG_INFO, "\tip address:        \t%s",
-		     session->GetMulticastIp().c_str());
-		for (auto i = 0; i < enabled_channels_count + 1; i++) {
-			blog(LOG_INFO, "\tchannel %d port: \t%d", i,
-			     session->GetMulticastPort(
-				     static_cast<xop::MediaChannelId>(i)));
+		if ((multicast = session->StartMulticast())) {
+			blog(LOG_INFO,
+			     "------------------------------------------------");
+			blog(LOG_INFO, "rtsp multicast info:");
+			blog(LOG_INFO, "\tip address:        \t%s",
+			     session->GetMulticastIp().c_str());
+			for (auto i = 0; i < enabled_channels_count + 1; i++) {
+				blog(LOG_INFO, "\tchannel %d port: \t%d", i,
+				     session->GetMulticastPort(
+					     static_cast<xop::MediaChannelId>(
+						     i)));
+			}
+			blog(LOG_INFO,
+			     "------------------------------------------------");
+		} else {
+			set_output_error(out_data, ERROR_START_MULTICAST);
+			return false;
 		}
-		blog(LOG_INFO,
-		     "------------------------------------------------");
-	} else {
-		set_output_error(out_data, ERROR_START_MULTICAST);
-		return false;
 	}
 
 	out_data->frame_queue =
