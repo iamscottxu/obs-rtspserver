@@ -96,13 +96,13 @@ $BuildDirectory = "$(if (Test-Path Env:BuildDirectory) { $env:BuildDirectory } e
 $BuildConfiguration = "$(if (Test-Path Env:BuildConfiguration) { $env:BuildConfiguration } else { $BuildConfiguration })"
 $BuildArch = "$(if (Test-Path Env:BuildArch) { $env:BuildArch } else { $BuildArch })"
 $OBSBranch = "$(if (Test-Path Env:OBSBranch) { $env:OBSBranch } else { $OBSBranch })"
-#$WindowsDepsVersion = "$(if (Test-Path Env:WindowsDepsVersion ) { $env:WindowsDepsVersion } else { "2019" })"
-$WindowsDepsVersion = "$(if (Test-Path Env:WindowsDepsVersion ) { $env:DEPS_VERSION_WIN } else { "2019" })"
+#$WindowsDepsVersion = "$(if (Test-Path Env:WindowsDepsVersion ) { $env:WindowsDepsVersion } else { "2022-02-13" })"
+$WindowsDepsVersion = "$(if (Test-Path Env:WindowsDepsVersion ) { $env:DEPS_VERSION_WIN } else { "2022-02-13" })"
 #$WindowsQtVersion = "$(if (Test-Path Env:WindowsQtVersion ) { $env:WindowsQtVersion } else { "5.15.2" })"
 $WindowsQtVersion = "$(if (Test-Path Env:WindowsQtVersion ) { $env:QT_VERSION_WIN } else { "5.15.2" })"
-$CmakeSystemVersion = "$(if (Test-Path Env:CMAKE_SYSTEM_VERSION) { $Env:CMAKE_SYSTEM_VERSION } else { "10.0.18363.657" })"
-#$OBSVersion = "$(if ( Test-Path Env:OBSVersion ) { $env:ObsVersion } else { "27.1.3" })"
-$OBSVersion = "$(if ( Test-Path Env:OBSVersion ) { $env:OBS_VERSION } else { "27.1.3" })"
+$CmakeSystemVersion = "$(if (Test-Path Env:CMAKE_SYSTEM_VERSION) { $Env:CMAKE_SYSTEM_VERSION } else { "10.0.22000.0" })"
+#$OBSVersion = "$(if ( Test-Path Env:OBSVersion ) { $env:ObsVersion } else { "27.2.3" })"
+$OBSVersion = "$(if ( Test-Path Env:OBSVersion ) { $env:OBS_VERSION } else { "27.2.3" })"
 #$NSISVersion = "$(if ( Test-Path Env:NSISVersion ) { $env:NSISVersion } else { "3.08" })"
 $NSISVersion = "$(if ( Test-Path Env:NSISVersion ) { $env:NSIS_VERSION_WIN } else { "3.08" })"
 
@@ -140,3 +140,27 @@ function Install-Windows-Dependencies {
 
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 }
+
+function Set-Msvc-Environment {
+    param(
+        [String]$VcvarSallPath,
+        [ValidateSet("x86", "amd64", "x86_amd64", "x86_arm", "x86_arm64", "amd64_x86", "amd64_arm", "amd64_arm64")]
+        [String]$Arch,
+        [ValidateSet("", "store", "uwp")]
+        [String]$PlatformType = "",
+        [string]$WinsdkVersion = "",
+        [string]$VcvarsVer = "",
+        [string]$VcvarsSpectreLibs = ""
+    )
+    Push-Location $VcvarSallPath
+    $parameter = "$Arch $PlatformType $WinsdkVersion"
+    if (-not $VcvarsVer -eq '') { $parameter = $parameter & " -vcvars_ver=$VcvarsVer" }
+    if (-not $VcvarsSpectreLibs -eq '') { $parameter = $parameter & " -vcvars_spectre_libs=$VcvarsSpectreLibs" }
+    cmd /c "vcvarsall.bat $parameter & set" |
+    ForEach-Object {
+        if ($_ -match "=") {
+            $v = $_.split("="); set-item -force -path "ENV:\$($v[0])"  -value "$($v[1])"
+        }
+    }
+    Pop-Location
+} 

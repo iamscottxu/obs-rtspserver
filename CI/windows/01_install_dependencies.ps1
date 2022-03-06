@@ -28,17 +28,17 @@ Function Install-obs-deps {
     Write-Status "Setup for pre-built Windows OBS dependencies v${Version}"
     Ensure-Directory $DepsBuildDir
 
-    if (!(Test-Path $DepsBuildDir/dependencies${Version})) {
+    if (!(Test-Path $DepsBuildDir/windows-deps-${Version})) {
         Write-Status "Setting up pre-built Windows OBS dependencies v${Version}"
 
         Write-Step "Download..."
         $ProgressPreference = $(if ($Quiet.isPresent) { "SilentlyContinue" } else { "Continue" })
-        Invoke-WebRequest -Uri "https://cdn-fastly.obsproject.com/downloads/dependencies${Version}.zip" -UseBasicParsing -OutFile "dependencies${Version}.zip"
+        Invoke-WebRequest -Uri "https://github.com/obsproject/obs-deps/releases/download/win-${Version}/windows-deps-${Version}.zip" -UseBasicParsing -OutFile "windows-deps-${Version}.zip"
         $ProgressPreference = 'Continue'
 
         Write-Step "Unpack..."
 
-        Expand-Archive -Path "dependencies${Version}.zip"
+        Expand-Archive -Path "windows-deps-${Version}.zip"
     } else {
         Write-Step "Found existing pre-built dependencies..."
 

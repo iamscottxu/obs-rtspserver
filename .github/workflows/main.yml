@@ -14,12 +14,12 @@ on:
 
 env:
   PRODUCT_NAME: 'obs-rtspserver'
-  QT_VERSION_MAC: '5.15.2'
-  QT_HASH_MAC: '069a249e7dd8215e18074ed432c0f06e369d23b053be4be23d4a947ba632cd6a'
+  DEPS_VERSION_MAC: '2022-02-13'
+  DEPS_HASH_MAC: '77471b1d345a768e8efec3f6ad9dc79f3c7cd34840b66f721b80025d29713f5d'
+  #QT_VERSION_MAC: '2022-02-13'
+  QT_HASH_MAC: '13fbcc45fd9d08b30e702d481fe4d58b23f93aa06848cede4ebe0956c79a5e8a'
+  DEPS_VERSION_WIN: '2022-02-13'
   QT_VERSION_WIN: '5.15.2'
-  DEPS_VERSION_MAC: '2021-12-22'
-  DEPS_HASH_MAC: 'f040dfebadad0eb1e79eb0f0fe9d55ad8d88f38eaab68b11f38cc7be4998c9e8'
-  DEPS_VERSION_WIN: '2019'
   NSIS_VERSION_WIN: '3.08'
 jobs:
   get_obs_info:
@@ -87,8 +87,8 @@ jobs:
       matrix:
         arch: [64, 32]
     env:
-      #CMAKE_GENERATOR: "Visual Studio 16 2019"
-      CMAKE_SYSTEM_VERSION: "10.0.18363.657"
+      #CMAKE_GENERATOR: "Visual Studio 17 2022"
+      CMAKE_SYSTEM_VERSION: "10.0.22000.0"
       OBS_VERSION: "${{ needs.get_obs_info.outputs.latest_tag_name }}"
     steps:
       - name: 'Add msbuild to PATH'
@@ -137,8 +137,8 @@ jobs:
     runs-on: [windows-latest]
     needs: [get_plugin_info, windows_build]
     env:
-      #CMAKE_GENERATOR: "Visual Studio 16 2019"
-      CMAKE_SYSTEM_VERSION: "10.0.18363.657"
+      #CMAKE_GENERATOR: "Visual Studio 17 2022"
+      CMAKE_SYSTEM_VERSION: "10.0.22000.0"
       OBS_VERSION: "${{ needs.get_obs_info.outputs.latest_tag_name }}"
     steps:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
