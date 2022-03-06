@@ -30,29 +30,37 @@ function Build-OBS-Plugin {
     Ensure-Directory ${CheckoutDir}
 
     if ($BuildArch -eq "64-bit") {
-        $QtFolder = "${CheckoutDir}/../obs-build-dependencies/Qt_${WindowsQtVersion}/msvc2019_64"
-        $DepsFolder = "${CheckoutDir}/../obs-build-dependencies/windows-deps-${WindowsDepsVersion}/win64"
-        $Env:CMAKE_PREFIX_PATH="${QtFolder};${DepsFolder}/bin;${DepsFolder}"
+        $QtDirectory = "${CheckoutDir}/../obs-build-dependencies/Qt_${WindowsQtVersion}/msvc2019_64"
+        $DepsDirectory = "${CheckoutDir}/../obs-build-dependencies/windows-deps-${WindowsDepsVersion}/win64"
         
-        cmake -S . -B "${BuildDirectory}64" -G "Visual Studio 17 2022" `
-            -DCMAKE_GENERATOR_PLATFORM=x64 `
-            -DCMAKE_SYSTEM_VERSION="${CmakeSystemVersion}" `
-            -DOBS_SOURCE_DIR="${ObsBuildDir}" `
-            "$(if (Test-Path Variable:$Quiet) { "-Wno-deprecated -Wno-dev --log-level=ERROR" })"
+        Set-Msvc-Environment-And-Run-Cmake -Arch "amd64" -WinsdkVersion "${CmakeSystemVersion}" -CmakeArgumentList @(
+            "-S", ".", "-B", """${BuildDirectory}64""", "-G", "Ninja",
+            "-DCMAKE_SYSTEM_VERSION=""${CmakeSystemVersion}""",
+            "-DQTDIR=""${QtDirectory}""",
+            "-DDepsPath=""${DepsDirectory}""",
+            "-DCMAKE_C_COMPILER=cl.exe",
+            "-DCMAKE_CXX_COMPILER=cl.exe",
+            "-DOBS_SOURCE_DIR=""${ObsBuildDir}""",
+            "$(if (Test-Path Variable:$Quiet) { "-Wno-deprecated -Wno-dev --log-level=ERROR" })")
 
-        cmake --build "${BuildDirectory}64" --config ${BuildConfiguration}
+        Set-Msvc-Environment-And-Run-Cmake -Arch "amd64" -WinsdkVersion "${CmakeSystemVersion}" -CmakeArgumentList @(
+            "--build", """${BuildDirectory}64""", "--config", "${BuildConfiguration}")
     } else {
-        $QtFolder = "${CheckoutDir}/../obs-build-dependencies/Qt_${WindowsQtVersion}/msvc2019"
-        $DepsFolder = "${CheckoutDir}/../obs-build-dependencies/windows-deps-${WindowsDepsVersion}/win32"
-        $Env:CMAKE_PREFIX_PATH="${QtFolder};${DepsFolder}/bin;${DepsFolder}"
+        $QtDirectory = "${CheckoutDir}/../obs-build-dependencies/Qt_${WindowsQtVersion}/msvc2019"
+        $DepsDirectory = "${CheckoutDir}/../obs-build-dependencies/windows-deps-${WindowsDepsVersion}/win32"
 
-        cmake -S . -B "${BuildDirectory}32" -G "Visual Studio 17 2022" `
-            -DCMAKE_GENERATOR_PLATFORM=Win32 `
-            -DCMAKE_SYSTEM_VERSION="${CmakeSystemVersion}" `
-            -DOBS_SOURCE_DIR="${ObsBuildDir}" `
-            "$(if (Test-Path Variable:$Quiet) { "-Wno-deprecated -Wno-dev --log-level=ERROR" })"
+        Set-Msvc-Environment-And-Run-Cmake -Arch "x86" -WinsdkVersion "${CmakeSystemVersion}" -CmakeArgumentList @(
+            "-S", ".", "-B", """${BuildDirectory}32""", "-G", "Ninja",
+            "-DCMAKE_SYSTEM_VERSION=""${CmakeSystemVersion}""",
+            "-DQTDIR=""${QtDirectory}""",
+            "-DDepsPath=""${DepsDirectory}""",
+            "-DCMAKE_C_COMPILER=cl.exe",
+            "-DCMAKE_CXX_COMPILER=cl.exe",
+            "-DOBS_SOURCE_DIR=""${ObsBuildDir}""",
+            "$(if (Test-Path Variable:$Quiet) { "-Wno-deprecated -Wno-dev --log-level=ERROR" })")
 
-        cmake --build "${BuildDirectory}32" --config ${BuildConfiguration}
+        Set-Msvc-Environment-And-Run-Cmake -Arch "x86" -WinsdkVersion "${CmakeSystemVersion}" -CmakeArgumentList @(
+            "--build", """${BuildDirectory}32""", "--config", "${BuildConfiguration}")
     }
 
     Ensure-Directory ${CheckoutDir}

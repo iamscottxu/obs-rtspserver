@@ -33,33 +33,43 @@ function Build-OBS-Libs {
     if ($BuildArch -eq "64-bit") {
         $QtDirectory = "${CheckoutDir}/../obs-build-dependencies/Qt_${WindowsQtVersion}/msvc2019_64"
         $DepsDirectory = "${CheckoutDir}/../obs-build-dependencies/windows-deps-${WindowsDepsVersion}/win64"
-        $Env:CMAKE_PREFIX_PATH="${QtDirectory};${DepsDirectory}/bin;${DepsDirectory}"
+        
+        Set-Msvc-Environment-And-Run-Cmake -Arch "amd64" -WinsdkVersion "${CmakeSystemVersion}" -CmakeArgumentList @(
+            "-S", ".", "-B", """plugin_${BuildDirectory}64""", "-G", "Ninja",
+            "-DCMAKE_SYSTEM_VERSION=""${CmakeSystemVersion}""",
+            "-DCMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION=""${CmakeSystemVersion}""",
+            "-DQTDIR=""${QtDirectory}""",
+            "-DDepsPath=""${DepsDirectory}""",
+            "-DCMAKE_C_COMPILER=cl.exe",
+            "-DCMAKE_CXX_COMPILER=cl.exe",
+            "-DENABLE_PLUGINS=OFF",
+            "-DENABLE_UI=ON",
+            "-DENABLE_SCRIPTING=OFF",
+            "-DBUILD_BROWSER=OFF",
+            "$(if (Test-Path Variable:$Quiet) { "-Wno-deprecated -Wno-dev --log-level=ERROR" })")
 
-        cmake -S . -B "plugin_${BuildDirectory}64" -G "Visual Studio 17 2022" `
-            -DCMAKE_SYSTEM_VERSION="${CmakeSystemVersion}" `
-            -DCMAKE_GENERATOR_PLATFORM=x64 `
-            -DENABLE_PLUGINS=OFF `
-            -DENABLE_UI=ON `
-            -DENABLE_SCRIPTING=OFF `
-            -DBUILD_BROWSER=OFF `
-            "$(if (Test-Path Variable:$Quiet) { "-Wno-deprecated -Wno-dev --log-level=ERROR" })"
-
-        cmake --build "plugin_${BuildDirectory}64" -t obs-frontend-api --config ${BuildConfiguration}
+        Set-Msvc-Environment-And-Run-Cmake -Arch "amd64" -WinsdkVersion "${CmakeSystemVersion}" -CmakeArgumentList @(
+            "--build", """plugin_${BuildDirectory}64""", "-t", "obs-frontend-api", "--config ${BuildConfiguration}")
     } else {
         $QtDirectory = "${CheckoutDir}/../obs-build-dependencies/Qt_${WindowsQtVersion}/msvc2019"
         $DepsDirectory = "${CheckoutDir}/../obs-build-dependencies/windows-deps-${WindowsDepsVersion}/win32"
-        $Env:CMAKE_PREFIX_PATH="${QtDirectory};${DepsDirectory}/bin;${DepsDirectory}"
 
-        cmake -S . -B "plugin_${BuildDirectory}32" -G "Visual Studio 17 2022" `
-            -DCMAKE_SYSTEM_VERSION="${CmakeSystemVersion}" `
-            -DCMAKE_GENERATOR_PLATFORM=Win32 `
-            -DENABLE_PLUGINS=OFF `
-            -DENABLE_UI=ON `
-            -DENABLE_SCRIPTING=OFF `
-            -DBUILD_BROWSER=OFF `
-            "$(if (Test-Path Variable:$Quiet) { "-Wno-deprecated -Wno-dev --log-level=ERROR" })"
+        Set-Msvc-Environment-And-Run-Cmake -Arch "x86" -WinsdkVersion "${CmakeSystemVersion}" -CmakeArgumentList @(
+            "-S", ".", "-B", """plugin_${BuildDirectory}32""", "-G", "Ninja",
+            "-DCMAKE_SYSTEM_VERSION=""${CmakeSystemVersion}""",
+            "-DCMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION=""${CmakeSystemVersion}""",
+            "-DQTDIR=""${QtDirectory}""",
+            "-DDepsPath=""${DepsDirectory}""",
+            "-DCMAKE_C_COMPILER=cl.exe",
+            "-DCMAKE_CXX_COMPILER=cl.exe",
+            "-DENABLE_PLUGINS=OFF",
+            "-DENABLE_UI=ON",
+            "-DENABLE_SCRIPTING=OFF",
+            "-DBUILD_BROWSER=OFF",
+            "$(if (Test-Path Variable:$Quiet) { "-Wno-deprecated -Wno-dev --log-level=ERROR" })")
 
-        cmake --build "plugin_${BuildDirectory}32" -t obs-frontend-api --config ${BuildConfiguration}
+            Set-Msvc-Environment-And-Run-Cmake -Arch "x86" -WinsdkVersion "${CmakeSystemVersion}" -CmakeArgumentList @(
+                "--build", """plugin_${BuildDirectory}32""", "-t", "obs-frontend-api", "--config ${BuildConfiguration}")
     }
 
     Ensure-Directory ${CheckoutDir}

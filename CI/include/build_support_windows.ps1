@@ -141,26 +141,39 @@ function Install-Windows-Dependencies {
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 }
 
-function Set-Msvc-Environment {
+function Find-Msvc-Vcvarsall-Path {
     param(
-        [String]$VcvarSallPath,
+        [string]$Version = ""
+    )
+    $vswherePath = "${env:ProgramFiles}\Microsoft Visual Studio\Installer\vswhere.exe"
+    if (-not (Test-Path $vswherePath)) { $vswherePath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" }
+    $argumentList = "-products", "*", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", "-property", "installationPath"
+    if ($Version -eq "") {
+        $argumentList += "-latest"
+    } else {
+        $argumentList += "-version", $Version
+    }
+    $output = (&$vswherePath $argumentList)
+    $VcvarsallPath = "$output\VC\Auxiliary\Build\vcvarsall.bat"
+    return $VcvarsallPath
+}
+
+function Set-Msvc-Environment-And-Run-Cmake {
+    param(
         [ValidateSet("x86", "amd64", "x86_amd64", "x86_arm", "x86_arm64", "amd64_x86", "amd64_arm", "amd64_arm64")]
         [String]$Arch,
         [ValidateSet("", "store", "uwp")]
         [String]$PlatformType = "",
         [string]$WinsdkVersion = "",
         [string]$VcvarsVer = "",
-        [string]$VcvarsSpectreLibs = ""
+        [string]$VcvarsSpectreLibs = "",
+        [string[]]$CmakeArgumentList
     )
-    Push-Location $VcvarSallPath
-    $parameter = "$Arch $PlatformType $WinsdkVersion"
-    if (-not $VcvarsVer -eq '') { $parameter = $parameter & " -vcvars_ver=$VcvarsVer" }
-    if (-not $VcvarsSpectreLibs -eq '') { $parameter = $parameter & " -vcvars_spectre_libs=$VcvarsSpectreLibs" }
-    cmd /c "vcvarsall.bat $parameter & set" |
-    ForEach-Object {
-        if ($_ -match "=") {
-            $v = $_.split("="); set-item -force -path "ENV:\$($v[0])"  -value "$($v[1])"
-        }
-    }
-    Pop-Location
+    $VcvarsallPath = Find-Msvc-Vcvarsall-Path($VcvarsVer)
+    $argumentList = "/C", "call", """$VcvarSallPath""", $Arch, $PlatformType, $WinsdkVersion
+    if (-not $VcvarsVer -eq '') { $argumentList += "-vcvars_ver=$VcvarsVer" }
+    if (-not $VcvarsSpectreLibs -eq '') {  $argumentList += "-vcvars_spectre_libs=$VcvarsSpectreLibs" }
+    $argumentList += "&&call", "cmake.exe"
+    $argumentList += $CmakeArgumentList
+    &"$env:windir\System32\cmd.exe" $argumentList
 } 
