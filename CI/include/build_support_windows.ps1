@@ -100,7 +100,7 @@ $OBSBranch = "$(if (Test-Path Env:OBSBranch) { $env:OBSBranch } else { $OBSBranc
 $WindowsDepsVersion = "$(if (Test-Path Env:WindowsDepsVersion ) { $env:DEPS_VERSION_WIN } else { "2022-02-13" })"
 #$WindowsQtVersion = "$(if (Test-Path Env:WindowsQtVersion ) { $env:WindowsQtVersion } else { "5.15.2" })"
 $WindowsQtVersion = "$(if (Test-Path Env:WindowsQtVersion ) { $env:QT_VERSION_WIN } else { "5.15.2" })"
-$CmakeSystemVersion = "$(if (Test-Path Env:CMAKE_SYSTEM_VERSION) { $Env:CMAKE_SYSTEM_VERSION } else { "10.0.22000.0" })"
+$CmakeSystemVersion = "$(if (Test-Path Env:CMAKE_SYSTEM_VERSION) { $Env:CMAKE_SYSTEM_VERSION } else { "10.0.20348.0" })"
 #$OBSVersion = "$(if ( Test-Path Env:OBSVersion ) { $env:ObsVersion } else { "27.2.3" })"
 $OBSVersion = "$(if ( Test-Path Env:OBSVersion ) { $env:OBS_VERSION } else { "27.2.3" })"
 #$NSISVersion = "$(if ( Test-Path Env:NSISVersion ) { $env:NSISVersion } else { "3.08" })"
@@ -147,10 +147,8 @@ function Find-Msvc-Vcvarsall-Path {
     )
     $vswherePath = "${env:ProgramFiles}\Microsoft Visual Studio\Installer\vswhere.exe"
     if (-not (Test-Path $vswherePath)) { $vswherePath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" }
-    $argumentList = "-products", "*", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", "-property", "installationPath"
-    if ($Version -eq "") {
-        $argumentList += "-latest"
-    } else {
+    $argumentList = "-products", "*", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", "-property", "installationPath", "-latest"
+    if ($Version -ne "") {
         $argumentList += "-version", $Version
     }
     $output = (&$vswherePath $argumentList)
@@ -160,6 +158,7 @@ function Find-Msvc-Vcvarsall-Path {
 
 function Set-Msvc-Environment-And-Run-Cmake {
     param(
+        [string]$VsVersion = "",
         [ValidateSet("x86", "amd64", "x86_amd64", "x86_arm", "x86_arm64", "amd64_x86", "amd64_arm", "amd64_arm64")]
         [String]$Arch,
         [ValidateSet("", "store", "uwp")]
@@ -169,7 +168,7 @@ function Set-Msvc-Environment-And-Run-Cmake {
         [string]$VcvarsSpectreLibs = "",
         [string[]]$CmakeArgumentList
     )
-    $VcvarsallPath = Find-Msvc-Vcvarsall-Path($VcvarsVer)
+    $VcvarsallPath = Find-Msvc-Vcvarsall-Path($VsVersion)
     $argumentList = "/C", "call", """$VcvarSallPath""", $Arch, $PlatformType, $WinsdkVersion
     if (-not $VcvarsVer -eq '') { $argumentList += "-vcvars_ver=$VcvarsVer" }
     if (-not $VcvarsSpectreLibs -eq '') {  $argumentList += "-vcvars_spectre_libs=$VcvarsSpectreLibs" }

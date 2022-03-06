@@ -46,6 +46,7 @@ function Build-OBS-Libs {
             "-DENABLE_UI=ON",
             "-DENABLE_SCRIPTING=OFF",
             "-DBUILD_BROWSER=OFF",
+            "-DCMAKE_BUILD_TYPE=Release",
             "$(if (Test-Path Variable:$Quiet) { "-Wno-deprecated -Wno-dev --log-level=ERROR" })")
 
         Set-Msvc-Environment-And-Run-Cmake -Arch "amd64" -WinsdkVersion "${CmakeSystemVersion}" -CmakeArgumentList @(
@@ -66,6 +67,7 @@ function Build-OBS-Libs {
             "-DENABLE_UI=ON",
             "-DENABLE_SCRIPTING=OFF",
             "-DBUILD_BROWSER=OFF",
+            "-DCMAKE_BUILD_TYPE=Release",
             "$(if (Test-Path Variable:$Quiet) { "-Wno-deprecated -Wno-dev --log-level=ERROR" })")
 
             Set-Msvc-Environment-And-Run-Cmake -Arch "x86" -WinsdkVersion "${CmakeSystemVersion}" -CmakeArgumentList @(

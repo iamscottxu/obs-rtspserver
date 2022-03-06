@@ -41,6 +41,7 @@ function Build-OBS-Plugin {
             "-DCMAKE_C_COMPILER=cl.exe",
             "-DCMAKE_CXX_COMPILER=cl.exe",
             "-DOBS_SOURCE_DIR=""${ObsBuildDir}""",
+            "-DCMAKE_BUILD_TYPE=""${BuildConfiguration}""",
             "$(if (Test-Path Variable:$Quiet) { "-Wno-deprecated -Wno-dev --log-level=ERROR" })")
 
         Set-Msvc-Environment-And-Run-Cmake -Arch "amd64" -WinsdkVersion "${CmakeSystemVersion}" -CmakeArgumentList @(
@@ -57,6 +58,7 @@ function Build-OBS-Plugin {
             "-DCMAKE_C_COMPILER=cl.exe",
             "-DCMAKE_CXX_COMPILER=cl.exe",
             "-DOBS_SOURCE_DIR=""${ObsBuildDir}""",
+            "-DCMAKE_BUILD_TYPE=""${BuildConfiguration}""",
             "$(if (Test-Path Variable:$Quiet) { "-Wno-deprecated -Wno-dev --log-level=ERROR" })")
 
         Set-Msvc-Environment-And-Run-Cmake -Arch "x86" -WinsdkVersion "${CmakeSystemVersion}" -CmakeArgumentList @(

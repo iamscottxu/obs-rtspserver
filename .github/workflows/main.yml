@@ -81,7 +81,7 @@ jobs:
           
   windows_build:
     name: '03 - Windows (Latest)'
-    runs-on: [windows-latest]
+    runs-on: [windows-2019]
     needs: [get_obs_info, get_plugin_info, clang_check]
     strategy:
       matrix:
@@ -134,7 +134,7 @@ jobs:
           
   windows_package:
     name: '04 - Windows Installer'
-    runs-on: [windows-latest]
+    runs-on: [windows-2019]
     needs: [get_plugin_info, windows_build]
     env:
       #CMAKE_GENERATOR: "Visual Studio 17 2022"
