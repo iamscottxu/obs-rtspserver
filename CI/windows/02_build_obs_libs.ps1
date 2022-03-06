@@ -32,10 +32,10 @@ function Build-OBS-Libs {
 
     if ($BuildArch -eq "64-bit") {
         $QtDirectory = "${CheckoutDir}/../obs-build-dependencies/Qt_${WindowsQtVersion}/msvc2019_64"
-        $DepsDirectory = "${CheckoutDir}/../obs-build-dependencies/dependencies${WindowsDepsVersion}/win64"
+        $DepsDirectory = "${CheckoutDir}/../obs-build-dependencies/windows-deps-${WindowsDepsVersion}/win64"
         $Env:CMAKE_PREFIX_PATH="${QtDirectory};${DepsDirectory}/bin;${DepsDirectory}"
 
-        cmake -S . -B "plugin_${BuildDirectory}64" -G "Visual Studio 16 2019" `
+        cmake -S . -B "plugin_${BuildDirectory}64" -G "Visual Studio 17 2022" `
             -DCMAKE_SYSTEM_VERSION="${CmakeSystemVersion}" `
             -DCMAKE_GENERATOR_PLATFORM=x64 `
             -DENABLE_PLUGINS=OFF `
@@ -47,10 +47,10 @@ function Build-OBS-Libs {
         cmake --build "plugin_${BuildDirectory}64" -t obs-frontend-api --config ${BuildConfiguration}
     } else {
         $QtDirectory = "${CheckoutDir}/../obs-build-dependencies/Qt_${WindowsQtVersion}/msvc2019"
-        $DepsDirectory = "${CheckoutDir}/../obs-build-dependencies/dependencies${WindowsDepsVersion}/win32"
+        $DepsDirectory = "${CheckoutDir}/../obs-build-dependencies/windows-deps-${WindowsDepsVersion}/win32"
         $Env:CMAKE_PREFIX_PATH="${QtDirectory};${DepsDirectory}/bin;${DepsDirectory}"
 
-        cmake -S . -B "plugin_${BuildDirectory}32" -G "Visual Studio 16 2019" `
+        cmake -S . -B "plugin_${BuildDirectory}32" -G "Visual Studio 17 2022" `
             -DCMAKE_SYSTEM_VERSION="${CmakeSystemVersion}" `
             -DCMAKE_GENERATOR_PLATFORM=Win32 `
             -DENABLE_PLUGINS=OFF `
