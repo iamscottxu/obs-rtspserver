@@ -33,8 +33,7 @@ package_obs_plugin() {
     if ! type packagesbuild &>/dev/null; then
         status "Setting up dependency Packages.app"
         step "Download..."
-        check_and_fetch "http://s.sudre.free.fr/Software/files/Packages.dmg" "70ac111417728c17b1f27d5520afd87c33f899f12de8ace0f703e3e1c500b28e"
-
+        check_and_fetch "http://s.sudre.free.fr/Software/files/Packages.dmg" "6afdd25386295974dad8f078b8f1e41cabebd08e72d970bf92f707c7e48b16c9"
         step "Mount disk image..."
         hdiutil attach -noverify Packages.dmg
 
