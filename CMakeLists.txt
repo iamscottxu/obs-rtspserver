@@ -9,9 +9,6 @@ set(LINUX_MAINTAINER_EMAIL "scottxu@scottxublog.com")
 set(LINUX_MAINTAINER "Scott Xu")
 set(MACOS_BUNDLEID "com.scottxu.obs-rtspserver")
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
 set(OBS_PLUGIN_OBS_SOURCE_DIR ${CMAKE_SOURCE_DIR})
 set(OBS_FRONTEND_API_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/UI/obs-frontend-api")
 
@@ -21,8 +18,12 @@ endif()
 
 add_subdirectory(rtsp-server)
 
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Widgets REQUIRED)
+if(CMAKE_VERSION VERSION_LESS "3.7.0")
+    set(CMAKE_INCLUDE_CURRENT_DIR ON)
+endif()
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 
 set(OBS_RTSPSERVER_SOURCES
 	rtsp_main.cpp
