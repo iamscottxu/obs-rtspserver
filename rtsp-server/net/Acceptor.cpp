@@ -60,12 +60,15 @@ void Acceptor::OnAccept()
 {
 	std::lock_guard locker(mutex_);
 
-	if (const auto ret = tcp_socket_->Accept(); std::get<0>(ret) > 0) {
+	if (const auto sockfd = tcp_socket_->Accept() > 0) {
+		bool isIpv6 = SocketUtil::IsIpv6Socket(sockfd);
 		if (new_connection_callback_) {
-			new_connection_callback_(std::get<0>(ret), std::get<1>(ret), std::get<2>(ret));
+			new_connection_callback_(sockfd,
+				SocketUtil::GetSocketIp(sockfd, isIpv6),
+				SocketUtil::GetPeerPort(sockfd, isIpv6));
 		}
 		else {
-			SocketUtil::Close(std::get<0>(ret));
+			SocketUtil::Close(sockfd);
 		}
 	}
 }
