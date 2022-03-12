@@ -22,6 +22,7 @@ MediaSession::MediaSession(std::string url_suffix, uint32_t max_channel_count)
     , media_sources_(max_channel_count)
     , multicast_port_(max_channel_count, 0)
     , _buffer(max_channel_count)
+    , has_new_client_(false), _buffer(max_channel_count)
     , max_channel_count_(max_channel_count)
 {
 	has_new_client_ = false;
@@ -38,6 +39,16 @@ MediaSession::~MediaSession()
 	if (multicast_ip_ != "") {
 		MulticastAddr::instance().Release(multicast_ip_);
 	}
+}
+
+void MediaSession::AddNotifyConnectedCallback(const NotifyConnectedCallback &cb)
+{
+	_notifyConnectedCallbacks.push_back(cb);
+}
+
+void MediaSession::AddNotifyDisconnectedCallback(const NotifyDisconnectedCallback &cb)
+{
+	_notifyDisconnectedCallbacks.push_back(cb);
 }
 
 bool MediaSession::AddSource(MediaChannelId channelId, MediaSource* source)
@@ -206,9 +217,8 @@ bool MediaSession::AddClient(SOCKET rtspfd, std::shared_ptr<RtpConnection> rtp_c
 	if(iter == clients_.end()) {
 		std::weak_ptr<RtpConnection> rtp_conn_weak_ptr = rtp_conn;
 		clients_.emplace(rtspfd, rtp_conn_weak_ptr);
-		if (notify_callback_) {
-			notify_callback_(session_id_, (uint32_t)clients_.size()); /* 回调通知当前客户端数量 */
-		}
+		for (auto& cb : _notifyConnectedCallbacks)
+			cb(session_id_, static_cast<uint32_t>(clients_.size()), rtp_conn->GetIp()); /* 回调通知当前客户端数量 */
         
 		has_new_client_ = true;
 		return true;
@@ -219,13 +229,15 @@ bool MediaSession::AddClient(SOCKET rtspfd, std::shared_ptr<RtpConnection> rtp_c
 
 void MediaSession::RemoveClient(SOCKET rtspfd)
 {  
-	std::lock_guard<std::mutex> lock(map_mutex_);
+	std::lock_guard lock(map_mutex_);
 
-	if (clients_.find(rtspfd) != clients_.end()) {
-		clients_.erase(rtspfd);
-		if (notify_callback_) {
-			notify_callback_(session_id_, (uint32_t)clients_.size());  /* 回调通知当前客户端数量 */
-		}
-	}
+	if (const auto it = clients_.find(rtspfd); it != clients_.end())
+    	{
+	        if (const auto conn = it->second.lock()) {
+                    for (auto& cb : _notifyDisconnectedCallbacks)
+                        cb(session_id_, static_cast<uint32_t>(clients_.size()) - 1, conn->GetIp()); /* 回调通知当前客户端数量 */
+                }
+		clients_.erase(it);
+    	}
 }
 
