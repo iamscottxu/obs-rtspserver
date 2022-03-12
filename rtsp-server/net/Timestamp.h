@@ -5,11 +5,10 @@
 #define XOP_TIMESTAMP_H
 
 #include <chrono>
+#include <string>
 #include <functional>
 #include <cstdint>
 #include <chrono>
-#include <thread>
-#include <string>
 
 namespace xop
 {
