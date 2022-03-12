@@ -21,8 +21,14 @@ namespace xop
 
 class RtspConnection;
 
-class RtpConnection
-{
+struct SockInfo {
+	SOCKET fd;
+	std::string ip;
+	uint16_t port;
+};
+
+
+class RtpConnection final {
 public:
     RtpConnection(std::weak_ptr<TcpConnection> rtsp_connection, uint32_t max_channel_count);
     virtual ~RtpConnection();
@@ -46,8 +52,14 @@ public:
     uint16_t GetRtcpPort(MediaChannelId channel_id) const
     { return local_rtcp_port_[static_cast<uint8_t>(channel_id)]; }
 
-    SOCKET GetRtcpfd(MediaChannelId channel_id)
+    SockInfo GetRtcpSockInfo(MediaChannelId channel_id)
     { return rtcpfd_[static_cast<uint8_t>(channel_id)]; }
+
+	std::string GetIp()
+    {
+	    const auto conn = rtsp_connection_.lock();
+	    return conn ? conn->GetIp() : "";
+    }
 
     bool IsMulticast() const
     { return is_multicast_; }
@@ -93,8 +105,8 @@ private:
     FrameType frame_type_ = FrameType::NONE;
     std::vector<uint16_t> local_rtp_port_;
     std::vector<uint16_t> local_rtcp_port_;
-        std::vector<SOCKET> rtpfd_;
-        std::vector<SOCKET> rtcpfd_;
+    std::vector<SockInfo> rtpfd_;
+	std::vector<SockInfo> rtcpfd_;
 
     struct sockaddr_in6 peer_addr_;
     std::vector<struct sockaddr_in6> peer_rtp_addr_;

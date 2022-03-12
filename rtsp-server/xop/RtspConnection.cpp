@@ -16,11 +16,11 @@
 using namespace xop;
 using namespace std;
 
-RtspConnection::RtspConnection(std::shared_ptr<Rtsp> rtsp, TaskScheduler *task_scheduler, SOCKET sockfd)
-	: TcpConnection(task_scheduler, sockfd)
+RtspConnection::RtspConnection(std::shared_ptr<Rtsp> rtsp, TaskScheduler *task_scheduler, SOCKET sockfd, std::string ip, int port)
+	: TcpConnection(task_scheduler, sockfd, ip, port)
 	, task_scheduler_(task_scheduler)
 	, rtsp_(rtsp)
-	, rtp_channel_(new Channel(sockfd))
+    , rtp_channel_(new Channel(sockfd, ip, port))
 	, rtsp_request_(new RtspRequest)
 	, rtsp_response_(new RtspResponse)
 {
@@ -325,9 +325,9 @@ void RtspConnection::HandleCmdSetup()
 			uint16_t session_id = rtp_conn_->GetRtpSessionId();
 
 			if(rtp_conn_->SetupRtpOverUdp(channel_id, cliRtpPort, cliRtcpPort)) {                
-				SOCKET rtcpfd = rtp_conn_->GetRtcpfd(channel_id);
-				auto channel = make_shared<Channel>(rtcpfd);
-                                channel->SetReadCallback([rtcpfd, this]() { this->HandleRtcp(rtcpfd); });
+				auto rtcpSockInfo = rtp_conn_->GetRtcpSockInfo(channel_id);
+				auto channel = make_shared<Channel>(rtcpSockInfo.fd, rtcpSockInfo.ip, rtcpSockInfo.port);
+                                channel->SetReadCallback([rtcpSockInfo, this]() { this->HandleRtcp(rtcpSockInfo.fd); });
                                 channel->EnableReading();
                                 task_scheduler_->UpdateChannel(channel);
 				rtcp_channels_[static_cast<uint8_t>(channel_id)] =

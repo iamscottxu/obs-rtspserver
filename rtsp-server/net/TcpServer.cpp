@@ -40,8 +40,8 @@ bool TcpServer::Start(std::string ip, uint16_t port)
 	//return false;
 
 	auto acceptor = unique_ptr<Acceptor>(new Acceptor(event_loop_));
-	acceptor->SetNewConnectionCallback([this](SOCKET sockfd) {
-		TcpConnection::Ptr conn = this->OnConnect(sockfd);
+	acceptor->SetNewConnectionCallback([this](SOCKET sockfd, std::string ip, int port) {
+		TcpConnection::Ptr conn = this->OnConnect(sockfd, ip, port);
 		if (conn) {
 			this->AddConnection(sockfd, conn);
 			conn->SetDisconnectCallback([this](TcpConnection::Ptr conn) {
@@ -97,9 +97,9 @@ void TcpServer::Stop()
 	return;
 }
 
-TcpConnection::Ptr TcpServer::OnConnect(SOCKET sockfd)
+TcpConnection::Ptr TcpServer::OnConnect(SOCKET sockfd, std::string ip, int port)
 {
-	return std::make_shared<TcpConnection>(event_loop_->GetTaskScheduler().get(), sockfd);
+	return std::make_shared<TcpConnection>(event_loop_->GetTaskScheduler().get(), sockfd, ip, port);
 }
 
 void TcpServer::AddConnection(SOCKET sockfd, TcpConnection::Ptr tcpConn)

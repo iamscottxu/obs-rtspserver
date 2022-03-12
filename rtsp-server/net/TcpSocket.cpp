@@ -51,25 +51,36 @@ bool TcpSocket::Listen(int backlog)
 	return true;
 }
 
-SOCKET TcpSocket::Accept()
+std::tuple<SOCKET, std::string, int> TcpSocket::Accept()
 {
-	struct sockaddr *psockaddr;
-	socklen_t addrlen = 0;
+	socklen_t addrlen;
+	std::tuple<SOCKET, std::string, int> ret;
 	if (ipv6_)
 	{
-		struct sockaddr_in6 addr = {0};
+		sockaddr_in6 addr = {0};
 		addrlen = sizeof addr;
-		psockaddr = (struct sockaddr *)&addr;
+		std::get<0>(ret) = ::accept(
+			sockfd_, reinterpret_cast<sockaddr *>(&addr), &addrlen);
+		if (std::get<0>(ret) > 0) {
+			std::get<1>(ret).resize(INET6_ADDRSTRLEN);
+			inet_ntop(AF_INET6, &addr.sin6_addr,
+				std::get<1>(ret).data(), INET6_ADDRSTRLEN);
+			std::get<2>(ret) = htons(addr.sin6_port);
+		}
 	} else
 	{
-		struct sockaddr_in addr = {0};
+		sockaddr_in addr = {0};
 		addrlen = sizeof addr;
-		psockaddr = (struct sockaddr *)&addr;
+		std::get<0>(ret) = ::accept(
+			sockfd_, reinterpret_cast<sockaddr *>(&addr), &addrlen);
+		if (std::get<0>(ret) > 0) {
+			std::get<1>(ret).resize(INET_ADDRSTRLEN);
+			inet_ntop(AF_INET, &addr.sin_addr,
+				  std::get<1>(ret).data(), INET_ADDRSTRLEN);
+			std::get<2>(ret) = htons(addr.sin_port);
+		}
 	}
-
-	SOCKET clientfd = ::accept(sockfd_, psockaddr, &addrlen);
-
-	return clientfd;
+	return ret;
 }
 
 bool TcpSocket::Connect(std::string ip, uint16_t port, int timeout)
