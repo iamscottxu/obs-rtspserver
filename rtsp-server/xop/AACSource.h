@@ -13,7 +13,7 @@ namespace xop
 class AACSource : public MediaSource
 {
 public:
-    static AACSource* CreateNew(uint32_t samplerate=44100, uint8_t channels=2, bool has_adts=true);
+    static AACSource* CreateNew(uint32_t samplerate= 44100, uint8_t channels= 2, bool has_adts= true);
     virtual ~AACSource();
 
     uint32_t GetSamplerate() const
@@ -22,13 +22,13 @@ public:
     uint32_t GetChannels() const
     { return channels_; }
 
-    virtual std::string GetMediaDescription(uint16_t port=0);
+    virtual std::string GetMediaDescription(uint16_t port= 0);
 
     virtual std::string GetAttribute();
 
-    bool HandleFrame(MediaChannelId channel_id, AVFrame frame);
+    virtual bool HandleFrame(MediaChannelId channel_id, AVFrame frame);
 
-    static uint32_t GetTimestamp(uint32_t samplerate =44100);
+    static uint32_t GetTimestamp(uint32_t samplerate = 44100);
 
 private:
     AACSource(uint32_t samplerate, uint8_t channels, bool has_adts);

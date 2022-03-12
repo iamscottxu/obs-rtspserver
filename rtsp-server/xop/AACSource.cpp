@@ -7,12 +7,12 @@
 #endif
 #endif
 #include "AACSource.h"
-#include <stdlib.h>
+//#include <stdlib.h>
 #include <cstdio>
 #include <chrono>
 #include <array>
 #include <vector>
-#include <map>
+//#include <map>
 #if defined(WIN32) || defined(_WIN32)
 
 #else
@@ -111,9 +111,9 @@ bool AACSource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 	RtpPacket rtp_pkt;
 	rtp_pkt.type = frame.type;
 	rtp_pkt.timestamp = frame.timestamp;
-	rtp_pkt.size = frame_size + 4 + RTP_HEADER_SIZE + AU_SIZE;
+	rtp_pkt.size = frame_size + RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE + AU_SIZE;
 	rtp_pkt.last = 1;
-	uint8_t *rtp_pkt_data = rtp_pkt.data.get() + RTP_HEADER_SIZE + 4;
+	uint8_t *rtp_pkt_data = rtp_pkt.data.get() +  RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE;
 
 	*(rtp_pkt_data++) = AU[0];
 	*(rtp_pkt_data++) = AU[1];

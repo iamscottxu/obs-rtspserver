@@ -1,4 +1,4 @@
-﻿// PHZ
+// PHZ
 // 2018-5-16
 
 #ifndef XOP_H265_SOURCE_H
@@ -26,7 +26,7 @@ public:
 
 	virtual std::string GetAttribute(); 
 
-	bool HandleFrame(MediaChannelId channelId, AVFrame frame);
+	virtual bool HandleFrame(MediaChannelId channelId, AVFrame frame);
 
 	static uint32_t GetTimestamp();
 	 
