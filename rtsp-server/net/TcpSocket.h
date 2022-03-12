@@ -23,7 +23,7 @@ public:
 	bool Bind(std::string ip, uint16_t port);
 	bool Listen(int backlog);
 	SOCKET Accept();
-	bool Connect(std::string ip, uint16_t port, int timeout = 0);
+	bool Connect(std::string ip, uint16_t port, int timeout = 0) const;
 	void Close();
 	void ShutdownWrite();
 

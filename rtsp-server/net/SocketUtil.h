@@ -28,12 +28,12 @@ public:
 	static std::string GetPeerIp(SOCKET sockfd, bool ipv6 = false);
 	static std::string GetSocketIp(SOCKET sockfd, bool ipv6 = false);
 	static uint16_t GetPeerPort(SOCKET sockfd, bool ipv6 = false);
-	static int GetPeerAddr(SOCKET sockfd, struct sockaddr_in *addr);
-	static int GetPeerAddr6(SOCKET sockfd, struct sockaddr_in6 *addr);
-	static int GetSocketAddr(SOCKET sockfd, struct sockaddr_in *addr);
-	static int GetSocketAddr6(SOCKET sockfd, struct sockaddr_in6 *addr);
+	static int GetPeerAddr(SOCKET sockfd, sockaddr_in *addr);
+	static int GetPeerAddr6(SOCKET sockfd, sockaddr_in6 *addr);
+	static int GetSocketAddr(SOCKET sockfd, sockaddr_in *addr);
+	static int GetSocketAddr6(SOCKET sockfd, sockaddr_in6 *addr);
 	static void Close(SOCKET sockfd);
-	static bool Connect(SOCKET sockfd, std::string ip, uint16_t port,
+	static bool Connect(SOCKET sockfd, const std::string &ip, uint16_t port,
 			    int timeout = 0, bool ipv6 = false);
 	static bool IsIpv6Address(std::string ip);
 	static bool IsIpv6Socket(SOCKET sockfd);

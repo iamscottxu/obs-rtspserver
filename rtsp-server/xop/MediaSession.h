@@ -32,20 +32,21 @@ class RtpConnection;
 class MediaSession
 {
 public:
-    typedef std::function<void (MediaSessionId sessionId, uint32_t num_clients, std::string ip)> NotifyConnectedCallback;
-    typedef std::function<void (MediaSessionId sessionId, uint32_t num_clients, std::string ip)> NotifyDisconnectedCallback;
+    using Ptr = std::shared_ptr<MediaSession>;
+	using NotifyConnectedCallback = std::function<void (MediaSessionId sessionId, std::string peer_ip, uint16_t peer_port)> ;
+	using NotifyDisconnectedCallback = std::function<void (MediaSessionId sessionId, std::string peer_ip, uint16_t peer_port)> ;
 
     static MediaSession* CreateNew(std::string url_suffix="live", uint32_t max_channel_count =2);
-    ~MediaSession();
+	virtual ~MediaSession();
 
     bool AddSource(MediaChannelId channel_id, MediaSource* source);
     bool RemoveSource(MediaChannelId channel_id);
 
     bool StartMulticast();
 
-    void AddNotifyConnectedCallback(const NotifyConnectedCallback &cb);
+    void AddNotifyConnectedCallback(const NotifyConnectedCallback &callback);
 
-    void AddNotifyDisconnectedCallback(const NotifyDisconnectedCallback &cb);
+    void AddNotifyDisconnectedCallback(const NotifyDisconnectedCallback &callback);
 
     std::string GetRtspUrlSuffix() const
     { return suffix_; }
@@ -53,13 +54,13 @@ public:
     void SetRtspUrlSuffix(std::string& suffix)
     { suffix_ = suffix; }
 
-    std::string GetSdpMessage(std::string ip, std::string sessionName, bool ipv6 = false);
+    std::string GetSdpMessage(std::string ip, std::string session_name, bool ipv6 = false);
 
     MediaSource* GetMediaSource(MediaChannelId channel_id);
 
     bool HandleFrame(MediaChannelId channel_id, AVFrame frame);
 
-    bool AddClient(SOCKET rtspfd, std::shared_ptr<RtpConnection> rtpConnPtr);
+    bool AddClient(SOCKET rtspfd, std::shared_ptr<RtpConnection> rtp_conn);
     void RemoveClient(SOCKET rtspfd);
 
     MediaSessionId GetMediaSessionId()
@@ -96,10 +97,10 @@ private:
     std::string suffix_;
 
     std::vector<std::unique_ptr<MediaSource>> media_sources_;
-    std::vector<RingBuffer<AVFrame>> _buffer;
+    std::vector<RingBuffer<AVFrame>> buffer_;
 
-    std::vector<NotifyConnectedCallback> _notifyConnectedCallbacks;
-    std::vector<NotifyDisconnectedCallback> _notifyDisconnectedCallbacks;
+    std::vector<NotifyConnectedCallback> notify_connected_callbacks_;
+    std::vector<NotifyDisconnectedCallback> notify_disconnected_callbacks_;
     std::mutex mutex_;
     std::mutex map_mutex_;
     std::map<SOCKET, std::weak_ptr<RtpConnection>> clients_;
@@ -112,8 +113,6 @@ private:
     static std::atomic_uint last_session_id_;
 };
 
-typedef std::shared_ptr<MediaSession> MediaSessionPtr;
-
 class MulticastAddr
 {
 public:
@@ -125,7 +124,7 @@ public:
 
 	std::string GetAddr()
 	{
-		std::lock_guard<std::mutex> lock(m_mutex);
+		std::lock_guard<std::mutex> lock(mutex_);
 		std::string addr_str;
 		struct sockaddr_in addr = { 0 };
 		std::random_device rd;
@@ -135,11 +134,11 @@ public:
 			addr.sin_addr.s_addr = htonl(0xE8000100 + (rd()) % range);
 			addr_str = inet_ntoa(addr.sin_addr);
 
-			if (m_addrs.find(addr_str) != m_addrs.end()) {
+			if (addrs_.find(addr_str) != addrs_.end()) {
 				addr_str.clear();
 			}
 			else {
-				m_addrs.insert(addr_str);
+				addrs_.insert(addr_str);
 				break;
 			}
 		}
@@ -148,13 +147,13 @@ public:
 	}
 
 	void Release(std::string addr) {
-		std::lock_guard<std::mutex> lock(m_mutex);
-		m_addrs.erase(addr);
+		std::lock_guard<std::mutex> lock(mutex_);
+		addrs_.erase(addr);
 	}
 
 private:
-	std::mutex m_mutex;
-	std::unordered_set<std::string> m_addrs;
+	std::mutex mutex_;
+	std::unordered_set<std::string> addrs_;
 };
 
 }

@@ -29,10 +29,10 @@ public:
 	virtual ~BufferReader();
 
 	uint32_t ReadableBytes() const
-	{ return (uint32_t)(writer_index_ - reader_index_); }
+	{ return static_cast<uint32_t>(writer_index_ - reader_index_); }
 
 	uint32_t WritableBytes() const
-	{  return (uint32_t)(buffer_->size() - writer_index_); }
+	{  return static_cast<uint32_t>(buffer_.size() - writer_index_); }
 
 	char* Peek() 
 	{ return Begin() + reader_index_; }
@@ -82,14 +82,14 @@ public:
 	uint32_t ReadUntilCrlf(std::string& data);
 
 	uint32_t Size() const 
-	{ return (uint32_t)buffer_->size(); }
+	{ return static_cast<uint32_t>(buffer_.size()); }
 
 private:
 	char* Begin()
-	{ return &*buffer_->begin(); }
+	{ return &*buffer_.begin(); }
 
 	const char* Begin() const
-	{ return &*buffer_->begin(); }
+	{ return &*buffer_.begin(); }
 
 	char* beginWrite()
 	{ return Begin() + writer_index_; }
@@ -97,13 +97,13 @@ private:
 	const char* BeginWrite() const
 	{ return Begin() + writer_index_; }
 
-	std::shared_ptr<std::vector<char>> buffer_;
+	std::vector<char> buffer_;
 	size_t reader_index_ = 0;
 	size_t writer_index_ = 0;
 
 	static const char kCRLF[];
-	static const uint32_t MAX_BYTES_PER_READ = 4096;
-	static const uint32_t MAX_BUFFER_SIZE = 1024 * 100000;
+	static constexpr uint32_t MAX_BYTES_PER_READ = 4096;
+	static constexpr uint32_t MAX_BUFFER_SIZE = 1024 * 100000;
 };
 
 }

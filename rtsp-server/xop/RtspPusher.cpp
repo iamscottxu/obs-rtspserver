@@ -30,13 +30,13 @@ void RtspPusher::AddSession(MediaSession* session)
     media_session_.reset(session);
 }
 
-void RtspPusher::RemoveSession(MediaSessionId sessionId)
+void RtspPusher::RemoveSession(MediaSessionId session_id)
 {
 	std::lock_guard locker(mutex_);
 	media_session_ = nullptr; //TODO
 }
 
-MediaSessionPtr RtspPusher::LookMediaSession(MediaSessionId sessionId)
+MediaSession::Ptr RtspPusher::LookMediaSession(MediaSessionId session_id)
 {
 	return media_session_; //TODO
 }
@@ -45,15 +45,15 @@ int RtspPusher::OpenUrl(const std::string url, const int msec)
 {
 	std::lock_guard lock(mutex_);
 
-	static Timestamp tp;
+	static Timestamp timestamp;
 	int timeout = msec;
 	if (timeout <= 0) {
 		timeout = 10000;
 	}
 
-	tp.reset();
+	timestamp.reset();
 
-	if (!this->parseRtspUrl(url)) {
+	if (!this->ParseRtspUrl(url)) {
 		LOG_ERROR("rtsp url(%s) was illegal.\n", url.c_str());
 		return -1;
 	}
@@ -76,12 +76,12 @@ int RtspPusher::OpenUrl(const std::string url, const int msec)
 	}
 
 	task_scheduler_ = event_loop_->GetTaskScheduler().get();
-	rtsp_conn_.reset(new RtspConnection(shared_from_this(), task_scheduler_, tcpSocket.GetSocket(), rtsp_url_info_.ip, rtsp_url_info_.port));
+	rtsp_conn_.reset(new RtspConnection(shared_from_this(), task_scheduler_, tcpSocket.GetSocket()));
     event_loop_->AddTriggerEvent([this]() {
 		rtsp_conn_->SendOptions(RtspConnection::ConnectionMode::RTSP_PUSHER);
     });
 
-	timeout -= static_cast<int>(tp.elapsed());
+	timeout -= static_cast<int>(timestamp.Elapsed());
 	if (timeout < 0) {
 		timeout = 1000;
 	}

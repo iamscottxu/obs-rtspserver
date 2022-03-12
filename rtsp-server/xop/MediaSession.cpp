@@ -22,7 +22,7 @@ MediaSession::MediaSession(std::string url_suffix, uint32_t max_channel_count)
     , suffix_(url_suffix)
     , media_sources_(max_channel_count)
     , multicast_port_(max_channel_count, 0)
-    , has_new_client_(false), _buffer(max_channel_count)
+    , has_new_client_(false), buffer_(max_channel_count)
     , max_channel_count_(max_channel_count)
 {
 }
@@ -39,20 +39,20 @@ MediaSession::~MediaSession()
 	}
 }
 
-void MediaSession::AddNotifyConnectedCallback(const NotifyConnectedCallback &cb)
+void MediaSession::AddNotifyConnectedCallback(const NotifyConnectedCallback &callback)
 {
-	_notifyConnectedCallbacks.push_back(cb);
+	notify_connected_callbacks_.push_back(callback);
 }
 
-void MediaSession::AddNotifyDisconnectedCallback(const NotifyDisconnectedCallback &cb)
+void MediaSession::AddNotifyDisconnectedCallback(const NotifyDisconnectedCallback &callback)
 {
-	_notifyDisconnectedCallbacks.push_back(cb);
+	notify_disconnected_callbacks_.push_back(callback);
 }
 
-bool MediaSession::AddSource(MediaChannelId channelId, MediaSource* source)
+bool MediaSession::AddSource(MediaChannelId channel_id, MediaSource* source)
 {
-	if (static_cast<uint8_t>(channelId) >= max_channel_count_) return false;
-	source->SetSendFrameCallback([this](MediaChannelId channelId, RtpPacket pkt) {
+	if (static_cast<uint8_t>(channel_id) >= max_channel_count_) return false;
+	source->SetSendFrameCallback([this](MediaChannelId channel_id, RtpPacket pkt) {
 		std::lock_guard lock(map_mutex_);
 
 		std::forward_list<std::shared_ptr<RtpConnection>> clients;
@@ -65,13 +65,13 @@ bool MediaSession::AddSource(MediaChannelId channelId, MediaSource* source)
 			else  {
 				if (int id = conn->GetId(); id >= 0) {
 					if (packets.find(id) == packets.end()) {
-						RtpPacket tmpPkt;
-						memcpy(tmpPkt.data.get(), pkt.data.get(), pkt.size);
-						tmpPkt.size = pkt.size;
-						tmpPkt.last = pkt.last;
-						tmpPkt.timestamp = pkt.timestamp;
-						tmpPkt.type = pkt.type;
-						packets.emplace(id, tmpPkt);
+						RtpPacket tmp_pkt;
+						memcpy(tmp_pkt.data.get(), pkt.data.get(), pkt.size);
+						tmp_pkt.size = pkt.size;
+						tmp_pkt.last = pkt.last;
+						tmp_pkt.timestamp = pkt.timestamp;
+						tmp_pkt.type = pkt.type;
+						packets.emplace(id, tmp_pkt);
 					}
 					clients.emplace_front(conn);
 				}
@@ -85,7 +85,7 @@ bool MediaSession::AddSource(MediaChannelId channelId, MediaSource* source)
 				if (auto iter2 = packets.find(id); iter2 != packets.end()) {
 					int ret = 0;
 					count++;
-					ret = iter->SendRtpPacket(channelId, iter2->second);
+					ret = iter->SendRtpPacket(channel_id, iter2->second);
 					if (is_multicast_ && ret == 0) {
 						break;
 					}				
@@ -95,13 +95,13 @@ bool MediaSession::AddSource(MediaChannelId channelId, MediaSource* source)
 		return true;
 	});
 
-	media_sources_[static_cast<uint8_t>(channelId)].reset(source);
+	media_sources_[static_cast<uint8_t>(channel_id)].reset(source);
 	return true;
 }
 
-bool MediaSession::RemoveSource(MediaChannelId channelId)
+bool MediaSession::RemoveSource(MediaChannelId channel_id)
 {
-	media_sources_[static_cast<uint8_t>(channelId)] = nullptr;
+	media_sources_[static_cast<uint8_t>(channel_id)] = nullptr;
 	return true;
 }
 
@@ -124,7 +124,7 @@ bool MediaSession::StartMulticast()
 	return true;
 }
 
-std::string MediaSession::GetSdpMessage(std::string ip, std::string sessionName, bool ipv6)
+std::string MediaSession::GetSdpMessage(std::string ip, std::string session_name, bool ipv6)
 {
 	if (media_sources_.empty()) return "";
                 
@@ -138,10 +138,10 @@ std::string MediaSession::GetSdpMessage(std::string ip, std::string sessionName,
 			"a=control:*\r\n" ,
 			static_cast<long>(std::time(nullptr)), ipv6 ? 6 : 4 , ip.c_str()); 
 
-	if(sessionName != "") {
+	if(session_name != "") {
 		snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf), 
 				"s=%s\r\n",
-				sessionName.c_str());
+				session_name.c_str());
 	}
     
 	if(is_multicast_) {
@@ -179,10 +179,10 @@ std::string MediaSession::GetSdpMessage(std::string ip, std::string sessionName,
 	return std::string(buf);
 }
 
-MediaSource* MediaSession::GetMediaSource(MediaChannelId channelId)
+MediaSource* MediaSession::GetMediaSource(MediaChannelId channel_id)
 {
-	if (static_cast<uint8_t>(channelId) < max_channel_count_) {
-		return media_sources_[static_cast<uint8_t>(channelId)].get();
+	if (static_cast<uint8_t>(channel_id) < max_channel_count_) {
+		return media_sources_[static_cast<uint8_t>(channel_id)].get();
 	}
 
 	return nullptr;
@@ -210,8 +210,8 @@ bool MediaSession::AddClient(SOCKET rtspfd, std::shared_ptr<RtpConnection> rtp_c
 	if(const auto iter = clients_.find (rtspfd); iter == clients_.end()) {
 		std::weak_ptr rtp_conn_weak_ptr = rtp_conn;
 		clients_.emplace(rtspfd, rtp_conn_weak_ptr);
-		for (auto& cb : _notifyConnectedCallbacks)
-			cb(session_id_, static_cast<uint32_t>(clients_.size()), rtp_conn->GetIp()); /* 回调通知当前客户端数量 */
+		for (auto& callback : notify_connected_callbacks_)
+			callback(session_id_, rtp_conn->GetIp(), rtp_conn->GetPort()); /* 回调通知当前客户端数量 */
         
 		has_new_client_ = true;
 		return true;
@@ -224,13 +224,13 @@ void MediaSession::RemoveClient(SOCKET rtspfd)
 {  
 	std::lock_guard lock(map_mutex_);
 
-	if (const auto it = clients_.find(rtspfd); it != clients_.end())
+	if (const auto iter = clients_.find(rtspfd); iter != clients_.end())
     	{
-	        if (const auto conn = it->second.lock()) {
-                    for (auto& cb : _notifyDisconnectedCallbacks)
-                        cb(session_id_, static_cast<uint32_t>(clients_.size()) - 1, conn->GetIp()); /* 回调通知当前客户端数量 */
+	        if (const auto conn = iter->second.lock()) {
+	        	for (auto &callback : notify_disconnected_callbacks_)
+                        callback(session_id_, conn->GetIp(), conn->GetPort()); /* 回调通知当前客户端数量 */
                 }
-		clients_.erase(it);
+		clients_.erase(iter);
     	}
 }
 

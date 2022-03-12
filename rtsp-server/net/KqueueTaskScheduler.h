@@ -13,7 +13,7 @@ namespace xop
 class KqueueTaskScheduler : public TaskScheduler
 {
 public:
-        KqueueTaskScheduler(int id = 0);
+	KqueueTaskScheduler(int id = 0);
 	virtual ~KqueueTaskScheduler();
 
 	void UpdateChannel(ChannelPtr channel);

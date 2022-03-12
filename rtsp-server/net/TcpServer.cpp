@@ -40,8 +40,8 @@ bool TcpServer::Start(std::string ip, uint16_t port)
 	//return false;
 
 	auto acceptor = unique_ptr<Acceptor>(new Acceptor(event_loop_));
-	acceptor->SetNewConnectionCallback([this](SOCKET sockfd, std::string ip, int port) {
-		TcpConnection::Ptr conn = this->OnConnect(sockfd, ip, port);
+	acceptor->SetNewConnectionCallback([this](SOCKET sockfd) {
+		TcpConnection::Ptr conn = this->OnConnect(sockfd);
 		if (conn) {
 			this->AddConnection(sockfd, conn);
 			conn->SetDisconnectCallback([this](TcpConnection::Ptr conn) {
@@ -82,24 +82,24 @@ void TcpServer::Stop()
 		return;
 
 	mutex_.lock();
-	for (auto iter : connections_)
+	for (const auto iter : connections_)
 		iter.second->Disconnect();
 	mutex_.unlock();
 
-	for (auto it = acceptors_.begin(); it != acceptors_.end(); it++)
+	for (auto it = acceptors_.begin(); it != acceptors_.end(); ++it)
 		(*it)->Close();
 
 	while (!connections_.empty())
-		Timer::Sleep(1);
+		Timer::Sleep(10);
 
 	acceptors_.clear();
 
 	return;
 }
 
-TcpConnection::Ptr TcpServer::OnConnect(SOCKET sockfd, std::string ip, int port)
+TcpConnection::Ptr TcpServer::OnConnect(SOCKET sockfd)
 {
-	return std::make_shared<TcpConnection>(event_loop_->GetTaskScheduler().get(), sockfd, ip, port);
+	return std::make_shared<TcpConnection>(event_loop_->GetTaskScheduler().get(), sockfd);
 }
 
 void TcpServer::AddConnection(SOCKET sockfd, TcpConnection::Ptr tcpConn)

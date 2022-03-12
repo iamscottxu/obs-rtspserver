@@ -20,20 +20,20 @@ class RtspServer : public Rtsp, public TcpServer
 {
 public:    
     static std::shared_ptr<RtspServer> Create(xop::EventLoop* loop);
-    ~RtspServer();
+	virtual ~RtspServer();
 
     MediaSessionId AddSession(MediaSession* session);
     void RemoveSession(MediaSessionId sessionId);
 
-    bool PushFrame(MediaSessionId sessionId, MediaChannelId channelId, AVFrame frame);
+    bool PushFrame(MediaSessionId session_id, MediaChannelId channel_id, AVFrame frame);
 
 private:
     friend class RtspConnection;
 
     RtspServer(xop::EventLoop* loop);
-    MediaSessionPtr LookMediaSession(const std::string& suffix);
-    MediaSessionPtr LookMediaSession(MediaSessionId sessionId);
-    virtual TcpConnection::Ptr OnConnect(SOCKET sockfd, std::string ip, int port);
+    MediaSession::Ptr LookMediaSession(const std::string &suffix);
+    MediaSession::Ptr LookMediaSession(MediaSessionId session_id);
+    virtual TcpConnection::Ptr OnConnect(SOCKET sockfd);
 
     std::mutex mutex_;
     std::unordered_map<MediaSessionId, std::shared_ptr<MediaSession>> media_sessions_;

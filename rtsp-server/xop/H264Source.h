@@ -19,7 +19,7 @@ public:
 	static H264Source *CreateNew(const std::vector<uint8_t> sps,
 				     const std::vector<uint8_t> pps,
 				     uint32_t framerate = 25);
-	~H264Source();
+	virtual ~H264Source();
 
 	void SetFramerate(uint32_t framerate)
 	{ framerate_ = framerate; }

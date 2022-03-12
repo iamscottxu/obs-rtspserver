@@ -12,7 +12,7 @@ namespace xop {
 class VP8Source : public MediaSource {
 public:
 	static VP8Source *CreateNew(uint32_t framerate = 25);
-	~VP8Source();
+	virtual ~VP8Source();
 
 	void Setframerate(uint32_t framerate) { framerate_ = framerate; }
 

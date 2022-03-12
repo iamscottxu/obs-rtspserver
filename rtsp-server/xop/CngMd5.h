@@ -13,7 +13,7 @@ namespace xop {
 class CngMd5 : public Md5 {
 public:
 	CngMd5();
-	~CngMd5();
+	virtual ~CngMd5();
 
 	void GetMd5Hash(const unsigned char *data, size_t dataSize,
 			unsigned char *outHash);

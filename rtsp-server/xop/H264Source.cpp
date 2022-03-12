@@ -54,7 +54,6 @@ string H264Source::GetMediaDescription(uint16_t port)
 {
 	char buf[100] = {0};
 	sprintf(buf, "m=video %hu RTP/AVP 96", port); // \r\nb=AS:2000
-
 	return string(buf);
 }
 

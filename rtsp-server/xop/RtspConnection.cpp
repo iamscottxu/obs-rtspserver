@@ -16,11 +16,11 @@
 using namespace xop;
 using namespace std;
 
-RtspConnection::RtspConnection(std::shared_ptr<Rtsp> rtsp, TaskScheduler *task_scheduler, SOCKET sockfd, std::string ip, int port)
-	: TcpConnection(task_scheduler, sockfd, ip, port)
+RtspConnection::RtspConnection(std::shared_ptr<Rtsp> rtsp, TaskScheduler *task_scheduler, SOCKET sockfd)
+	: TcpConnection(task_scheduler, sockfd)
 	, task_scheduler_(task_scheduler)
 	, rtsp_(rtsp)
-    , rtp_channel_(new Channel(sockfd, ip, port))
+    //, rtp_channel_(new Channel(sockfd))
 	, rtsp_request_(new RtspRequest)
 	, rtsp_response_(new RtspResponse)
 {
@@ -34,10 +34,10 @@ RtspConnection::RtspConnection(std::shared_ptr<Rtsp> rtsp, TaskScheduler *task_s
 
 	alive_count_ = 1;
 
-	rtp_channel_->SetReadCallback([this]() { this->HandleRead(); });
+	/*rtp_channel_->SetReadCallback([this]() { this->HandleRead(); });
 	rtp_channel_->SetWriteCallback([this]() { this->HandleWrite(); });
 	rtp_channel_->SetCloseCallback([this]() { this->HandleClose(); });
-	rtp_channel_->SetErrorCallback([this]() { this->HandleError(); });
+	rtp_channel_->SetErrorCallback([this]() { this->HandleError(); });*/
 
 	has_auth_ = true;
 	if (rtsp->has_auth_info_) {
@@ -83,7 +83,7 @@ void RtspConnection::OnClose()
 	if(session_id_ != 0) {
 		auto rtsp = rtsp_.lock();
 		if (rtsp) {
-			MediaSessionPtr media_session = rtsp->LookMediaSession(session_id_);
+			MediaSession::Ptr media_session = rtsp->LookMediaSession(session_id_);
 			if (media_session) {
 				media_session->RemoveClient(this->GetSocket());
 			}
@@ -237,7 +237,7 @@ void RtspConnection::HandleCmdDescribe()
 
 	int size = 0;
 	std::shared_ptr<char> res(new char[4096], std::default_delete<char[]>());
-	MediaSessionPtr media_session = nullptr;
+	MediaSession::Ptr media_session = nullptr;
 
 	auto rtsp = rtsp_.lock();
 	if (rtsp) {
@@ -245,7 +245,7 @@ void RtspConnection::HandleCmdDescribe()
 	}
 
         if (!rtp_conn_ && media_session) {
-                rtp_conn_.reset(new RtpConnection(shared_from_this(), media_session->GetMaxChannelCount()));
+                rtp_conn_.reset(new RtpConnection(std::dynamic_pointer_cast<RtspConnection>(shared_from_this()), media_session->GetMaxChannelCount()));
         }
 	
 	if(!rtsp || !media_session) {
@@ -284,7 +284,7 @@ void RtspConnection::HandleCmdSetup()
 	int size = 0;
 	std::shared_ptr<char> res(new char[4096], std::default_delete<char[]>());
 	MediaChannelId channel_id = rtsp_request_->GetChannelId();
-	MediaSessionPtr media_session = nullptr;
+	MediaSession::Ptr media_session = nullptr;
 
 	auto rtsp = rtsp_.lock();
 	if (rtsp && session_id_) {
@@ -320,14 +320,14 @@ void RtspConnection::HandleCmdSetup()
 			size = rtsp_request_->BuildSetupTcpRes(res.get(), 4096, rtp_channel, rtcp_channel, session_id);
 		}
 		else if(rtsp_request_->GetTransportMode() == TransportMode::RTP_OVER_UDP) {
-			uint16_t cliRtpPort = rtsp_request_->GetRtpPort();
-			uint16_t cliRtcpPort = rtsp_request_->GetRtcpPort();
+			uint16_t peer_rtp_port = rtsp_request_->GetRtpPort();
+			uint16_t peer_rtcp_port = rtsp_request_->GetRtcpPort();
 			uint16_t session_id = rtp_conn_->GetRtpSessionId();
 
-			if(rtp_conn_->SetupRtpOverUdp(channel_id, cliRtpPort, cliRtcpPort)) {                
-				auto rtcpSockInfo = rtp_conn_->GetRtcpSockInfo(channel_id);
-				auto channel = make_shared<Channel>(rtcpSockInfo.fd, rtcpSockInfo.ip, rtcpSockInfo.port);
-                                channel->SetReadCallback([rtcpSockInfo, this]() { this->HandleRtcp(rtcpSockInfo.fd); });
+			if(rtp_conn_->SetupRtpOverUdp(channel_id, peer_rtp_port, peer_rtcp_port)) {                
+				auto rtcp_fd = rtp_conn_->GetRtcpfd(channel_id);
+				auto channel = make_shared<Channel>(rtcp_fd);
+                                channel->SetReadCallback([rtcp_fd, this]() { this->HandleRtcp(rtcp_fd); });
                                 channel->EnableReading();
                                 task_scheduler_->UpdateChannel(channel);
 				rtcp_channels_[static_cast<uint8_t>(channel_id)] =
@@ -443,7 +443,7 @@ void RtspConnection::SendOptions(ConnectionMode mode)
 	auto media_session = rtsp->LookMediaSession(1);
 
         if (rtp_conn_ == nullptr) {
-                rtp_conn_.reset(new RtpConnection(shared_from_this(), media_session->GetMaxChannelCount()));
+                rtp_conn_.reset(new RtpConnection(std::dynamic_pointer_cast<RtspConnection>(shared_from_this()), media_session->GetMaxChannelCount()));
         }
 
 	conn_mode_ = mode;
@@ -457,7 +457,7 @@ void RtspConnection::SendOptions(ConnectionMode mode)
 
 void RtspConnection::SendAnnounce()
 {
-	MediaSessionPtr media_session = nullptr;
+	MediaSession::Ptr media_session = nullptr;
 
 	auto rtsp = rtsp_.lock();
 	if (rtsp) {
@@ -502,8 +502,8 @@ void RtspConnection::SendDescribe()
 void RtspConnection::SendSetup()
 {
 	int size = 0;
-	std::shared_ptr<char> buf(new char[2048], std::default_delete<char[]>());	
-	MediaSessionPtr media_session = nullptr;
+	std::shared_ptr<char> buf(new char[2048], std::default_delete<char[]>());
+	MediaSession::Ptr media_session = nullptr;
 
 	auto rtsp = rtsp_.lock();
 	if (rtsp) {

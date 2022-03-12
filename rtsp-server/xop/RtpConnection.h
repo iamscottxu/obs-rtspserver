@@ -21,17 +21,10 @@ namespace xop
 
 class RtspConnection;
 
-struct SockInfo {
-	SOCKET fd;
-	std::string ip;
-	uint16_t port;
-};
-
-
-class RtpConnection final {
+class RtpConnection {
 public:
-    RtpConnection(const std::weak_ptr<TcpConnection> &rtsp_connection, uint32_t max_channel_count);
-    ~RtpConnection();
+    RtpConnection(const std::weak_ptr<RtspConnection> &rtsp_connection, uint32_t max_channel_count);
+	virtual ~RtpConnection();
 
     void SetClockRate(MediaChannelId channel_id, uint32_t clock_rate)
     { media_channel_info_[static_cast<uint8_t>(channel_id)].clock_rate = clock_rate; }
@@ -52,14 +45,12 @@ public:
     uint16_t GetRtcpPort(MediaChannelId channel_id) const
     { return local_rtcp_port_[static_cast<uint8_t>(channel_id)]; }
 
-    SockInfo GetRtcpSockInfo(MediaChannelId channel_id)
+    SOCKET GetRtcpfd(MediaChannelId channel_id)
     { return rtcpfd_[static_cast<uint8_t>(channel_id)]; }
 
-	std::string GetIp()
-    {
-	    const auto conn = rtsp_connection_.lock();
-	    return conn ? conn->GetIp() : "";
-    }
+	std::string GetIp() { return rtsp_ip_; }
+
+    uint16_t GetPort() { return rtsp_port_; }
 
     bool IsMulticast() const
     { return is_multicast_; }
@@ -94,7 +85,9 @@ private:
 
    uint8_t max_channel_count_ = 0;
 
-	std::weak_ptr<TcpConnection> rtsp_connection_;
+	std::weak_ptr<RtspConnection> rtsp_connection_;
+    std::string rtsp_ip_;
+    uint16_t rtsp_port_;
 
     TransportMode transport_mode_;
     bool is_multicast_ = false;
@@ -105,8 +98,8 @@ private:
     FrameType frame_type_ = FrameType::NONE;
     std::vector<uint16_t> local_rtp_port_;
     std::vector<uint16_t> local_rtcp_port_;
-    std::vector<SockInfo> rtpfd_;
-	std::vector<SockInfo> rtcpfd_;
+    std::vector<SOCKET> rtpfd_;
+    std::vector<SOCKET> rtcpfd_;
 
     sockaddr_in6 peer_addr_;
     std::vector<sockaddr_in6> peer_rtp_addr_;

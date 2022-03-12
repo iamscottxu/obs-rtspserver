@@ -56,7 +56,7 @@ enum class MediaChannelId : uint8_t
 	channel_6 = 6,
 	channel_7 = 7,
 	channel_8 = 8,
-        channel_9 = 9
+	channel_9 = 9
 };
 
 typedef uint32_t MediaSessionId;

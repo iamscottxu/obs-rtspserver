@@ -8,7 +8,7 @@ namespace xop {
 class MacMd5 : public Md5 {
 public:
 	MacMd5();
-	~MacMd5();
+	virtual ~MacMd5();
 
 	void GetMd5Hash(const unsigned char *data, size_t dataSize,
 			unsigned char *outHash);

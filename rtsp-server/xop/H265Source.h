@@ -14,7 +14,7 @@ class H265Source : public MediaSource
 {
 public:
 	static H265Source* CreateNew(uint32_t framerate=25);
-	~H265Source();
+	virtual ~H265Source();
 
 	void Setframerate(uint32_t framerate)
 	{ framerate_ = framerate; }

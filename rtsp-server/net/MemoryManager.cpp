@@ -34,14 +34,14 @@ void MemoryPool::Init(uint32_t size, uint32_t n)
 	num_blocks_ = n;
 	memory_ = static_cast<char *>(malloc(num_blocks_ * (block_size_ + sizeof(MemoryBlock))));
 	head_ = reinterpret_cast<MemoryBlock *>(memory_);
-	head_->blockId = 1;
+	head_->block_id = 1;
 	head_->pool = this;
 	head_->next = nullptr;
 
 	MemoryBlock* current = head_;
 	for (uint32_t n = 1; n < num_blocks_; n++) {
 		auto * next = reinterpret_cast<MemoryBlock *>(memory_ + n * (block_size_ + sizeof(MemoryBlock)));
-		next->blockId = n + 1;
+		next->block_id = n + 1;
 		next->pool = this;
 		next->next = nullptr;
 
@@ -65,7 +65,7 @@ void* MemoryPool::Alloc(uint32_t size)
 void MemoryPool::Free(void* ptr)
 {
 	const auto block = reinterpret_cast<MemoryBlock *>(static_cast<char *>(ptr) - sizeof(MemoryBlock));
-	if (block->blockId != 0) {
+	if (block->block_id != 0) {
 		std::lock_guard locker(mutex_);
 		block->next = head_;
 		head_ = block;
@@ -103,7 +103,7 @@ void* MemoryManager::Alloc(uint32_t size)
 	}
 
 	const auto block = static_cast<MemoryBlock *>(malloc(size + sizeof(MemoryBlock)));
-	block->blockId = 0;
+	block->block_id = 0;
 	block->pool = nullptr;
 	block->next = nullptr;
 	return (reinterpret_cast<char *>(block) + sizeof(MemoryBlock));
@@ -113,7 +113,7 @@ void MemoryManager::Free(void* ptr)
 {
 	auto block = reinterpret_cast<MemoryBlock *>(static_cast<char *>(ptr) - sizeof(MemoryBlock));
 
-	if (MemoryPool *pool = block->pool; pool != nullptr && block->blockId > 0) {
+	if (MemoryPool *pool = block->pool; pool != nullptr && block->block_id > 0) {
 		pool->Free(ptr);
 	}
 	else {

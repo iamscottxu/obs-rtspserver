@@ -16,9 +16,9 @@
 using namespace xop;
 
 DigestAuthentication::DigestAuthentication(std::string realm, std::string username, std::string password)
-	: m_realm(realm)
-	, m_username(username)
-	, m_password(password)
+	: realm_(realm)
+	, username_(username)
+	, password_(password)
 {
 #if defined(WIN32) || defined(_WIN32)
 	md5 = new CngMd5();
@@ -51,8 +51,8 @@ std::string DigestAuthentication::GetNonce()
 std::string DigestAuthentication::GetResponse(std::string nonce, std::string cmd, std::string url)
 {
 	//md5(md5(<username>:<realm> : <password>) :<nonce> : md5(<cmd>:<url>))
-	auto hex1 = md5->GetMd5HashString(m_username + ":" + m_realm + ":" +
-					  m_password);
+	auto hex1 = md5->GetMd5HashString(username_ + ":" + realm_ + ":" +
+					  password_);
 	auto hex2 = md5->GetMd5HashString(cmd + ":" + url);
 	auto response = md5->GetMd5HashString(hex1 + ":" + nonce + ":" + hex2);
 	return response;

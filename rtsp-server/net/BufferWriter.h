@@ -24,7 +24,7 @@ class BufferWriter
 {
 public:
 	BufferWriter(int capacity = kMaxQueueLength);
-	~BufferWriter() {}
+	virtual ~BufferWriter() {}
 
 	bool Append(std::shared_ptr<char> data, size_t size, uint32_t index=0);
 	bool Append(const char* data, size_t size, uint32_t index=0);

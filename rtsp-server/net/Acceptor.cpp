@@ -27,7 +27,7 @@ int Acceptor::Listen(std::string ip, uint16_t port)
 		tcp_socket_->Close();
 	}
 	const SOCKET sockfd = tcp_socket_->Create(SocketUtil::IsIpv6Address(ip));
-	channel_ptr_.reset(new Channel(sockfd, ip, port));
+	channel_ptr_.reset(new Channel(sockfd));
 	SocketUtil::SetReuseAddr(sockfd);
 	SocketUtil::SetReusePort(sockfd);
 	SocketUtil::SetNonBlock(sockfd);
@@ -59,13 +59,9 @@ void Acceptor::Close()
 void Acceptor::OnAccept()
 {
 	std::lock_guard locker(mutex_);
-
-	if (const auto sockfd = tcp_socket_->Accept() > 0) {
-		bool isIpv6 = SocketUtil::IsIpv6Socket(sockfd);
+	if (const auto sockfd = tcp_socket_->Accept(); sockfd > 0) {
 		if (new_connection_callback_) {
-			new_connection_callback_(sockfd,
-				SocketUtil::GetSocketIp(sockfd, isIpv6),
-				SocketUtil::GetPeerPort(sockfd, isIpv6));
+			new_connection_callback_(sockfd);
 		}
 		else {
 			SocketUtil::Close(sockfd);
