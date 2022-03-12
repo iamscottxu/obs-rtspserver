@@ -341,14 +341,15 @@ static bool rtsp_output_start(void *data)
 	out_data->frame_queue =
 		std::make_unique<threadsafe_queue<queue_frame>>();
 
-	session->SetNotifyCallback([out_data](xop::MediaSessionId session_id,
+	/* session->NotifyConnectedCallback(
+		[out_data](xop::MediaSessionId session_id,
 	                                      const uint32_t num_clients) {
 		/*if (num_clients > 0 && out_data->num_clients == 0) {
 			obs_output_pause(out_data->output, false);
-		}*/
+		}
 		out_data->num_clients = num_clients;
 		blog(LOG_INFO, "the number of rtsp clients: %d", num_clients);
-	});
+	});*/
 
 	out_data->session_id = out_data->server->AddSession(session);
 

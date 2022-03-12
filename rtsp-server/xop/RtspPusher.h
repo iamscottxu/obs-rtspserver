@@ -1,4 +1,4 @@
-﻿#ifndef XOP_RTSP_PUSHER_H
+#ifndef XOP_RTSP_PUSHER_H
 #define XOP_RTSP_PUSHER_H
 
 #include <mutex>
@@ -23,7 +23,7 @@ public:
 	void Close();
 	bool IsConnected();
 
-	bool PushFrame(MediaChannelId channelId, AVFrame frame);
+	bool PushFrame(MediaChannelId channelId, const AVFrame &frame);
 
 private:
 	friend class RtspConnection;

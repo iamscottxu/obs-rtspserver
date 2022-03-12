@@ -79,9 +79,9 @@ void EventLoop::Loop()
 		threads_.push_back(thread);
 	}
 
-	int priority = TASK_SCHEDULER_PRIORITY_REALTIME;
+	const int priority = TASK_SCHEDULER_PRIORITY_REALTIME;
 
-	for (auto iter : threads_) 
+	for (const auto &iter : threads_) 
 	{
 #if defined(WIN32) || defined(_WIN32)
 		switch (priority) 

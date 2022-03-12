@@ -95,7 +95,7 @@ int BufferWriter::Send(SOCKET sockfd, int timeout)
 		SocketUtil::SetBlock(sockfd, timeout); 
 	}
       
-	int ret = 0;
+	int ret;
 	int count = 1;
 
 	do
@@ -116,8 +116,7 @@ int BufferWriter::Send(SOCKET sockfd, int timeout)
 		}
 		else if (ret < 0) {
 #if defined(WIN32) || defined(_WIN32)
-			int error = WSAGetLastError();
-			if (error == WSAEWOULDBLOCK || error == WSAEINPROGRESS || error == 0)
+			if (const int error = WSAGetLastError(); error == WSAEWOULDBLOCK || error == WSAEINPROGRESS || error == 0)
 #else
                         if (errno == EINTR || errno == EAGAIN)
 #endif

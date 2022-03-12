@@ -32,15 +32,15 @@ void MemoryPool::Init(uint32_t size, uint32_t n)
 
 	block_size_ = size;
 	num_blocks_ = n;
-	memory_ = (char*)malloc(num_blocks_ * (block_size_ + sizeof(MemoryBlock)));
-	head_ = (MemoryBlock*)memory_;
+	memory_ = static_cast<char *>(malloc(num_blocks_ * (block_size_ + sizeof(MemoryBlock))));
+	head_ = reinterpret_cast<MemoryBlock *>(memory_);
 	head_->blockId = 1;
 	head_->pool = this;
 	head_->next = nullptr;
 
 	MemoryBlock* current = head_;
 	for (uint32_t n = 1; n < num_blocks_; n++) {
-		MemoryBlock* next = (MemoryBlock*)(memory_ + (n * (block_size_ + sizeof(MemoryBlock))));
+		auto * next = reinterpret_cast<MemoryBlock *>(memory_ + n * (block_size_ + sizeof(MemoryBlock)));
 		next->blockId = n + 1;
 		next->pool = this;
 		next->next = nullptr;
@@ -52,13 +52,11 @@ void MemoryPool::Init(uint32_t size, uint32_t n)
 
 void* MemoryPool::Alloc(uint32_t size)
 {
-	MemoryBlock* block = nullptr;
-
-	std::lock_guard<std::mutex> locker(mutex_);
+	std::lock_guard locker(mutex_);
 	if (head_ != nullptr) {
 		MemoryBlock* block = head_;
 		head_ = head_->next;
-		return ((char*)block + sizeof(MemoryBlock));
+		return reinterpret_cast<char *>(block) + sizeof(MemoryBlock);
 	}
 
 	return nullptr;
@@ -66,9 +64,9 @@ void* MemoryPool::Alloc(uint32_t size)
 
 void MemoryPool::Free(void* ptr)
 {
-	MemoryBlock *block = (MemoryBlock*)((char*)ptr - sizeof(MemoryBlock));
+	const auto block = reinterpret_cast<MemoryBlock *>(static_cast<char *>(ptr) - sizeof(MemoryBlock));
 	if (block->blockId != 0) {
-		std::lock_guard<std::mutex> locker(mutex_);
+		std::lock_guard locker(mutex_);
 		block->next = head_;
 		head_ = block;
 	}
@@ -95,31 +93,27 @@ MemoryManager& MemoryManager::Instance()
 
 void* MemoryManager::Alloc(uint32_t size)
 {
-	for (int n = 0; n < kMaxMemoryPool; n++) {
-		if (size <= memory_pools_[n].BolckSize()) {
-			void* ptr = memory_pools_[n].Alloc(size);
-			if (ptr != nullptr) {
+	for (auto &memory_pool : memory_pools_) {
+		if (size <= memory_pool.BolckSize()) {
+			if (void* ptr = memory_pool.Alloc(size); ptr != nullptr) {
 				return ptr;
-			}				
-			else {
-				break;
 			}
+			break;
 		}
-	} 
+	}
 
-	MemoryBlock *block = (MemoryBlock*)malloc(size + sizeof(MemoryBlock));
+	const auto block = static_cast<MemoryBlock *>(malloc(size + sizeof(MemoryBlock)));
 	block->blockId = 0;
 	block->pool = nullptr;
 	block->next = nullptr;
-	return ((char*)block + sizeof(MemoryBlock));
+	return (reinterpret_cast<char *>(block) + sizeof(MemoryBlock));
 }
 
 void MemoryManager::Free(void* ptr)
 {
-	MemoryBlock *block = (MemoryBlock*)((char*)ptr - sizeof(MemoryBlock));
-	MemoryPool *pool = block->pool;
-	
-	if (pool != nullptr && block->blockId > 0) {
+	auto block = reinterpret_cast<MemoryBlock *>(static_cast<char *>(ptr) - sizeof(MemoryBlock));
+
+	if (MemoryPool *pool = block->pool; pool != nullptr && block->blockId > 0) {
 		pool->Free(ptr);
 	}
 	else {

@@ -7,7 +7,7 @@
 
 using namespace xop;
 
-RtspPusher::RtspPusher(xop::EventLoop *event_loop)
+RtspPusher::RtspPusher(EventLoop *event_loop)
 	: event_loop_(event_loop)
 {
 
@@ -18,7 +18,7 @@ RtspPusher::~RtspPusher()
 	this->Close();
 }
 
-std::shared_ptr<RtspPusher> RtspPusher::Create(xop::EventLoop* loop)
+std::shared_ptr<RtspPusher> RtspPusher::Create(EventLoop * loop)
 {
 	std::shared_ptr<RtspPusher> pusher(new RtspPusher(loop));
 	return pusher;
@@ -26,26 +26,26 @@ std::shared_ptr<RtspPusher> RtspPusher::Create(xop::EventLoop* loop)
 
 void RtspPusher::AddSession(MediaSession* session)
 {
-    std::lock_guard<std::mutex> locker(mutex_);
+    std::lock_guard locker(mutex_);
     media_session_.reset(session);
 }
 
 void RtspPusher::RemoveSession(MediaSessionId sessionId)
 {
-	std::lock_guard<std::mutex> locker(mutex_);
-	media_session_ = nullptr;
+	std::lock_guard locker(mutex_);
+	media_session_ = nullptr; //TODO
 }
 
 MediaSessionPtr RtspPusher::LookMediaSession(MediaSessionId sessionId)
 {
-	return media_session_;
+	return media_session_; //TODO
 }
 
-int RtspPusher::OpenUrl(std::string url, int msec)
+int RtspPusher::OpenUrl(const std::string url, const int msec)
 {
-	std::lock_guard<std::mutex> lock(mutex_);
+	std::lock_guard lock(mutex_);
 
-	static xop::Timestamp tp;
+	static Timestamp tp;
 	int timeout = msec;
 	if (timeout <= 0) {
 		timeout = 10000;
@@ -81,14 +81,14 @@ int RtspPusher::OpenUrl(std::string url, int msec)
 		rtsp_conn_->SendOptions(RtspConnection::ConnectionMode::RTSP_PUSHER);
     });
 
-	timeout -= (int)tp.elapsed();
+	timeout -= static_cast<int>(tp.elapsed());
 	if (timeout < 0) {
 		timeout = 1000;
 	}
 
 	do
 	{
-		xop::Timer::Sleep(100);
+		Timer::Sleep(100);
 		timeout -= 100;
 	} while (!rtsp_conn_->IsRecord() && timeout > 0);
 
@@ -107,7 +107,7 @@ int RtspPusher::OpenUrl(std::string url, int msec)
 
 void RtspPusher::Close()
 {
-	std::lock_guard<std::mutex> lock(mutex_);
+	std::lock_guard lock(mutex_);
 
 	if (rtsp_conn_ != nullptr) {
 		std::shared_ptr<RtspConnection> rtsp_conn = rtsp_conn_;
@@ -121,7 +121,7 @@ void RtspPusher::Close()
 
 bool RtspPusher::IsConnected()
 {
-	std::lock_guard<std::mutex> lock(mutex_);
+	std::lock_guard lock(mutex_);
 
 	if (rtsp_conn_ != nullptr) {
 		return (!rtsp_conn_->IsClosed());
@@ -129,9 +129,9 @@ bool RtspPusher::IsConnected()
 	return false;
 }
 
-bool RtspPusher::PushFrame(MediaChannelId channelId, AVFrame frame)
+bool RtspPusher::PushFrame(const MediaChannelId channelId, const AVFrame &frame)
 {
-	std::lock_guard<std::mutex> locker(mutex_);
+	std::lock_guard locker(mutex_);
 	if (!media_session_ || !rtsp_conn_) {
 		return false;
 	}

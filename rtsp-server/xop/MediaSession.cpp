@@ -18,15 +18,13 @@ using namespace std;
 std::atomic_uint MediaSession::last_session_id_(1);
 
 MediaSession::MediaSession(std::string url_suffix, uint32_t max_channel_count)
-    : suffix_(url_suffix)
+    : session_id_(++last_session_id_)
+    , suffix_(url_suffix)
     , media_sources_(max_channel_count)
     , multicast_port_(max_channel_count, 0)
-    , _buffer(max_channel_count)
     , has_new_client_(false), _buffer(max_channel_count)
     , max_channel_count_(max_channel_count)
 {
-	has_new_client_ = false;
-	session_id_ = ++last_session_id_;
 }
 
 MediaSession* MediaSession::CreateNew(std::string url_suffix, uint32_t max_channel_count)
@@ -36,7 +34,7 @@ MediaSession* MediaSession::CreateNew(std::string url_suffix, uint32_t max_chann
 
 MediaSession::~MediaSession()
 {
-	if (multicast_ip_ != "") {
+	if (!multicast_ip_.empty()) {
 		MulticastAddr::instance().Release(multicast_ip_);
 	}
 }
@@ -55,19 +53,17 @@ bool MediaSession::AddSource(MediaChannelId channelId, MediaSource* source)
 {
 	if (static_cast<uint8_t>(channelId) >= max_channel_count_) return false;
 	source->SetSendFrameCallback([this](MediaChannelId channelId, RtpPacket pkt) {
-		std::lock_guard<std::mutex> lock(map_mutex_);
+		std::lock_guard lock(map_mutex_);
 
 		std::forward_list<std::shared_ptr<RtpConnection>> clients;
 		std::map<int, RtpPacket> packets;
 
 		for (auto iter = clients_.begin(); iter != clients_.end();) {
-			auto conn = iter->second.lock();
-			if (conn == nullptr) {
+			if (auto conn = iter->second.lock(); conn == nullptr) {
 				clients_.erase(iter++);
 			}
-			else  {				
-				int id = conn->GetId();
-				if (id >= 0) {
+			else  {
+				if (int id = conn->GetId(); id >= 0) {
 					if (packets.find(id) == packets.end()) {
 						RtpPacket tmpPkt;
 						memcpy(tmpPkt.data.get(), pkt.data.get(), pkt.size);
@@ -79,17 +75,15 @@ bool MediaSession::AddSource(MediaChannelId channelId, MediaSource* source)
 					}
 					clients.emplace_front(conn);
 				}
-				iter++;
+				++iter;
 			}
 		}
         
 		int count = 0;
-		for(auto iter : clients) {
-			int ret = 0;
-			int id = iter->GetId();
-			if (id >= 0) {
-				auto iter2 = packets.find(id);
-				if (iter2 != packets.end()) {
+		for(const auto &iter : clients) {
+			if (int id = iter->GetId(); id >= 0) {
+				if (auto iter2 = packets.find(id); iter2 != packets.end()) {
+					int ret = 0;
 					count++;
 					ret = iter->SendRtpPacket(channelId, iter2->second);
 					if (is_multicast_ && ret == 0) {
@@ -118,7 +112,7 @@ bool MediaSession::StartMulticast()
 	}
 
 	multicast_ip_ = MulticastAddr::instance().GetAddr();
-	if (multicast_ip_ == "") {
+	if (multicast_ip_.empty()) {
 		return false;
 	}
 
@@ -142,7 +136,7 @@ std::string MediaSession::GetSdpMessage(std::string ip, std::string sessionName,
 			"o=- 9%ld 1 IN IP%d %s\r\n"
 			"t=0 0\r\n"
 			"a=control:*\r\n" ,
-			(long)std::time(NULL), ipv6 ? 6 : 4 , ip.c_str()); 
+			static_cast<long>(std::time(nullptr)), ipv6 ? 6 : 4 , ip.c_str()); 
 
 	if(sessionName != "") {
 		snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf), 
@@ -196,11 +190,11 @@ MediaSource* MediaSession::GetMediaSource(MediaChannelId channelId)
 
 bool MediaSession::HandleFrame(MediaChannelId channelId, AVFrame frame)
 {
-	std::lock_guard<std::mutex> lock(mutex_);
+	std::lock_guard lock(mutex_);
 
         if (static_cast<uint8_t>(channelId) < max_channel_count_) {
 		media_sources_[static_cast<uint8_t>(channelId)]->HandleFrame(
-			channelId, frame);
+			channelId, std::move(frame));
 	}
 	else {
 		return false;
@@ -211,11 +205,10 @@ bool MediaSession::HandleFrame(MediaChannelId channelId, AVFrame frame)
 
 bool MediaSession::AddClient(SOCKET rtspfd, std::shared_ptr<RtpConnection> rtp_conn)
 {
-	std::lock_guard<std::mutex> lock(map_mutex_);
+	std::lock_guard lock(map_mutex_);
 
-	auto iter = clients_.find (rtspfd);
-	if(iter == clients_.end()) {
-		std::weak_ptr<RtpConnection> rtp_conn_weak_ptr = rtp_conn;
+	if(const auto iter = clients_.find (rtspfd); iter == clients_.end()) {
+		std::weak_ptr rtp_conn_weak_ptr = rtp_conn;
 		clients_.emplace(rtspfd, rtp_conn_weak_ptr);
 		for (auto& cb : _notifyConnectedCallbacks)
 			cb(session_id_, static_cast<uint32_t>(clients_.size()), rtp_conn->GetIp()); /* 回调通知当前客户端数量 */

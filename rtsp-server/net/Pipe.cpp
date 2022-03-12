@@ -46,9 +46,10 @@ bool Pipe::Create()
 		return false;
 	}
 
-	if ((pipe_fd_[0] = rp.Accept()) < 0) {
+	pipe_fd_[0] = std::get<0>(rp.Accept());
+	/*if (pipe_fd_[0] < 0) {
 		return false;
-	}
+	}*/
 
 	SocketUtil::SetNonBlock(pipe_fd_[0]);
 	SocketUtil::SetNonBlock(pipe_fd_[1]);

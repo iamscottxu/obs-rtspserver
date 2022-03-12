@@ -21,7 +21,7 @@ Acceptor::~Acceptor()
 
 int Acceptor::Listen(std::string ip, uint16_t port)
 {
-	std::lock_guard<std::mutex> locker(mutex_);
+	std::lock_guard locker(mutex_);
 
 	if (tcp_socket_->GetSocket() > 0) {
 		tcp_socket_->Close();
@@ -48,7 +48,7 @@ int Acceptor::Listen(std::string ip, uint16_t port)
 
 void Acceptor::Close()
 {
-	std::lock_guard<std::mutex> locker(mutex_);
+	std::lock_guard locker(mutex_);
 
 	if (tcp_socket_->GetSocket() > 0) {
 		event_loop_->RemoveChannel(channel_ptr_);
@@ -58,7 +58,7 @@ void Acceptor::Close()
 
 void Acceptor::OnAccept()
 {
-	std::lock_guard<std::mutex> locker(mutex_);
+	std::lock_guard locker(mutex_);
 
 	if (const auto ret = tcp_socket_->Accept(); std::get<0>(ret) > 0) {
 		if (new_connection_callback_) {

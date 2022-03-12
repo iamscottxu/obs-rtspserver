@@ -30,8 +30,8 @@ struct SockInfo {
 
 class RtpConnection final {
 public:
-    RtpConnection(std::weak_ptr<TcpConnection> rtsp_connection, uint32_t max_channel_count);
-    virtual ~RtpConnection();
+    RtpConnection(const std::weak_ptr<TcpConnection> &rtsp_connection, uint32_t max_channel_count);
+    ~RtpConnection();
 
     void SetClockRate(MediaChannelId channel_id, uint32_t clock_rate)
     { media_channel_info_[static_cast<uint8_t>(channel_id)].clock_rate = clock_rate; }
@@ -67,14 +67,14 @@ public:
     bool IsSetup(MediaChannelId channel_id) const
     { return media_channel_info_[static_cast<uint8_t>(channel_id)].is_setup; }
 
-    std::string GetMulticastIp(MediaChannelId channel_id) const;
+    std::string GetMulticastIp(MediaChannelId channel_id);
 
     void Play();
     void Record();
     void Teardown();
 
-    std::string GetRtpInfo(const std::string& rtsp_url);
-    int SendRtpPacket(MediaChannelId channel_id, RtpPacket pkt);
+    std::string GetRtpInfo(const std::string& rtsp_url) const;
+    int SendRtpPacket(MediaChannelId channel_id, const RtpPacket &pkt);
 
     bool IsClosed() const
     { return is_closed_; }
@@ -88,7 +88,7 @@ private:
     friend class RtspConnection;
     friend class MediaSession;
     void SetFrameType(FrameType frameType = FrameType::NONE);
-    void SetRtpHeader(MediaChannelId channel_id, RtpPacket pkt);
+    void SetRtpHeader(MediaChannelId channel_id, const RtpPacket &pkt);
     int  SendRtpOverTcp(MediaChannelId channel_id, RtpPacket pkt);
     int  SendRtpOverUdp(MediaChannelId channel_id, RtpPacket pkt);
 
@@ -108,9 +108,9 @@ private:
     std::vector<SockInfo> rtpfd_;
 	std::vector<SockInfo> rtcpfd_;
 
-    struct sockaddr_in6 peer_addr_;
-    std::vector<struct sockaddr_in6> peer_rtp_addr_;
-    std::vector<struct sockaddr_in6> peer_rtcp_sddr_;
+    sockaddr_in6 peer_addr_;
+    std::vector<sockaddr_in6> peer_rtp_addr_;
+    std::vector<sockaddr_in6> peer_rtcp_sddr_;
     std::vector<MediaChannelInfo> media_channel_info_;
 
     bool ipv6_;

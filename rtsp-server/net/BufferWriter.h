@@ -50,7 +50,7 @@ private:
 	std::queue<Packet> buffer_; 		
 	int max_queue_length_ = 0;
 	 
-	static const int kMaxQueueLength = 10000;
+	static constexpr int kMaxQueueLength = 10000;
 };
 
 }

@@ -65,8 +65,7 @@ struct MediaChannelInfo
 
 struct RtpPacket
 {
-	RtpPacket()
-		: data(new uint8_t[1600])
+	RtpPacket() : data(new uint8_t[1600], std::default_delete<uint8_t[]>())
 	{
 		size = 0;
 		timestamp = 0;
