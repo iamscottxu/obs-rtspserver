@@ -32,12 +32,12 @@ public:
 
 	bool IsFull() const
 	{
-		return (static_cast<int>(buffer_.size()) >= max_queue_length_
-				? true
-				: false);
+		return static_cast<int>(buffer_.size()) >= max_queue_length_
+			       ? true
+			       : false;
 	}
 
-	uint32_t Size() const { return static_cast<uint32_t>(buffer_.size()); }
+	uint32_t Size() const { return buffer_.size(); }
 
 private:
 	typedef struct {

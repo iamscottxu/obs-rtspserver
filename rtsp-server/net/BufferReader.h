@@ -25,15 +25,9 @@ public:
 	explicit BufferReader(uint32_t initialSize = kInitialSize);
 	virtual ~BufferReader();
 
-	uint32_t ReadableBytes() const
-	{
-		return static_cast<uint32_t>(writer_index_ - reader_index_);
-	}
+	uint32_t ReadableBytes() const { return writer_index_ - reader_index_; }
 
-	uint32_t WritableBytes() const
-	{
-		return static_cast<uint32_t>(buffer_.size() - writer_index_);
-	}
+	uint32_t WritableBytes() const { return buffer_.size() - writer_index_; }
 
 	char *Peek() { return Begin() + reader_index_; }
 
@@ -86,7 +80,7 @@ public:
 	uint32_t ReadAll(std::string &data);
 	uint32_t ReadUntilCrlf(std::string &data);
 
-	uint32_t Size() const { return static_cast<uint32_t>(buffer_.size()); }
+	uint32_t Size() const { return buffer_.size(); }
 
 private:
 	char *Begin() { return &*buffer_.begin(); }

@@ -49,7 +49,7 @@ void MemoryPool::Init(const uint32_t size, const uint32_t n)
 	}
 }
 
-void *MemoryPool::Alloc(uint32_t size)
+void *MemoryPool::Alloc(const uint32_t size)
 {
 	std::lock_guard locker(mutex_);
 	if (head_ != nullptr) {
@@ -105,7 +105,7 @@ void *MemoryManager::Alloc(const uint32_t size)
 	block->block_id = 0;
 	block->pool = nullptr;
 	block->next = nullptr;
-	return (reinterpret_cast<char *>(block) + sizeof(MemoryBlock));
+	return reinterpret_cast<char *>(block) + sizeof(MemoryBlock);
 }
 
 void MemoryManager::Free(void *ptr)

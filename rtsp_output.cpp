@@ -318,7 +318,7 @@ static bool rtsp_output_start(void *data)
 
 	auto multicast = obs_data_get_bool(settings, "multicast");
 	if (multicast) {
-		if ((multicast = session->StartMulticast())) {
+		if (multicast = session->StartMulticast(); multicast) {
 			blog(LOG_INFO,
 			     "------------------------------------------------");
 			blog(LOG_INFO, "rtsp multicast info:");

@@ -59,7 +59,7 @@ SOCKET TcpSocket::Accept() const
 		psockaddr = reinterpret_cast<sockaddr *>(&addr);
 	}
 
-	const SOCKET socket_fd = ::accept(sockfd_, psockaddr, &addrlen);
+	const SOCKET socket_fd = accept(sockfd_, psockaddr, &addrlen);
 
 	return socket_fd;
 }

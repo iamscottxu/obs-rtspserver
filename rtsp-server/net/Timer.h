@@ -39,7 +39,7 @@ public:
 		event_callback_ = event;
 	}
 
-	void Start(int64_t microseconds, const bool repeat = false)
+	void Start(const int64_t microseconds, const bool repeat = false)
 	{
 		is_repeat_ = repeat;
 		auto time_begin = std::chrono::high_resolution_clock::now();

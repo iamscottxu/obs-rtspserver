@@ -57,7 +57,7 @@ void TcpConnection::Send(const char *data, const size_t size)
 
 void TcpConnection::Disconnect()
 {
-	std::lock_guard<std::mutex> lock(mutex_);
+	std::lock_guard lock(mutex_);
 	auto conn = shared_from_this();
 	task_scheduler_->AddTriggerEvent([conn]() { conn->Close(); });
 }

@@ -24,8 +24,8 @@ bool Pipe::Create()
 		return false;
 	}
 #else
-	TcpSocket rp(socket(AF_INET, SOCK_STREAM, 0)),
-		wp(socket(AF_INET, SOCK_STREAM, 0));
+	const TcpSocket rp(socket(AF_INET, SOCK_STREAM, 0));
+	const TcpSocket wp(socket(AF_INET, SOCK_STREAM, 0));
 	std::random_device rd;
 
 	pipe_fd_[0] = rp.GetSocket();
@@ -34,7 +34,7 @@ bool Pipe::Create()
 	int again = 5;
 
 	while (again--) {
-		port = rd();
+		port = static_cast<uint16_t>(rd());
 		if (rp.Bind("127.0.0.1", port)) {
 			break;
 		}
@@ -53,9 +53,9 @@ bool Pipe::Create()
 	}
 
 	pipe_fd_[0] = rp.Accept(); //TODO
-	/*if (pipe_fd_[0] < 0) {
+	if (pipe_fd_[0] < 0) {
 		return false;
-	}*/
+	}
 
 	SocketUtil::SetNonBlock(pipe_fd_[0]);
 	SocketUtil::SetNonBlock(pipe_fd_[1]);

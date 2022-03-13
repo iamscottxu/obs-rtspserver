@@ -77,7 +77,7 @@ string AACSource::GetAttribute() // RFC 3640
 	const size_t rtpmap_format_size =
 		sprintf(buf.data(), rtpmap_fmt, samplerate_, channels_);
 
-	const array<uint8_t, 2> audioSpecificConfig = {
+	const array audioSpecificConfig = {
 		static_cast<uint8_t>(profile + 1 << 3 |
 				     samplingFrequencyIndex >> 1),
 		static_cast<uint8_t>(samplingFrequencyIndex << 7 |
@@ -130,7 +130,7 @@ bool AACSource::HandleFrame(const MediaChannelId channel_id,
 	return true;
 }
 
-uint32_t AACSource::GetTimestamp(uint32_t sampleRate)
+uint32_t AACSource::GetTimestamp(const uint32_t sampleRate)
 {
 	//auto time_point = chrono::time_point_cast<chrono::milliseconds>(chrono::high_resolution_clock::now());
 	//return (uint32_t)(time_point.time_since_epoch().count() * sampleRate / 1000);

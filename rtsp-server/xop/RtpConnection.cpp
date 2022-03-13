@@ -192,7 +192,7 @@ bool RtpConnection::SetupRtpOverUdp(MediaChannelId channel_id,
 }
 
 bool RtpConnection::SetupRtpOverMulticast(MediaChannelId channel_id,
-					  const std::string ip,
+					  const std::string &ip,
 					  const uint16_t port)
 {
 	const bool ipv6 = SocketUtil::IsIpv6Address(ip);
@@ -359,7 +359,7 @@ int RtpConnection::SendRtpPacket(MediaChannelId channel_id,
 	if (!conn) {
 		return -1;
 	}
-	const auto rtsp_conn = dynamic_cast<RtspConnection *>(conn.get());
+	const auto rtsp_conn = conn.get();
 	const bool ret = rtsp_conn->task_scheduler_->AddTriggerEvent([this,
 								      channel_id,
 								      pkt] {

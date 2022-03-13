@@ -9,7 +9,7 @@
 
 #include "Logger.h"
 #include "Timestamp.h"
-#include <stdarg.h>
+#include <cstdarg>
 #include <iostream>
 
 using namespace xop;

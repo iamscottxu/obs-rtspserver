@@ -22,7 +22,7 @@ std::string Md5::GetMd5HashString(const unsigned char *data,
 {
 	unsigned char hash[MD5_HASH_LENGTH];
 	GetMd5Hash(data, dataSize, hash);
-	char hashStr[2 * MD5_HASH_LENGTH + 1];
+	char hashStr[2 * MD5_HASH_LENGTH + 1]{};
 	for (size_t i = 0; i < MD5_HASH_LENGTH; i++) {
 		hashStr[2 * i] = hex_value_[((hash[i] >> 4) & 0xF)];
 		hashStr[2 * i + 1] = hex_value_[(hash[i]) & 0x0F];

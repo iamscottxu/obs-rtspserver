@@ -19,7 +19,7 @@ public:
 				     uint32_t framerate = 25);
 	~H264Source() override;
 
-	void SetFramerate(uint32_t framerate) { framerate_ = framerate; }
+	void SetFramerate(const uint32_t framerate) { framerate_ = framerate; }
 
 	uint32_t GetFramerate() const { return framerate_; }
 

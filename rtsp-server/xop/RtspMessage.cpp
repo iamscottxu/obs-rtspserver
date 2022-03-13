@@ -25,8 +25,7 @@ bool RtspRequest::ParseRequest(BufferReader *buffer)
 	bool ret = true;
 	while (true) {
 		if (state_ == RtspRequestParseState::kParseRequestLine) {
-			const char *firstCrlf = buffer->FindFirstCrlf();
-			if (firstCrlf != nullptr) {
+			if (const char *firstCrlf = buffer->FindFirstCrlf(); firstCrlf != nullptr) {
 				ret = ParseRequestLine(buffer->Peek(),
 						       firstCrlf);
 				buffer->RetrieveUntil(firstCrlf + 2);
@@ -39,8 +38,7 @@ bool RtspRequest::ParseRequest(BufferReader *buffer)
 			break;
 		}
 		if (state_ == RtspRequestParseState::kParseHeadersLine) {
-			const char *lastCrlf = buffer->FindLastCrlf();
-			if (lastCrlf != nullptr) {
+			if (const char *lastCrlf = buffer->FindLastCrlf(); lastCrlf != nullptr) {
 				ret = ParseHeadersLine(buffer->Peek(),
 						       lastCrlf);
 				buffer->RetrieveUntil(lastCrlf + 2);
@@ -180,7 +178,7 @@ bool RtspRequest::ParseCSeq(std::string &message)
 	if (const std::size_t pos = message.find("CSeq");
 	    pos != std::string::npos) {
 		uint32_t cseq = 0;
-		sscanf(message.c_str() + pos, "%*[^:]: %u", &cseq);
+		sscanf(message.c_str() + pos, "%*[^:]: %u", &cseq); //TODO
 		header_line_param_.emplace("cseq", make_pair("", cseq));
 		return true;
 	}
@@ -205,7 +203,7 @@ bool RtspRequest::ParseTransport(std::string &message)
 		if ((pos = message.find("RTP/AVP/TCP")) != std::string::npos) {
 			transport_ = TransportMode::RTP_OVER_TCP;
 			uint16_t rtpChannel = 0, rtcpChannel = 0;
-			if (sscanf(message.c_str() + pos,
+			if (sscanf(message.c_str() + pos, //TODO
 				   "%*[^;];%*[^;];%*[^=]=%hu-%hu", &rtpChannel,
 				   &rtcpChannel) != 2) {
 				return false;
@@ -220,7 +218,7 @@ bool RtspRequest::ParseTransport(std::string &message)
 			if (((message.find("unicast", pos)) !=
 			     std::string::npos)) {
 				transport_ = TransportMode::RTP_OVER_UDP;
-				if (sscanf(message.c_str() + pos,
+				if (sscanf(message.c_str() + pos, //TODO
 					   "%*[^;];%*[^;];%*[^=]=%hu-%hu",
 					   &rtp_port, &rtcpPort) != 2) {
 					return false;
@@ -252,7 +250,7 @@ bool RtspRequest::ParseSessionId(std::string &message)
 	const std::size_t pos = message.find("Session");
 	if (pos != std::string::npos) {
 		uint32_t session_id = 0;
-		if (sscanf(message.c_str() + pos, "%*[^:]: %u", &session_id) !=
+		if (sscanf(message.c_str() + pos, "%*[^:]: %u", &session_id) != //TODO
 		    1) {
 			return false;
 		}
@@ -270,7 +268,7 @@ bool RtspRequest::ParseMediaChannel(std::string &message)
 		const std::size_t pos = url.rfind("/track");
 		if (pos != std::string::npos) {
 			int channel_index;
-			if (sscanf(url.c_str() + pos, "/track%d",
+			if (sscanf(url.c_str() + pos, "/track%d", //TODO
 				   &channel_index) != 1) {
 				return false;
 			}

@@ -11,7 +11,7 @@
 namespace xop {
 class EpollTaskScheduler : public TaskScheduler {
 public:
-	EpollTaskScheduler(int id = 0);
+	explicit EpollTaskScheduler(int id = 0);
 	~EpollTaskScheduler() override;
 
 	void UpdateChannel(const ChannelPtr &channel) override;

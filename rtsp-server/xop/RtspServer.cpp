@@ -68,14 +68,13 @@ MediaSession::Ptr RtspServer::LookMediaSession(const MediaSessionId session_id)
 }
 
 bool RtspServer::PushFrame(const MediaSessionId session_id,
-			   const MediaChannelId channel_id, const AVFrame frame)
+			   const MediaChannelId channel_id, const AVFrame &frame)
 {
 	std::shared_ptr<MediaSession> sessionPtr;
 
 	{
 		std::lock_guard locker(mutex_);
-		const auto iter = media_sessions_.find(session_id);
-		if (iter != media_sessions_.end()) {
+		if (const auto iter = media_sessions_.find(session_id); iter != media_sessions_.end()) {
 			sessionPtr = iter->second;
 		} else {
 			return false;

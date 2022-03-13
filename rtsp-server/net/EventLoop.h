@@ -5,7 +5,6 @@
 #define XOP_EVENT_LOOP_H
 
 #include <memory>
-#include <atomic>
 #include <thread>
 #include <mutex>
 

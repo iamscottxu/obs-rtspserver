@@ -28,10 +28,9 @@ RtspConnection::RtspConnection(const std::shared_ptr<Rtsp> &rtsp,
 	  rtsp_request_(new RtspRequest),
 	  rtsp_response_(new RtspResponse)
 {
-	this->SetReadCallback([this](std::shared_ptr<TcpConnection> conn,
-				     xop::BufferReader &buffer) {
-		return this->OnRead(buffer);
-	});
+	this->SetReadCallback(
+		[this](std::shared_ptr<TcpConnection> conn,
+		       BufferReader &buffer) { return this->OnRead(buffer); });
 
 	this->SetCloseCallback([this](std::shared_ptr<TcpConnection> conn) {
 		this->OnClose();
@@ -425,8 +424,8 @@ void RtspConnection::HandleCmdTeardown()
 	rtp_conn_->Teardown();
 
 	const uint16_t session_id = rtp_conn_->GetRtpSessionId();
-	std::shared_ptr<char> res(new char[2048],
-				  std::default_delete<char[]>());
+	const std::shared_ptr<char> res(new char[2048],
+	                                std::default_delete<char[]>());
 	const int size =
 		rtsp_request_->BuildTeardownRes(res.get(), 2048, session_id);
 	SendRtspMessage(res, size);

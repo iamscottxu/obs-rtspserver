@@ -2,7 +2,6 @@
 // 2018-5-15
 
 #include "SelectTaskScheduler.h"
-#include "Logger.h"
 #include "Timer.h"
 #include <cstring>
 #include <forward_list>

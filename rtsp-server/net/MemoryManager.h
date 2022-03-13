@@ -42,7 +42,7 @@ public:
 	~MemoryManager();
 
 	void *Alloc(uint32_t size);
-	static void Free(void *ptr);
+	void Free(void *ptr);
 
 private:
 	MemoryManager();

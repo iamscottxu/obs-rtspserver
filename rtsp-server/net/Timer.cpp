@@ -63,8 +63,7 @@ void TimerQueue::HandleTimerEvent()
 			    flag) {
 				events_.begin()->second->SetNextTimeout(
 					timePoint);
-				auto timerPtr =
-					std::move(events_.begin()->second);
+				auto timerPtr = events_.begin()->second;
 				events_.erase(events_.begin());
 				events_.emplace(
 					std::pair(timerPtr->getNextTimeout(),

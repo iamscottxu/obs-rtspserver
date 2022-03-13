@@ -18,7 +18,7 @@ using namespace std;
 std::atomic_uint MediaSession::last_session_id_(1);
 
 MediaSession::MediaSession(std::string url_suffix,
-			   const uint32_t max_channel_count)
+			   const uint8_t max_channel_count)
 	: max_channel_count_(max_channel_count),
 	  session_id_(++last_session_id_),
 	  suffix_(std::move(url_suffix)),

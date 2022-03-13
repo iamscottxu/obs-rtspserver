@@ -1,5 +1,5 @@
 #include "BaseMd5.h"
-#include "3rdpart/md5/md5.hpp"
+#include "md5.hpp"
 
 using namespace xop;
 

@@ -20,7 +20,7 @@ public:
 
 	void Start();
 	void Stop();
-	TimerId AddTimer(TimerEvent timerEvent, uint32_t msec);
+	TimerId AddTimer(const TimerEvent &timerEvent, uint32_t msec);
 	void RemoveTimer(TimerId timerId);
 	bool AddTriggerEvent(TriggerEvent callback);
 

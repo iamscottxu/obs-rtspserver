@@ -6,7 +6,6 @@
 
 #include <vector>
 #include <atomic>
-#include <iostream>
 
 namespace xop {
 

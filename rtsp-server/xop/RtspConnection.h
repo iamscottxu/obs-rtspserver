@@ -6,7 +6,6 @@
 #ifndef _RTSP_CONNECTION_H
 #define _RTSP_CONNECTION_H
 
-#include "net/EventLoop.h"
 #include "net/TcpConnection.h"
 #include "RtpConnection.h"
 #include "RtspMessage.h"

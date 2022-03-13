@@ -24,7 +24,7 @@ public:
 	void RemoveSession(MediaSessionId sessionId);
 
 	bool PushFrame(MediaSessionId session_id, MediaChannelId channel_id,
-		       AVFrame frame);
+	               const AVFrame &frame);
 
 private:
 	friend class RtspConnection;

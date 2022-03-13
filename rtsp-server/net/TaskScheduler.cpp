@@ -59,14 +59,14 @@ void TaskScheduler::Stop()
 	wakeup_pipe_->Write(&event, 1);
 }
 
-TimerId TaskScheduler::AddTimer(const TimerEvent timerEvent,
+TimerId TaskScheduler::AddTimer(const TimerEvent &timerEvent,
 				const uint32_t msec)
 {
 	const TimerId id = timer_queue_.AddTimer(timerEvent, msec);
 	return id;
 }
 
-void TaskScheduler::RemoveTimer(TimerId timerId)
+void TaskScheduler::RemoveTimer(const TimerId timerId)
 {
 	timer_queue_.RemoveTimer(timerId);
 }

@@ -77,7 +77,7 @@ public:
 		return static_cast<uint32_t>(clients_.size());
 	}
 
-	uint32_t GetMaxChannelCount() const { return max_channel_count_; }
+	uint8_t GetMaxChannelCount() const { return max_channel_count_; }
 
 	bool IsMulticast() const { return is_multicast_; }
 
@@ -95,9 +95,9 @@ public:
 private:
 	friend class MediaSource;
 	friend class RtspServer;
-	MediaSession(std::string url_suffix, uint32_t max_channel_count);
+	MediaSession(std::string url_suffix, uint8_t max_channel_count);
 
-	uint32_t max_channel_count_ = 0;
+	uint8_t max_channel_count_ = 0;
 
 	MediaSessionId session_id_ = 0;
 	std::string suffix_;

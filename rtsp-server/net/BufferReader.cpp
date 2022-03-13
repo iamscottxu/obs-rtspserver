@@ -59,8 +59,7 @@ BufferReader::~BufferReader() = default;
 int BufferReader::Read(const SOCKET sockfd)
 {
 	if (const uint32_t size = WritableBytes(); size < MAX_BYTES_PER_READ) {
-		const auto bufferReaderSize =
-			static_cast<uint32_t>(buffer_.size());
+		const auto bufferReaderSize = buffer_.size();
 		if (bufferReaderSize > MAX_BUFFER_SIZE) {
 			return 0;
 		}
@@ -69,7 +68,7 @@ int BufferReader::Read(const SOCKET sockfd)
 	}
 
 	const int bytes_read =
-		::recv(sockfd, beginWrite(), MAX_BYTES_PER_READ, 0);
+		recv(sockfd, beginWrite(), MAX_BYTES_PER_READ, 0);
 	if (bytes_read > 0) {
 		writer_index_ += bytes_read;
 	}

@@ -51,9 +51,9 @@ std::string DigestAuthentication::GetNonce() const
 	return md5_->GetMd5HashString(std::to_string(timestamp + rd()));
 }
 
-std::string DigestAuthentication::GetResponse(const std::string nonce,
-					      const std::string cmd,
-					      const std::string url) const
+std::string DigestAuthentication::GetResponse(const std::string &nonce,
+					      const std::string &cmd,
+					      const std::string &url) const
 {
 	//md5(md5(<username>:<realm> : <password>) :<nonce> : md5(<cmd>:<url>))
 	const auto hex1 = md5_->GetMd5HashString(username_ + ":" + realm_ +

@@ -22,7 +22,7 @@
 
 using namespace xop;
 
-EventLoop::EventLoop(uint32_t num_threads)
+EventLoop::EventLoop(const uint32_t num_threads)
 	: num_threads_(num_threads > 0 ? num_threads : 1)
 {
 	this->Loop();
