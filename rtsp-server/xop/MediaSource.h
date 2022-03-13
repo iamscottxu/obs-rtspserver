@@ -21,8 +21,8 @@ class MediaSource
 public:
 	using SendFrameCallback = std::function<bool (MediaChannelId channel_id, RtpPacket pkt)>;
 
-	MediaSource() {}
-	virtual ~MediaSource() {}
+	MediaSource() = default;
+	virtual ~MediaSource() = default;
 
 	virtual MediaType GetMediaType() const
 	{ return media_type_; }

@@ -15,7 +15,7 @@ EpollTaskScheduler::EpollTaskScheduler(int id) : TaskScheduler(id)
 #if defined(__linux) || defined(__linux__)
 	epollfd_ = epoll_create1(1024);
 #endif
-	this->UpdateChannel(wakeup_channel_);
+	this->EpollTaskScheduler::UpdateChannel(wakeup_channel_);
 }
 
 EpollTaskScheduler::~EpollTaskScheduler()
@@ -30,7 +30,7 @@ EpollTaskScheduler::~EpollTaskScheduler()
 
 void EpollTaskScheduler::UpdateChannel(ChannelPtr channel)
 {
-	std::lock_guard<std::mutex> lock(mutex_);
+	std::lock_guard lock(mutex_);
 #if defined(__linux) || defined(__linux__)
 	int fd = channel->GetSocket();
 	if (channels_.find(fd) != channels_.end()) {
@@ -67,7 +67,7 @@ void EpollTaskScheduler::Update(int operation, ChannelPtr &channel)
 
 void EpollTaskScheduler::RemoveChannel(ChannelPtr &channel)
 {
-	std::lock_guard<std::mutex> lock(mutex_);
+	std::lock_guard lock(mutex_);
 #if defined(__linux) || defined(__linux__)
 	int fd = channel->GetSocket();
 

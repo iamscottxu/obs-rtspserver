@@ -29,17 +29,17 @@ struct RtspUrlInfo
 class Rtsp : public std::enable_shared_from_this<Rtsp>
 {
 public:
-	Rtsp() : has_auth_info_(false) {}
-	virtual ~Rtsp() {}
+	Rtsp() = default;
+	virtual ~Rtsp() = default;
 
-	virtual void SetAuthConfig(std::string realm, std::string username, std::string password)
+	virtual void SetAuthConfig(const std::string realm, const std::string username, const std::string password)
 	{
 		realm_ = realm;
 		username_ = username;
 		password_ = password;
 		has_auth_info_ = true;
 
-		if (realm_=="" || username=="") {
+		if (realm_.empty() || username.empty()) {
 			has_auth_info_ = false;
 		}
 	}
@@ -53,7 +53,7 @@ public:
 	virtual std::string GetRtspUrl()
 	{ return rtsp_url_info_.url; }
 
-	bool ParseRtspUrl(std::string url)
+	bool ParseRtspUrl(const std::string &url)
 	{
 		char ip[100] = { 0 };
 		char suffix[100] = { 0 };
@@ -115,7 +115,7 @@ protected:
 	std::string username_;
 	std::string password_;
 	std::string version_;
-	struct RtspUrlInfo rtsp_url_info_;
+	RtspUrlInfo rtsp_url_info_;
 };
 
 }

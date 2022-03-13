@@ -9,7 +9,7 @@
 
 using namespace xop;
 
-bool SocketUtil::Bind(const SOCKET sockfd, const std::string ip, const uint16_t port, const bool ipv6)
+bool SocketUtil::Bind(const SOCKET sockfd, const std::string &ip, const uint16_t port, const bool ipv6)
 {
 	sockaddr *psockaddr;
 	socklen_t addrlen;
@@ -92,7 +92,7 @@ void SocketUtil::SetNoDelay(SOCKET sockfd)
 #ifdef TCP_NODELAY
 	int on = 1;
 	int ret = setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char *>(&on),
-			     sizeof(on));
+			     sizeof on);
 #endif
 }
 
@@ -120,7 +120,7 @@ void SocketUtil::SetRecvBufSize(SOCKET sockfd, int size)
 	setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<char *>(&size), sizeof size);
 }
 
-std::string SocketUtil::GetPeerIp(SOCKET sockfd, const bool ipv6)
+std::string SocketUtil::GetPeerIp(const SOCKET sockfd, const bool ipv6)
 {
 	if (ipv6) {
 		sockaddr_in6 addr = {0};
@@ -172,7 +172,7 @@ int SocketUtil::GetPeerAddr(SOCKET sockfd, sockaddr_in *addr)
 	return getpeername(sockfd, reinterpret_cast<sockaddr *>(addr), &addrlen);
 }
 
-int SocketUtil::GetPeerAddr6(SOCKET sockfd, sockaddr_in6 *addr)
+int SocketUtil::GetPeerAddr6(const SOCKET sockfd, sockaddr_in6 *addr)
 {
 	socklen_t addrlen = sizeof(struct sockaddr_in6);
 	return getpeername(sockfd, reinterpret_cast<sockaddr *>(addr), &addrlen);
@@ -225,10 +225,10 @@ bool SocketUtil::Connect(SOCKET sockfd, const std::string &ip, const uint16_t po
 		addrlen = sizeof(addr);
 	}
 
-	if (::connect(sockfd, psockaddr, addrlen) == SOCKET_ERROR) {
+	if (connect(sockfd, psockaddr, addrlen) == SOCKET_ERROR) {
 		if (timeout > 0) {
 			is_connected = false;
-			fd_set fd_write;
+			fd_set fd_write{};
 			FD_ZERO(&fd_write);
 			FD_SET(sockfd, &fd_write);
 			const timeval tv = {timeout / 1000,

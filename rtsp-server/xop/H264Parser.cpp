@@ -70,7 +70,7 @@ Nal H264Parser::findNal(const uint8_t *data, uint32_t size)
     return nal;
 }
 
-vector<uint8_t> H264Parser::RemoveEmulationBytes(vector<uint8_t> const from)
+vector<uint8_t> H264Parser::RemoveEmulationBytes(vector<uint8_t> const &from)
 {
 	size_t i = 0;
 	vector<uint8_t> to(from.size());

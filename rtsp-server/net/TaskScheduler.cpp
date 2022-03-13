@@ -31,9 +31,7 @@ TaskScheduler::TaskScheduler(const int id)
 }
 
 TaskScheduler::~TaskScheduler()
-{
-	
-}
+= default;
 
 void TaskScheduler::Start()
 {
@@ -64,7 +62,7 @@ void TaskScheduler::Stop()
 
 TimerId TaskScheduler::AddTimer(const TimerEvent timerEvent, const uint32_t msec)
 {
-	TimerId id = timer_queue_.AddTimer(timerEvent, msec);
+	const TimerId id = timer_queue_.AddTimer(timerEvent, msec);
 	return id;
 }
 
@@ -86,13 +84,13 @@ bool TaskScheduler::AddTriggerEvent(TriggerEvent callback)
 	return false;
 }
 
-void TaskScheduler::Wake()
+void TaskScheduler::Wake() const
 {
 	char event[10] = { 0 };
 	while (wakeup_pipe_->Read(event, 10) > 0);
 }
 
-void TaskScheduler::HandleTriggerEvent()
+void TaskScheduler::HandleTriggerEvent() const
 {
 	do 
 	{

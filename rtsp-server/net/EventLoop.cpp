@@ -7,6 +7,8 @@
 
 #if defined(WIN32) || defined(_WIN32) 
 #include<windows.h>
+
+#include <utility>
 #include "SelectTaskScheduler.h"
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib,"Iphlpapi.lib")
@@ -21,13 +23,8 @@
 using namespace xop;
 
 EventLoop::EventLoop(uint32_t num_threads)
-	: index_(1)
+	: num_threads_(num_threads > 0 ? num_threads : 1)
 {
-	num_threads_ = 1;
-	if (num_threads > 0) {
-		num_threads_ = num_threads;
-	}
-
 	this->Loop();
 }
 
@@ -38,25 +35,23 @@ EventLoop::~EventLoop()
 
 std::shared_ptr<TaskScheduler> EventLoop::GetTaskScheduler()
 {
-	std::lock_guard<std::mutex> locker(mutex_);
+	std::lock_guard locker(mutex_);
 	if (task_schedulers_.size() == 1) {
 		return task_schedulers_.at(0);
 	}
-	else {
-		auto task_scheduler = task_schedulers_.at(index_);
-		index_++;
-		if (index_ >= task_schedulers_.size()) {
-			index_ = 1;
-		}		
-		return task_scheduler;
-	}
+	auto task_scheduler = task_schedulers_.at(index_);
+	index_++;
+	if (index_ >= task_schedulers_.size()) {
+		index_ = 1;
+	}		
+	return task_scheduler;
 
 	//return nullptr;
 }
 
 void EventLoop::Loop()
 {
-	std::lock_guard<std::mutex> locker(mutex_);
+	std::lock_guard locker(mutex_);
 
 	if (!task_schedulers_.empty()) {
 		return ;
@@ -110,13 +105,13 @@ void EventLoop::Loop()
 
 void EventLoop::Quit()
 {
-	std::lock_guard<std::mutex> locker(mutex_);
+	std::lock_guard locker(mutex_);
 
-	for (auto iter : task_schedulers_) {
+	for (const auto &iter : task_schedulers_) {
 		iter->Stop();
 	}
 
-	for (auto iter : threads_) {
+	for (const auto iter : threads_) {
 		iter->join();
 	}
 
@@ -126,41 +121,41 @@ void EventLoop::Quit()
 	
 void EventLoop::UpdateChannel(ChannelPtr channel)
 {
-	std::lock_guard<std::mutex> locker(mutex_);
-	if (task_schedulers_.size() > 0) {
-		task_schedulers_[0]->UpdateChannel(channel);
+	std::lock_guard locker(mutex_);
+	if (!task_schedulers_.empty()) {
+		task_schedulers_[0]->UpdateChannel(std::move(channel));
 	}	
 }
 
 void EventLoop::RemoveChannel(ChannelPtr& channel)
 {
-	std::lock_guard<std::mutex> locker(mutex_);
-	if (task_schedulers_.size() > 0) {
+	std::lock_guard locker(mutex_);
+	if (!task_schedulers_.empty()) {
 		task_schedulers_[0]->RemoveChannel(channel);
 	}	
 }
 
-TimerId EventLoop::AddTimer(TimerEvent timerEvent, uint32_t msec)
+TimerId EventLoop::AddTimer(TimerEvent timerEvent, const uint32_t msec)
 {
-	std::lock_guard<std::mutex> locker(mutex_);
-	if (task_schedulers_.size() > 0) {
-		return task_schedulers_[0]->AddTimer(timerEvent, msec);
+	std::lock_guard locker(mutex_);
+	if (!task_schedulers_.empty()) {
+		return task_schedulers_[0]->AddTimer(std::move(timerEvent), msec);
 	}
 	return 0;
 }
 
-void EventLoop::RemoveTimer(TimerId timerId)
+void EventLoop::RemoveTimer(const TimerId timerId)
 {
-	std::lock_guard<std::mutex> locker(mutex_);
-	if (task_schedulers_.size() > 0) {
+	std::lock_guard locker(mutex_);
+	if (!task_schedulers_.empty()) {
 		task_schedulers_[0]->RemoveTimer(timerId);
 	}	
 }
 
-bool EventLoop::AddTriggerEvent(TriggerEvent callback)
+bool EventLoop::AddTriggerEvent(const TriggerEvent callback)
 {   
-	std::lock_guard<std::mutex> locker(mutex_);
-	if (task_schedulers_.size() > 0) {
+	std::lock_guard locker(mutex_);
+	if (!task_schedulers_.empty()) {
 		return task_schedulers_[0]->AddTriggerEvent(callback);
 	}
 	return false;

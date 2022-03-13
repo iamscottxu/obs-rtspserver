@@ -23,7 +23,7 @@ bool RtspRequest::ParseRequest(BufferReader *buffer)
 	}
     
     bool ret = true;
-	while(1) {
+	while(true) {
 	    if (state_ == RtspRequestParseState::kParseRequestLine) {
 			const char* firstCrlf = buffer->FindFirstCrlf();
 			if(firstCrlf != nullptr)
@@ -34,21 +34,21 @@ bool RtspRequest::ParseRequest(BufferReader *buffer)
 
 			if (state_ == RtspRequestParseState::kParseHeadersLine) {
 				continue;
-			}             
-			else {
-				break;
-			}           
-		} else if (state_ == RtspRequestParseState::kParseHeadersLine) {
-			const char* lastCrlf = buffer->FindLastCrlf();
-			if(lastCrlf != nullptr) {
-				ret = ParseHeadersLine(buffer->Peek(), lastCrlf);
-				buffer->RetrieveUntil(lastCrlf + 2);
 			}
 			break;
-		} else if (state_ == RtspRequestParseState::kGotAll) {
-			buffer->RetrieveAll();
-			return true;
-		}
+	    }
+	    if (state_ == RtspRequestParseState::kParseHeadersLine) {
+		    const char* lastCrlf = buffer->FindLastCrlf();
+		    if(lastCrlf != nullptr) {
+			    ret = ParseHeadersLine(buffer->Peek(), lastCrlf);
+			    buffer->RetrieveUntil(lastCrlf + 2);
+		    }
+		    break;
+	    }
+	    if (state_ == RtspRequestParseState::kGotAll) {
+		    buffer->RetrieveAll();
+		    return true;
+	    }
 	}
 
 	return ret;
@@ -56,7 +56,7 @@ bool RtspRequest::ParseRequest(BufferReader *buffer)
 
 bool RtspRequest::ParseRequestLine(const char* begin, const char* end)
 {
-	string message(begin, end);
+	const string message(begin, end);
 	char method[64] = {0};
 	char url[512] = {0};
 	char version[64] = {0};
@@ -116,7 +116,7 @@ bool RtspRequest::ParseRequestLine(const char* begin, const char* end)
 
 	request_line_param_.emplace("url", make_pair(string(url), 0));
 	request_line_param_.emplace("url_host", make_pair(string(host), 0));
-	request_line_param_.emplace("url_port", make_pair("", (uint32_t)port));
+	request_line_param_.emplace("url_port", make_pair("", static_cast<uint32_t>(port)));
 	request_line_param_.emplace("url_suffix", make_pair(string(suffix), 0));
 	request_line_param_.emplace("version", make_pair(string(version), 0));
 	request_line_param_.emplace("method", make_pair(move(method_str), 0));
@@ -180,8 +180,7 @@ bool RtspRequest::ParseHeadersLine(const char* begin, const char* end)
 
 bool RtspRequest::ParseCSeq(std::string& message)
 {
-	std::size_t pos = message.find("CSeq");
-	if (pos != std::string::npos) {
+	if (const std::size_t pos = message.find("CSeq"); pos != std::string::npos) {
 		uint32_t cseq = 0;
 		sscanf(message.c_str()+pos, "%*[^:]: %u", &cseq);
 		header_line_param_.emplace("cseq", make_pair("", cseq));
@@ -191,10 +190,10 @@ bool RtspRequest::ParseCSeq(std::string& message)
     return false;
 }
 
-bool RtspRequest::ParseAccept(std::string& message)
+bool RtspRequest::ParseAccept(const std::string& message)
 {
-	if ((message.rfind("Accept")==std::string::npos)
-		|| (message.rfind("sdp")==std::string::npos)) {
+	if (message.rfind("Accept")==std::string::npos
+		|| message.rfind("sdp")==std::string::npos) {
 		return false;
 	}
 
@@ -203,8 +202,7 @@ bool RtspRequest::ParseAccept(std::string& message)
 
 bool RtspRequest::ParseTransport(std::string& message)
 {
-	std::size_t pos = message.find("Transport");
-	if(pos != std::string::npos) {
+	if(std::size_t pos = message.find("Transport"); pos != std::string::npos) {
 		if((pos=message.find("RTP/AVP/TCP")) != std::string::npos) {
 			transport_ = TransportMode::RTP_OVER_TCP;
 			uint16_t rtpChannel = 0, rtcpChannel = 0;
@@ -247,7 +245,7 @@ bool RtspRequest::ParseTransport(std::string& message)
 
 bool RtspRequest::ParseSessionId(std::string& message)
 {
-	std::size_t pos = message.find("Session");
+	const std::size_t pos = message.find("Session");
 	if (pos != std::string::npos) {
 		uint32_t session_id = 0;
 		if (sscanf(message.c_str() + pos, "%*[^:]: %u", &session_id) != 1) {
@@ -261,16 +259,15 @@ bool RtspRequest::ParseSessionId(std::string& message)
 
 bool RtspRequest::ParseMediaChannel(std::string& message)
 {
-	auto iter = request_line_param_.find("url");
-	if(iter != request_line_param_.end()) {
-		std::string url = iter->second.first;
-		std::size_t pos = url.rfind("/track");
+	if(const auto iter = request_line_param_.find("url"); iter != request_line_param_.end()) {
+		const std::string url = iter->second.first;
+		const std::size_t pos = url.rfind("/track");
 		if (pos != std::string::npos) {
 			int channel_index;
                         if (sscanf(url.c_str() + pos, "/track%d", &channel_index) != 1) {
                                 return false;
                         }
-                        channel_id_ = (MediaChannelId)channel_index;
+                        channel_id_ = static_cast<MediaChannelId>(channel_index);
                         return true;
 		}       
 	}
@@ -278,9 +275,8 @@ bool RtspRequest::ParseMediaChannel(std::string& message)
 }
 
 bool RtspRequest::ParseAuthorization(std::string& message)
-{	
-	std::size_t pos = message.find("Authorization");
-	if (pos != std::string::npos) {
+{
+	if (std::size_t pos = message.find("Authorization"); pos != std::string::npos) {
 		if ((pos = message.find("response=")) != std::string::npos) {
 			auth_response_ = message.substr(pos + 10, 32);
 			if (auth_response_.size() == 32) {
@@ -296,8 +292,7 @@ bool RtspRequest::ParseAuthorization(std::string& message)
 uint32_t RtspRequest::GetCSeq() const
 {
 	uint32_t cseq = 0;
-	auto iter = header_line_param_.find("cseq");
-	if(iter != header_line_param_.end()) {
+	if(const auto iter = header_line_param_.find("cseq"); iter != header_line_param_.end()) {
 		cseq = iter->second.second;
 	}
 
@@ -306,8 +301,7 @@ uint32_t RtspRequest::GetCSeq() const
 
 std::string RtspRequest::GetHost() const
 {
-	auto iter = request_line_param_.find("url_ip");
-	if(iter != request_line_param_.end()) {
+	if(const auto iter = request_line_param_.find("url_ip"); iter != request_line_param_.end()) {
 		return iter->second.first;
 	}
 
@@ -316,8 +310,7 @@ std::string RtspRequest::GetHost() const
 
 std::string RtspRequest::GetRtspUrl() const
 {
-	auto iter = request_line_param_.find("url");
-	if(iter != request_line_param_.end()) {
+	if(const auto iter = request_line_param_.find("url"); iter != request_line_param_.end()) {
 		return iter->second.first;
 	}
 
@@ -326,8 +319,7 @@ std::string RtspRequest::GetRtspUrl() const
 
 std::string RtspRequest::GetRtspUrlSuffix() const
 {
-	auto iter = request_line_param_.find("url_suffix");
-	if(iter != request_line_param_.end()) {
+	if(const auto iter = request_line_param_.find("url_suffix"); iter != request_line_param_.end()) {
 		return iter->second.first;
 	}
 
@@ -341,8 +333,7 @@ std::string RtspRequest::GetAuthResponse() const
 
 uint8_t RtspRequest::GetRtpChannel() const
 {
-	auto iter = header_line_param_.find("rtp_channel");
-	if(iter != header_line_param_.end()) {
+	if(const auto iter = header_line_param_.find("rtp_channel"); iter != header_line_param_.end()) {
 		return iter->second.second;
 	}
 
@@ -351,8 +342,7 @@ uint8_t RtspRequest::GetRtpChannel() const
 
 uint8_t RtspRequest::GetRtcpChannel() const
 {
-	auto iter = header_line_param_.find("rtcp_channel");
-	if(iter != header_line_param_.end()) {
+	if(const auto iter = header_line_param_.find("rtcp_channel"); iter != header_line_param_.end()) {
 		return iter->second.second;
 	}
 
@@ -361,8 +351,7 @@ uint8_t RtspRequest::GetRtcpChannel() const
 
 uint16_t RtspRequest::GetRtpPort() const
 {
-	auto iter = header_line_param_.find("rtp_port");
-	if(iter != header_line_param_.end()) {
+	if(const auto iter = header_line_param_.find("rtp_port"); iter != header_line_param_.end()) {
 		return iter->second.second;
 	}
 
@@ -371,31 +360,30 @@ uint16_t RtspRequest::GetRtpPort() const
 
 uint16_t RtspRequest::GetRtcpPort() const
 {
-	auto iter = header_line_param_.find("rtcp_port");
-	if(iter != header_line_param_.end()) {
+	if(const auto iter = header_line_param_.find("rtcp_port"); iter != header_line_param_.end()) {
 		return iter->second.second;
 	}
 
 	return 0;
 }
 
-int RtspRequest::BuildOptionRes(const char* buf, int buf_size)
+int RtspRequest::BuildOptionRes(const char* buf, int buf_size) const
 {
-	memset((void*)buf, 0, buf_size);
-	snprintf((char*)buf, buf_size,
+	memset((void*)buf, 0, buf_size); //TODO
+	snprintf(const_cast<char *>(buf), buf_size,
 			"RTSP/1.0 200 OK\r\n"
 			"CSeq: %u\r\n"
 			"Public: OPTIONS, DESCRIBE, SETUP, TEARDOWN, PLAY\r\n"
 			"\r\n",
 			this->GetCSeq());
 
-	return (int)strlen(buf);
+	return static_cast<int>(strlen(buf));
 }
 
-int RtspRequest::BuildDescribeRes(const char* buf, int buf_size, const char* sdp)
+int RtspRequest::BuildDescribeRes(const char* buf, const int buf_size, const char* sdp) const
 {
-	memset((void*)buf, 0, buf_size);
-	snprintf((char*)buf, buf_size,
+	memset((void*)buf, 0, buf_size); //TODO
+	snprintf(const_cast<char *>(buf), buf_size,
 			"RTSP/1.0 200 OK\r\n"
 			"CSeq: %u\r\n"
 			"Content-Length: %d\r\n"
@@ -403,16 +391,16 @@ int RtspRequest::BuildDescribeRes(const char* buf, int buf_size, const char* sdp
 			"\r\n"
 			"%s",
 			this->GetCSeq(), 
-			(int)strlen(sdp), 
+			static_cast<int>(strlen(sdp)), 
 			sdp);
 
-	return (int)strlen(buf);
+	return static_cast<int>(strlen(buf));
 }
 
-int RtspRequest::BuildSetupMulticastRes(const char* buf, int buf_size, const char* multicast_ip, uint16_t port, uint32_t session_id)
+int RtspRequest::BuildSetupMulticastRes(const char* buf, const int buf_size, const char* multicast_ip, const uint16_t port, const uint32_t session_id) const
 {	
-	memset((void*)buf, 0, buf_size);
-	snprintf((char*)buf, buf_size,
+	memset((void*)buf, 0, buf_size); //TODO
+	snprintf(const_cast<char *>(buf), buf_size,
 			"RTSP/1.0 200 OK\r\n"
 			"CSeq: %u\r\n"
 			"Transport: RTP/AVP;multicast;destination=%s;source=%s;port=%u-0;ttl=255\r\n"
@@ -424,13 +412,13 @@ int RtspRequest::BuildSetupMulticastRes(const char* buf, int buf_size, const cha
 			port,
 			session_id);
 
-	return (int)strlen(buf);
+	return static_cast<int>(strlen(buf));
 }
 
-int RtspRequest::BuildSetupUdpRes(const char* buf, int buf_size, uint16_t rtp_chn, uint16_t rtcp_chn, uint32_t session_id)
+int RtspRequest::BuildSetupUdpRes(const char* buf, const int buf_size, const uint16_t rtp_chn, const uint16_t rtcp_chn, const uint32_t session_id) const
 {
-	memset((void*)buf, 0, buf_size);
-	snprintf((char*)buf, buf_size,
+	memset((void*)buf, 0, buf_size); //TODO
+	snprintf(const_cast<char *>(buf), buf_size,
 			"RTSP/1.0 200 OK\r\n"
 			"CSeq: %u\r\n"
 			"Transport: RTP/AVP;unicast;client_port=%hu-%hu;server_port=%hu-%hu\r\n"
@@ -443,13 +431,13 @@ int RtspRequest::BuildSetupUdpRes(const char* buf, int buf_size, uint16_t rtp_ch
 			rtcp_chn,
 			session_id);
 
-	return (int)strlen(buf);
+	return static_cast<int>(strlen(buf));
 }
 
-int RtspRequest::BuildSetupTcpRes(const char* buf, int buf_size, uint16_t rtp_chn, uint16_t rtcp_chn, uint32_t session_id)
+int RtspRequest::BuildSetupTcpRes(const char* buf, const int buf_size, const uint16_t rtp_chn, const uint16_t rtcp_chn, const uint32_t session_id) const
 {
-	memset((void*)buf, 0, buf_size);
-	snprintf((char*)buf, buf_size,
+	memset((void*)buf, 0, buf_size); //TODO
+	snprintf(const_cast<char *>(buf), buf_size,
 			"RTSP/1.0 200 OK\r\n"
 			"CSeq: %u\r\n"
 			"Transport: RTP/AVP/TCP;unicast;interleaved=%d-%d\r\n"
@@ -459,13 +447,13 @@ int RtspRequest::BuildSetupTcpRes(const char* buf, int buf_size, uint16_t rtp_ch
 			rtp_chn, rtcp_chn,
 			session_id);
 
-	return (int)strlen(buf);
+	return static_cast<int>(strlen(buf));
 }
 
-int RtspRequest::BuildPlayRes(const char* buf, int buf_size, const char* rtpInfo, uint32_t session_id)
+int RtspRequest::BuildPlayRes(const char* buf, const int buf_size, const char* rtp_info, const uint32_t session_id) const
 {
-	memset((void*)buf, 0, buf_size);
-	snprintf((char*)buf, buf_size,
+	memset((void*)buf, 0, buf_size); //TODO
+	snprintf(const_cast<char *>(buf), buf_size,
 			"RTSP/1.0 200 OK\r\n"
 			"CSeq: %d\r\n"
 			"Range: npt=0.000-\r\n"
@@ -473,18 +461,18 @@ int RtspRequest::BuildPlayRes(const char* buf, int buf_size, const char* rtpInfo
 			this->GetCSeq(),
 			session_id);
 
-	if (rtpInfo != nullptr) {
-		snprintf((char*)buf + strlen(buf), buf_size - strlen(buf), "%s\r\n", rtpInfo);
+	if (rtp_info != nullptr) {
+		snprintf(const_cast<char *>(buf) + strlen(buf), buf_size - strlen(buf), "%s\r\n", rtp_info);
 	}
 
-	snprintf((char*)buf + strlen(buf), buf_size - strlen(buf), "\r\n");
-	return (int)strlen(buf);
+	snprintf(const_cast<char *>(buf) + strlen(buf), buf_size - strlen(buf), "\r\n");
+	return static_cast<int>(strlen(buf));
 }
 
-int RtspRequest::BuildTeardownRes(const char* buf, int buf_size, uint32_t session_id)
+int RtspRequest::BuildTeardownRes(const char* buf, const int buf_size, const uint32_t session_id) const
 {
-	memset((void*)buf, 0, buf_size);
-	snprintf((char*)buf, buf_size,
+	memset((void*)buf, 0, buf_size); //TODO
+	snprintf(const_cast<char *>(buf), buf_size,
 			"RTSP/1.0 200 OK\r\n"
 			"CSeq: %d\r\n"
 			"Session: %u\r\n"
@@ -492,13 +480,13 @@ int RtspRequest::BuildTeardownRes(const char* buf, int buf_size, uint32_t sessio
 			this->GetCSeq(),
 			session_id);
 
-	return (int)strlen(buf);
+	return static_cast<int>(strlen(buf));
 }
 
-int RtspRequest::BuildGetParamterRes(const char* buf, int buf_size, uint32_t session_id)
+int RtspRequest::BuildGetParamterRes(const char* buf, const int buf_size, const uint32_t session_id) const
 {
-	memset((void*)buf, 0, buf_size);
-	snprintf((char*)buf, buf_size,
+	memset((void*)buf, 0, buf_size); //TODO
+	snprintf(const_cast<char *>(buf), buf_size,
 			"RTSP/1.0 200 OK\r\n"
 			"CSeq: %d\r\n"
 			"Session: %u\r\n"
@@ -506,49 +494,49 @@ int RtspRequest::BuildGetParamterRes(const char* buf, int buf_size, uint32_t ses
 			this->GetCSeq(),
 			session_id);
 
-	return (int)strlen(buf);
+	return static_cast<int>(strlen(buf));
 }
 
-int RtspRequest::BuildNotFoundRes(const char* buf, int buf_size)
+int RtspRequest::BuildNotFoundRes(const char* buf, const int buf_size) const
 {
-	memset((void*)buf, 0, buf_size);
-	snprintf((char*)buf, buf_size,
+	memset((void*)buf, 0, buf_size); //TODO
+	snprintf(const_cast<char *>(buf), buf_size,
 			"RTSP/1.0 404 Not Found\r\n"
 			"CSeq: %u\r\n"
 			"\r\n",
 			this->GetCSeq());
 
-	return (int)strlen(buf);
+	return static_cast<int>(strlen(buf));
 }
 
-int RtspRequest::BuildServerErrorRes(const char* buf, int buf_size)
+int RtspRequest::BuildServerErrorRes(const char* buf, const int buf_size) const
 {
-	memset((void*)buf, 0, buf_size);
-	snprintf((char*)buf, buf_size,
+	memset((void*)buf, 0, buf_size); //TODO
+	snprintf(const_cast<char *>(buf), buf_size,
 			"RTSP/1.0 500 Internal Server Error\r\n"
 			"CSeq: %u\r\n"
 			"\r\n",
 			this->GetCSeq());
 
-	return (int)strlen(buf);
+	return static_cast<int>(strlen(buf));
 }
 
-int RtspRequest::BuildUnsupportedRes(const char* buf, int buf_size)
+int RtspRequest::BuildUnsupportedRes(const char* buf, const int buf_size) const
 {
-	memset((void*)buf, 0, buf_size);
-	snprintf((char*)buf, buf_size,
+	memset((void*)buf, 0, buf_size); //TODO
+	snprintf(const_cast<char *>(buf), buf_size,
 			"RTSP/1.0 461 Unsupported transport\r\n"
 			"CSeq: %d\r\n"
 			"\r\n",
 			this->GetCSeq());
 
-	return (int)strlen(buf);
+	return static_cast<int>(strlen(buf));
 }
 
-int RtspRequest::BuildUnauthorizedRes(const char* buf, int buf_size, const char* realm, const char* nonce)
+int RtspRequest::BuildUnauthorizedRes(const char* buf, const int buf_size, const char* realm, const char* nonce) const
 {
-	memset((void*)buf, 0, buf_size);
-	snprintf((char*)buf, buf_size,
+	memset((void*)buf, 0, buf_size); //TODO
+	snprintf(const_cast<char *>(buf), buf_size,
 			"RTSP/1.0 401 Unauthorized\r\n"
 			"CSeq: %d\r\n"
 			"WWW-Authenticate: Digest realm=\"%s\", nonce=\"%s\"\r\n"
@@ -557,20 +545,18 @@ int RtspRequest::BuildUnauthorizedRes(const char* buf, int buf_size, const char*
 			realm,
 			nonce);
 
-	return (int)strlen(buf);
+	return static_cast<int>(strlen(buf));
 }
 
-bool RtspResponse::ParseResponse(xop::BufferReader *buffer)
+bool RtspResponse::ParseResponse(BufferReader *buffer)
 {
-	if (strstr(buffer->Peek(), "\r\n\r\n") != NULL) {
-		if (strstr(buffer->Peek(), "OK") == NULL) {
+	if (strstr(buffer->Peek(), "\r\n\r\n") != nullptr) {
+		if (strstr(buffer->Peek(), "OK") == nullptr) {
 			return false;
 		}
 
-		char* ptr = strstr(buffer->Peek(), "Session");
-		if (ptr != NULL) {
-			char session_id[50] = {0};
-			if (sscanf(ptr, "%*[^:]: %s", session_id) == 1)
+		if (char* ptr = strstr(buffer->Peek(), "Session"); ptr != nullptr) {
+			if (char session_id[50] = {0}; sscanf(ptr, "%*[^:]: %s", session_id) == 1)
 				session_ = session_id;
 		}
 
@@ -581,10 +567,10 @@ bool RtspResponse::ParseResponse(xop::BufferReader *buffer)
 	return true;
 }
 
-int RtspResponse::BuildOptionReq(const char* buf, int buf_size)
+int RtspResponse::BuildOptionReq(const char* buf, const int buf_size)
 {
-	memset((void*)buf, 0, buf_size);
-	snprintf((char*)buf, buf_size,
+	memset((void*)buf, 0, buf_size); //TODO
+	snprintf(const_cast<char *>(buf), buf_size,
 			"OPTIONS %s RTSP/1.0\r\n"
 			"CSeq: %u\r\n"
 			"User-Agent: %s\r\n"
@@ -594,13 +580,13 @@ int RtspResponse::BuildOptionReq(const char* buf, int buf_size)
 			user_agent_.c_str());
 
 	method_ = Method::OPTIONS;
-	return (int)strlen(buf);
+	return static_cast<int>(strlen(buf));
 }
 
-int RtspResponse::BuildAnnounceReq(const char* buf, int buf_size, const char *sdp)
+int RtspResponse::BuildAnnounceReq(const char* buf, const int buf_size, const char *sdp)
 {
-	memset((void*)buf, 0, buf_size);
-	snprintf((char*)buf, buf_size,
+	memset((void*)buf, 0, buf_size); //TODO
+	snprintf(const_cast<char *>(buf), buf_size,
 			"ANNOUNCE %s RTSP/1.0\r\n"
 			"Content-Type: application/sdp\r\n"
 			"CSeq: %u\r\n"
@@ -613,17 +599,17 @@ int RtspResponse::BuildAnnounceReq(const char* buf, int buf_size, const char *sd
 			this->GetCSeq() + 1, 
 			user_agent_.c_str(),
 			this->GetSession().c_str(),
-			(int)strlen(sdp),
+			static_cast<int>(strlen(sdp)),
 			sdp);
 
 	method_ = Method::ANNOUNCE;
-	return (int)strlen(buf);
+	return static_cast<int>(strlen(buf));
 }
 
-int RtspResponse::BuildDescribeReq(const char* buf, int buf_size)
+int RtspResponse::BuildDescribeReq(const char* buf, const int buf_size)
 {
-	memset((void*)buf, 0, buf_size);
-	snprintf((char*)buf, buf_size,
+	memset((void*)buf, 0, buf_size); //TODO
+	snprintf(const_cast<char *>(buf), buf_size,
 			"DESCRIBE %s RTSP/1.0\r\n"
 			"CSeq: %u\r\n"
 			"Accept: application/sdp\r\n"
@@ -634,10 +620,10 @@ int RtspResponse::BuildDescribeReq(const char* buf, int buf_size)
 			user_agent_.c_str());
 
 	method_ = Method::DESCRIBE;
-	return (int)strlen(buf);
+	return static_cast<int>(strlen(buf));
 }
 
-int RtspResponse::BuildSetupTcpReq(const char* buf, int buf_size, int trackId)
+int RtspResponse::BuildSetupTcpReq(const char* buf, const int buf_size, const int trackId)
 {
 	int interleaved[2] = { 0, 1 };
 	if (trackId == 1) {
@@ -645,8 +631,8 @@ int RtspResponse::BuildSetupTcpReq(const char* buf, int buf_size, int trackId)
 		interleaved[1] = 3;
 	}
 
-	memset((void*)buf, 0, buf_size);
-	snprintf((char*)buf, buf_size,
+	memset((void*)buf, 0, buf_size); //TODO
+	snprintf(const_cast<char *>(buf), buf_size,
 			"SETUP %s/track%d RTSP/1.0\r\n"
 			"Transport: RTP/AVP/TCP;unicast;mode=record;interleaved=%d-%d\r\n"
 			"CSeq: %u\r\n"
@@ -662,13 +648,13 @@ int RtspResponse::BuildSetupTcpReq(const char* buf, int buf_size, int trackId)
 			this->GetSession().c_str());
 
 	method_ = Method::SETUP;
-	return (int)strlen(buf);
+	return static_cast<int>(strlen(buf));
 }
 
-int RtspResponse::BuildRecordReq(const char* buf, int buf_size)
+int RtspResponse::BuildRecordReq(const char* buf, const int buf_size)
 {
-	memset((void*)buf, 0, buf_size);
-	snprintf((char*)buf, buf_size,
+	memset((void*)buf, 0, buf_size); //TODO
+	snprintf(const_cast<char *>(buf), buf_size,
 			"RECORD %s RTSP/1.0\r\n"
 			"Range: npt=0.000-\r\n"
 			"CSeq: %u\r\n"
@@ -681,5 +667,5 @@ int RtspResponse::BuildRecordReq(const char* buf, int buf_size)
 			this->GetSession().c_str());
 
 	method_ = Method::RECORD;
-	return (int)strlen(buf);
+	return static_cast<int>(strlen(buf));
 }

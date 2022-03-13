@@ -24,7 +24,7 @@ extern "C" {
 using namespace xop;
 using namespace std;
 
-H264Source::H264Source(const vector<uint8_t> sps, const vector<uint8_t> pps,
+H264Source::H264Source(const vector<uint8_t> &sps, const vector<uint8_t> &pps,
 		       uint32_t framerate)
 	: framerate_(framerate),
 	  sps_(sps), pps_(pps)
@@ -39,22 +39,20 @@ H264Source *H264Source::CreateNew(uint32_t framerate)
 	return new H264Source(vector<uint8_t>(), vector<uint8_t>(), framerate);
 }
 
-H264Source *H264Source::CreateNew(const vector<uint8_t> sps,
-				  const vector<uint8_t> pps, uint32_t framerate)
+H264Source *H264Source::CreateNew(const vector<uint8_t> &sps,
+				  const vector<uint8_t> &pps, const uint32_t framerate)
 {
 	return new H264Source(sps, pps, framerate);
 }
 
 H264Source::~H264Source()
-{
-
-}
+= default;
 
 string H264Source::GetMediaDescription(uint16_t port)
 {
 	char buf[100] = {0};
 	sprintf(buf, "m=video %hu RTP/AVP 96", port); // \r\nb=AS:2000
-	return string(buf);
+	return buf;
 }
 
 string H264Source::GetAttribute()
@@ -62,7 +60,7 @@ string H264Source::GetAttribute()
 	auto sdp = string("a=rtpmap:96 H264/90000\r\n");
 
 	if (!sps_.empty() && !pps_.empty()) {
-		char const *fmtp = "a=fmtp:96 packetization-mode=1;"
+		const auto fmtp = "a=fmtp:96 packetization-mode=1;"
 				   "profile-level-id=%06X;"
 				   "sprop-parameter-sets=%s,%s";
 
@@ -86,7 +84,7 @@ string H264Source::GetAttribute()
         return sdp;
 }
 
-bool H264Source::HandleFrame(MediaChannelId channel_id, AVFrame frame)
+bool H264Source::HandleFrame(const MediaChannelId channel_id, const AVFrame frame)
 {
     uint8_t *frame_buf  = frame.buffer.get();
     size_t frame_size = frame.size;
@@ -166,8 +164,8 @@ uint32_t H264Source::GetTimestamp()
 	uint32_t ts = ((tv.tv_sec*1000)+((tv.tv_usec+500)/1000))*90; // 90: _clockRate/1000;
 	return ts;
 #else  */
-	auto time_point = chrono::time_point_cast<chrono::microseconds>(chrono::steady_clock::now());
-	return (uint32_t)((time_point.time_since_epoch().count() + 500) / 1000 * 90 );
+const auto time_point = chrono::time_point_cast<chrono::microseconds>(chrono::steady_clock::now());
+	return static_cast<uint32_t>((time_point.time_since_epoch().count() + 500) / 1000 * 90);
 //#endif
 }
 
@@ -177,9 +175,9 @@ std::string H264Source::Base64Encode(const void *input, size_t size)
 	base64_encodestate b64encoder;
 	base64_init_encodestate(&b64encoder);
 
-	auto length = base64_encode_block(
-		reinterpret_cast<const char *>(input),
-				      int(size), buffer.data(), &b64encoder);
+	const auto length = base64_encode_block(
+		static_cast<const char *>(input),
+				      static_cast<int>(size), buffer.data(), &b64encoder);
 	base64_encode_blockend(buffer.data() + length, &b64encoder);
 
 	return std::string(buffer.cbegin(), buffer.cend() - 1);

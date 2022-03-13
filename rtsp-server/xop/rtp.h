@@ -76,12 +76,12 @@ struct MediaChannelInfo
 
 struct RtpPacket
 {
-	RtpPacket() : data(new uint8_t[1600], std::default_delete<uint8_t[]>())
+	RtpPacket() : data(new uint8_t[1600], std::default_delete<uint8_t[]>()),
+	              size(0),
+	              timestamp(0),
+	              type(FrameType::NONE),
+	              last(0)
 	{
-		size = 0;
-		timestamp = 0;
-		type = FrameType::NONE;
-		last = 0;
 	}
 
 	std::shared_ptr<uint8_t> data;

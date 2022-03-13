@@ -15,7 +15,7 @@ KqueueTaskScheduler::KqueueTaskScheduler(int id) : TaskScheduler(id)
 #if defined(__APPLE__) || defined(__MACH__)
         kqueuefd_ = kqueue();
 #endif
-	this->UpdateChannel(wakeup_channel_);
+	this->KqueueTaskScheduler::UpdateChannel(wakeup_channel_);
 }
 
 KqueueTaskScheduler::~KqueueTaskScheduler() {}
@@ -60,7 +60,7 @@ void KqueueTaskScheduler::Update(int operation, ChannelPtr &channel)
 
 void KqueueTaskScheduler::RemoveChannel(ChannelPtr &channel)
 {
-	std::lock_guard<std::mutex> lock(mutex_);
+	std::lock_guard lock(mutex_);
 #if defined(__APPLE__) || defined(__MACH__)
         int fd = channel->GetSocket();
 

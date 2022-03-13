@@ -14,13 +14,13 @@ class EpollTaskScheduler : public TaskScheduler
 {
 public:
 	EpollTaskScheduler(int id = 0);
-	virtual ~EpollTaskScheduler();
+	~EpollTaskScheduler() override;
 
-	void UpdateChannel(ChannelPtr channel);
-	void RemoveChannel(ChannelPtr& channel);
+	void UpdateChannel(ChannelPtr channel) override;
+	void RemoveChannel(ChannelPtr& channel) override;
 
 	// timeout: ms
-	bool HandleEvent(int timeout);
+	bool HandleEvent(int timeout) override;
 
 private:
 	void Update(int operation, ChannelPtr& channel);

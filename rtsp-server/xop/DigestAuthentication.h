@@ -26,15 +26,15 @@ public:
 	std::string GetPassword() const
 	{ return password_; }
 
-	std::string GetNonce();
-	std::string GetResponse(std::string nonce, std::string cmd, std::string url);
+	std::string GetNonce() const;
+	std::string GetResponse(std::string nonce, std::string cmd, std::string url) const;
 
 private:
 
 	std::string realm_;
 	std::string username_;
 	std::string password_;
-	Md5* md5;
+	Md5* md5_;
 };
 
 }

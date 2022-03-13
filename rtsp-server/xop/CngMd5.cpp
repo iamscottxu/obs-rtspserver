@@ -14,7 +14,7 @@ CngMd5::CngMd5() : Md5()
 
 #if defined(WIN32) || defined(_WIN32)
         DWORD cbData = 0;
-	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	NTSTATUS status;
 	if (!NT_SUCCESS(status = BCryptOpenAlgorithmProvider(
 				&hAlgorithm_, BCRYPT_MD5_ALGORITHM, NULL, 0))) {
 		LOG_ERROR("**** Error 0x%x returned by BCryptOpenAlgorithmProvider",
@@ -46,7 +46,7 @@ CngMd5::~CngMd5() {
 #endif
 }
 
-void CngMd5::GetMd5Hash(const unsigned char *data, size_t dataSize,
+void CngMd5::GetMd5Hash(const unsigned char *data, const size_t dataSize,
 			  unsigned char *outHash)
 {
 #if defined(WIN32) || defined(_WIN32)
@@ -54,15 +54,15 @@ void CngMd5::GetMd5Hash(const unsigned char *data, size_t dataSize,
 		LOG_ERROR("**** The generated hash value is too long");
 		goto Cleanup;
 	}
-	PBYTE pbHashObject =
-		(PBYTE)HeapAlloc(GetProcessHeap(), 0, cbHashObject_);
-	if (NULL == pbHashObject) {
+	const auto pbHashObject =
+		static_cast<PBYTE>(HeapAlloc(GetProcessHeap(), 0, cbHashObject_));
+	if (nullptr == pbHashObject) {
 		LOG_ERROR("**** memory allocation failed");
 		goto Cleanup;
 	}
 	//create a hash
-	BCRYPT_HASH_HANDLE hHash = NULL;
-	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	BCRYPT_HASH_HANDLE hHash = nullptr;
+	NTSTATUS status;
 	if (!NT_SUCCESS(status = BCryptCreateHash(hAlgorithm_, &hHash,
 						  pbHashObject,
 						  cbHashObject_, NULL, 0, 0))) {
@@ -71,7 +71,7 @@ void CngMd5::GetMd5Hash(const unsigned char *data, size_t dataSize,
 		goto Cleanup;
 	}
 
-	if (!NT_SUCCESS(status = BCryptHashData(hHash, (PBYTE)data, dataSize, 0))) {
+	if (!NT_SUCCESS(status = BCryptHashData(hHash, const_cast<PBYTE>(data), dataSize, 0))) {
 		LOG_ERROR("**** Error 0x%x returned by BCryptHashData",
 			status);
 		goto Cleanup;
@@ -81,7 +81,6 @@ void CngMd5::GetMd5Hash(const unsigned char *data, size_t dataSize,
 	if (!NT_SUCCESS(status = BCryptFinishHash(hHash, outHash, cbHash_, 0))) {
 		LOG_ERROR("**** Error 0x%x returned by BCryptFinishHash",
 			status);
-		goto Cleanup;
 	}
 
 Cleanup:

@@ -13,28 +13,24 @@ using namespace xop;
 #define SELECT_CTL_MOD  1
 #define SELECT_CTL_DEL	2
 
-SelectTaskScheduler::SelectTaskScheduler(int id)
+SelectTaskScheduler::SelectTaskScheduler(const int id)
 	: TaskScheduler(id)
 {
 	FD_ZERO(&fd_read_backup_);
 	FD_ZERO(&fd_write_backup_);
 	FD_ZERO(&fd_exp_backup_);
 
-	this->UpdateChannel(wakeup_channel_);
+	this->SelectTaskScheduler::UpdateChannel(wakeup_channel_);
 }
 
 SelectTaskScheduler::~SelectTaskScheduler()
-{
-	
-}
+= default;
 
 void SelectTaskScheduler::UpdateChannel(ChannelPtr channel)
 {
-	std::lock_guard<std::mutex> lock(mutex_);
+	std::lock_guard lock(mutex_);
 
-	SOCKET socket = channel->GetSocket();
-
-	if(channels_.find(socket) != channels_.end()) {
+	if(SOCKET socket = channel->GetSocket(); channels_.find(socket) != channels_.end()) {
 		if(channel->IsNoneEvent()) {
 			is_fd_read_reset_ = true;
 			is_fd_write_reset_ = true;
@@ -58,11 +54,9 @@ void SelectTaskScheduler::UpdateChannel(ChannelPtr channel)
 
 void SelectTaskScheduler::RemoveChannel(ChannelPtr& channel)
 {
-	std::lock_guard<std::mutex> lock(mutex_);
+	std::lock_guard lock(mutex_);
 
-	SOCKET fd = channel->GetSocket();
-
-	if(channels_.find(fd) != channels_.end()) {
+	if(const SOCKET fd = channel->GetSocket(); channels_.find(fd) != channels_.end()) {
 		is_fd_read_reset_ = true;
 		is_fd_write_reset_ = true;
 		is_fd_exp_reset_ = true;
@@ -81,9 +75,9 @@ bool SelectTaskScheduler::HandleEvent(int timeout)
 		return true;
 	}
 
-	fd_set fd_read;
-	fd_set fd_write;
-	fd_set fd_exp;
+	fd_set fd_read{};
+	fd_set fd_write{};
+	fd_set fd_exp{};
 	FD_ZERO(&fd_read);
 	FD_ZERO(&fd_write);
 	FD_ZERO(&fd_exp);
@@ -96,10 +90,10 @@ bool SelectTaskScheduler::HandleEvent(int timeout)
 			maxfd_ = 0;
 		}
           
-		std::lock_guard<std::mutex> lock(mutex_);
-		for(auto iter : channels_) {
+		std::lock_guard lock(mutex_);
+		for(const auto &iter : channels_) {
 			int events = iter.second->GetEvents();
-			SOCKET fd = iter.second->GetSocket();
+			const SOCKET fd = iter.second->GetSocket();
 
 			if (is_fd_read_reset_ && (events&EVENT_IN)) {
 				FD_SET(fd, &fd_read);
@@ -155,8 +149,8 @@ bool SelectTaskScheduler::HandleEvent(int timeout)
 		timeout = 10;
 	}
 
-	struct timeval tv = { timeout/1000, timeout%1000*1000 };
-	int ret = select((int)maxfd_+1, &fd_read, &fd_write, &fd_exp, &tv); 	
+	const timeval tv = { timeout/1000, timeout%1000*1000 };
+	const int ret = select(static_cast<int>(maxfd_)+1, &fd_read, &fd_write, &fd_exp, &tv); 	
 	if (ret < 0) {
 #if defined(WIN32) || defined(_WIN32)
 #else
@@ -169,10 +163,10 @@ bool SelectTaskScheduler::HandleEvent(int timeout)
 
 	std::forward_list<std::pair<ChannelPtr, int>> event_list;
 	if(ret > 0) {
-		std::lock_guard<std::mutex> lock(mutex_);
-		for(auto iter : channels_) {
+		std::lock_guard lock(mutex_);
+		for(const auto &iter : channels_) {
 			int events = 0;
-			SOCKET socket = iter.second->GetSocket();
+			const SOCKET socket = iter.second->GetSocket();
 
 			if (FD_ISSET(socket, &fd_read)) {
 				events |= EVENT_IN;
@@ -192,7 +186,7 @@ bool SelectTaskScheduler::HandleEvent(int timeout)
 		}
 	}	
 
-	for(auto& iter: event_list) {
+	for(const auto& iter: event_list) {
 		iter.first->HandleEvent(iter.second);
 	}
 

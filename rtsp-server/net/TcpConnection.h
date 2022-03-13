@@ -25,7 +25,7 @@ public:
 	TcpConnection(TaskScheduler *task_scheduler, SOCKET sockfd);
 	virtual ~TcpConnection();
 
-	TaskScheduler* GetTaskScheduler() const 
+	virtual TaskScheduler* GetTaskScheduler() const 
 	{ return task_scheduler_; }
 
 	void SetReadCallback(const ReadCallback& cb)
@@ -34,7 +34,7 @@ public:
 	void SetCloseCallback(const CloseCallback& cb)
 	{ close_cb_ = cb; }
 
-	void Send(std::shared_ptr<char> data, size_t size);
+	void Send(const std::shared_ptr<char> &data, size_t size);
 	void Send(const char *data, size_t size);
     
 	void Disconnect();
@@ -48,7 +48,7 @@ public:
 	SOCKET GetSocket() const
 	{ return channel_->GetSocket(); }
 
-	int GetPort() const
+	uint16_t GetPort() const
 	{ return SocketUtil::GetPeerPort(channel_->GetSocket(), ipv6_); }
 
 	std::string GetIp() const
@@ -66,14 +66,14 @@ protected:
 	{ disconnect_cb_ = cb; }
 
 	TaskScheduler* task_scheduler_;
-	std::unique_ptr<xop::BufferReader> read_buffer_;
-	std::unique_ptr<xop::BufferWriter> write_buffer_;
+	std::unique_ptr<BufferReader> read_buffer_;
+	std::unique_ptr<BufferWriter> write_buffer_;
 	std::atomic_bool is_closed_;
 
 private:
 	void Close();
 
-	std::shared_ptr<xop::Channel> channel_;
+	std::shared_ptr<Channel> channel_;
 	std::mutex mutex_;
 	DisconnectCallback disconnect_cb_;
 	CloseCallback close_cb_;

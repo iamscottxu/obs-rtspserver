@@ -17,9 +17,7 @@ TcpSocket::TcpSocket(SOCKET sockfd, const bool ipv6)
 }
 
 TcpSocket::~TcpSocket()
-{
-	
-}
+= default;
 
 SOCKET TcpSocket::Create(const bool ipv6)
 {
@@ -28,7 +26,7 @@ SOCKET TcpSocket::Create(const bool ipv6)
 	return sockfd_;
 }
 
-bool TcpSocket::Bind(const std::string ip, const uint16_t port)
+bool TcpSocket::Bind(const std::string &ip, const uint16_t port) const
 {
 	if (!SocketUtil::Bind(sockfd_, ip, port, ipv6_))
 	{
@@ -40,7 +38,7 @@ bool TcpSocket::Bind(const std::string ip, const uint16_t port)
 	return true;
 }
 
-bool TcpSocket::Listen(const int backlog)
+bool TcpSocket::Listen(const int backlog) const
 {
 	if(::listen(sockfd_, backlog) == SOCKET_ERROR)
 	{
@@ -51,7 +49,7 @@ bool TcpSocket::Listen(const int backlog)
 	return true;
 }
 
-SOCKET TcpSocket::Accept()
+SOCKET TcpSocket::Accept() const
 {
 	sockaddr *psockaddr;
 	socklen_t addrlen;
@@ -72,7 +70,7 @@ SOCKET TcpSocket::Accept()
 	return socket_fd;
 }
 
-bool TcpSocket::Connect(std::string ip, uint16_t port, int timeout) const
+bool TcpSocket::Connect(const std::string &ip, const uint16_t port, const int timeout) const
 { 
 	if (!SocketUtil::Connect(sockfd_, ip, port, timeout, ipv6_))
 	{

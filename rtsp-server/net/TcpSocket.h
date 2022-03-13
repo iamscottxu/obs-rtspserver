@@ -20,10 +20,10 @@ public:
 	virtual ~TcpSocket();
 
 	SOCKET Create(bool ipv6 = false);
-	bool Bind(std::string ip, uint16_t port);
-	bool Listen(int backlog);
-	SOCKET Accept();
-	bool Connect(std::string ip, uint16_t port, int timeout = 0) const;
+	bool Bind(const std::string &ip, uint16_t port) const;
+	bool Listen(int backlog) const;
+	SOCKET Accept() const;
+	bool Connect(const std::string &ip, uint16_t port, int timeout = 0) const;
 	void Close();
 	void ShutdownWrite();
 

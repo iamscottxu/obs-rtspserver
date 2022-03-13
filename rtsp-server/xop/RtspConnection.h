@@ -44,17 +44,17 @@ public:
 	};
 
 	RtspConnection() = delete;
-	RtspConnection(std::shared_ptr<Rtsp> rtsp_server, TaskScheduler *task_scheduler, SOCKET sockfd);
-	virtual ~RtspConnection();
+	RtspConnection(const std::shared_ptr<Rtsp> &rtsp_server, TaskScheduler *task_scheduler, SOCKET sockfd);
+	~RtspConnection() override;
 
-	MediaSessionId GetMediaSessionId()
+	MediaSessionId GetMediaSessionId() const
 	{ return session_id_; }
 
-	TaskScheduler *GetTaskScheduler() const 
+	TaskScheduler *GetTaskScheduler() const override
 	{ return task_scheduler_; }
 
 	void KeepAlive()
-	{ alive_count_++; }
+	{ ++alive_count_; }
 
 	bool IsAlive() const
 	{
@@ -92,7 +92,7 @@ private:
 	bool OnRead(BufferReader& buffer);
 	void OnClose();
 	void HandleRtcp(SOCKET sockfd);
-	void HandleRtcp(BufferReader& buffer);   
+	static void HandleRtcp(BufferReader& buffer);   
 	bool HandleRtspRequest(BufferReader& buffer);
 	bool HandleRtspResponse(BufferReader& buffer);
 
@@ -114,14 +114,14 @@ private:
 
 	std::atomic_int alive_count_;
 	std::weak_ptr<Rtsp> rtsp_;
-	xop::TaskScheduler *task_scheduler_ = nullptr;
+	TaskScheduler *task_scheduler_ = nullptr;
 
 	ConnectionMode conn_mode_ = ConnectionMode::RTSP_SERVER;
 	ConnectionState conn_state_ = ConnectionState::START_CONNECT;
 	MediaSessionId  session_id_ = 0;
 
 	bool has_auth_ = true;
-	std::string _nonce;
+	std::string nonce_;
 	std::unique_ptr<DigestAuthentication> auth_info_;
 
 	//std::shared_ptr<Channel>       rtp_channel_;

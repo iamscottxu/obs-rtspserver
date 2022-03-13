@@ -19,7 +19,7 @@
 using namespace xop;
 using namespace std;
 
-VP8Source::VP8Source(uint32_t framerate) : framerate_(framerate)
+VP8Source::VP8Source(const uint32_t framerate) : framerate_(framerate)
 {
 	payload_ = 96;
 	clock_rate_ = 90000;
@@ -30,21 +30,21 @@ VP8Source *VP8Source::CreateNew(uint32_t framerate)
 	return new VP8Source(framerate);
 }
 
-VP8Source::~VP8Source() {}
+VP8Source::~VP8Source() = default;
 
-string VP8Source::GetMediaDescription(uint16_t port)
+string VP8Source::GetMediaDescription(const uint16_t port)
 {
 	char buf[100] = {0};
 	sprintf(buf, "m=video %hu RTP/AVP 96", port);
-	return string(buf);
+	return buf;
 }
 
 string VP8Source::GetAttribute()
 {
-	return string("a=rtpmap:96 VP8/90000");
+	return "a=rtpmap:96 VP8/90000";
 }
 
-bool VP8Source::HandleFrame(MediaChannelId channel_id, AVFrame frame)
+bool VP8Source::HandleFrame(const MediaChannelId channel_id, AVFrame frame)
 {
 	uint8_t *frame_buf = frame.buffer.get();
 	uint32_t frame_size = frame.size;
@@ -95,8 +95,8 @@ bool VP8Source::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 
 uint32_t VP8Source::GetTimestamp()
 {
-	auto time_point = chrono::time_point_cast<chrono::microseconds>(
+	const auto time_point = chrono::time_point_cast<chrono::microseconds>(
 		chrono::steady_clock::now());
-	return (uint32_t)((time_point.time_since_epoch().count() + 500) / 1000 *
-			  90);
+	return static_cast<uint32_t>((time_point.time_since_epoch().count() + 500) / 1000 *
+	                             90);
 }

@@ -15,7 +15,7 @@ namespace xop
 class SocketUtil
 {
 public:
-	static bool Bind(SOCKET sockfd, std::string ip, uint16_t port, bool ipv6 = false);
+	static bool Bind(SOCKET sockfd, const std::string &ip, uint16_t port, bool ipv6 = false);
 	static void SetNonBlock(SOCKET fd);
 	static void SetBlock(SOCKET fd, int write_timeout=0);
 	static void SetReuseAddr(SOCKET fd);

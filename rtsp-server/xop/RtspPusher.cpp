@@ -41,7 +41,7 @@ MediaSession::Ptr RtspPusher::LookMediaSession(MediaSessionId session_id)
 	return media_session_; //TODO
 }
 
-int RtspPusher::OpenUrl(const std::string url, const int msec)
+int RtspPusher::OpenUrl(const std::string &url, const int msec)
 {
 	std::lock_guard lock(mutex_);
 
@@ -75,7 +75,7 @@ int RtspPusher::OpenUrl(const std::string url, const int msec)
 		return -1;
 	}
 
-	task_scheduler_ = event_loop_->GetTaskScheduler().get();
+	task_scheduler_ = event_loop_->GetTaskScheduler().get(); //TODO
 	rtsp_conn_.reset(new RtspConnection(shared_from_this(), task_scheduler_, tcpSocket.GetSocket()));
     event_loop_->AddTriggerEvent([this]() {
 		rtsp_conn_->SendOptions(RtspConnection::ConnectionMode::RTSP_PUSHER);

@@ -23,10 +23,7 @@ const char* Priority_To_String[] =
 	"ERROR"
 };
 
-Logger::Logger() 
-{
-    
-}
+Logger::Logger() = default;
 
 Logger &Logger::Instance()
 {
@@ -35,9 +32,7 @@ Logger &Logger::Instance()
 }
 
 Logger::~Logger()
-{
-
-}
+= default;
 
 void Logger::Init(char *pathname)
 {

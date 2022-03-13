@@ -22,7 +22,7 @@
 using namespace xop;
 using namespace std;
 
-AACSource::AACSource(uint32_t samplerate, uint8_t channels, bool has_adts)
+AACSource::AACSource(const uint32_t samplerate, const uint8_t channels, const bool has_adts)
 	: samplerate_(samplerate), channels_(channels), has_adts_(has_adts)
 {
 	payload_ = 97;
@@ -30,20 +30,20 @@ AACSource::AACSource(uint32_t samplerate, uint8_t channels, bool has_adts)
 	clock_rate_ = samplerate;
 }
 
-AACSource *AACSource::CreateNew(uint32_t samplerate, uint8_t channels,
-				bool has_adts)
+AACSource *AACSource::CreateNew(const uint32_t samplerate, const uint8_t channels,
+                                const bool has_adts)
 {
 	return new AACSource(samplerate, channels, has_adts);
 }
 
-AACSource::~AACSource() {}
+AACSource::~AACSource() = default;
 
-string AACSource::GetMediaDescription(uint16_t port)
+string AACSource::GetMediaDescription(const uint16_t port)
 {
 	char buf[100] = {0};
 	sprintf(buf, "m=audio %hu RTP/AVP 97", port); // \r\nb=AS:64
 
-	return string(buf);
+	return buf;
 }
 
 static array<uint32_t, 16> samplingFrequencyTable = {
@@ -56,12 +56,12 @@ static array<uint32_t, 16> samplingFrequencyTable = {
 string AACSource::GetAttribute() // RFC 3640
 {
 	uint8_t samplingFrequencyIndex = 0;
-	for (auto samplingFrequency : samplingFrequencyTable) {
+	for (const auto samplingFrequency : samplingFrequencyTable) {
 		if (samplingFrequency == samplerate_)
 			break;
 		samplingFrequencyIndex++;
 	}
-	uint8_t profile = 1;
+	constexpr uint8_t profile = 1;
 
 	if (samplingFrequencyIndex == samplingFrequencyTable.size())
 		return ""; // error
@@ -78,16 +78,16 @@ string AACSource::GetAttribute() // RFC 3640
 		sprintf(buf.data(), rtpmap_fmt, samplerate_, channels_);
 
 	const array<uint8_t, 2> audioSpecificConfig = {
-		(uint8_t)(((profile + 1) << 3) | (samplingFrequencyIndex >> 1)),
-		(uint8_t)((samplingFrequencyIndex << 7) | (channels_ << 3))
+		static_cast<uint8_t>(profile + 1 << 3 | samplingFrequencyIndex >> 1),
+		static_cast<uint8_t>(samplingFrequencyIndex << 7 | channels_ << 3)
 	};
 	sprintf(buf.data() + rtpmap_format_size, fmtp_fmt,
 		audioSpecificConfig[0], audioSpecificConfig[1]);
 
-	return string(buf.data());
+	return buf.data();
 }
 
-bool AACSource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
+bool AACSource::HandleFrame(const MediaChannelId channel_id, const AVFrame frame)
 {
 	if (frame.size > (MAX_RTP_PAYLOAD_SIZE - AU_SIZE)) {
 		return false;
@@ -98,10 +98,10 @@ bool AACSource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 		adts_size = ADTS_SIZE;
 	}
 
-	uint8_t *frame_buf = frame.buffer.get() + adts_size;
+	const uint8_t *frame_buf = frame.buffer.get() + adts_size;
 	size_t frame_size = frame.size - adts_size;
 
-	char AU[AU_SIZE] = {
+	const char AU[AU_SIZE] = {
 		0x00,
 		0x10,
 		static_cast<char>((frame_size & 0x1fe0) >> 5),
@@ -120,10 +120,10 @@ bool AACSource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 	*(rtp_pkt_data++) = AU[2];
 	*(rtp_pkt_data++) = AU[3];
 
-	memcpy(rtp_pkt_data++, frame_buf, frame_size);
+	memcpy(rtp_pkt_data, frame_buf, frame_size);
 
 	if (send_frame_callback_) {
-		send_frame_callback_(channel_id, rtp_pkt);
+		return send_frame_callback_(channel_id, rtp_pkt); //TODO
 	}
 
 	return true;
@@ -134,8 +134,8 @@ uint32_t AACSource::GetTimestamp(uint32_t sampleRate)
 	//auto time_point = chrono::time_point_cast<chrono::milliseconds>(chrono::high_resolution_clock::now());
 	//return (uint32_t)(time_point.time_since_epoch().count() * sampleRate / 1000);
 
-	auto time_point = chrono::time_point_cast<chrono::microseconds>(
+	const auto time_point = chrono::time_point_cast<chrono::microseconds>(
 		chrono::steady_clock::now());
-	return (uint32_t)((time_point.time_since_epoch().count() + 500) / 1000 *
-			  sampleRate / 1000);
+	return static_cast<uint32_t>((time_point.time_since_epoch().count() + 500) / 1000 *
+	                             sampleRate / 1000);
 }

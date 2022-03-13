@@ -16,10 +16,10 @@ template <typename T>
 class RingBuffer
 {
 public:
-	RingBuffer(unsigned capacity = 60)
-		: buffer_(capacity)
-		, capacity_(capacity)
+	explicit RingBuffer(unsigned capacity = 60)
+		: capacity_(capacity)
 		, num_datas_(0)
+		, buffer_(capacity)
 	{ }
 	
 	virtual ~RingBuffer() {}
@@ -77,7 +77,7 @@ private:
 		return false;
 	}
 
-	void Add(int& pos)
+	void Add(int& pos) const
 	{	
 		pos = pos + 1 == capacity_ ? 0 : pos + 1;
 	}

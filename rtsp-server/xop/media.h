@@ -30,13 +30,13 @@ enum class FrameType : uint8_t
 };
 
 struct AVFrame
-{	
-	AVFrame(size_t size = 0)
-		: buffer(new uint8_t[size], std::default_delete<uint8_t[]>())
+{
+	explicit AVFrame(const size_t size = 0)
+		: buffer(new uint8_t[size], std::default_delete<uint8_t[]>()),
+		  size(size),
+		  type(FrameType::NONE),
+		  timestamp(0)
 	{
-		this->size = size;
-		type = FrameType::NONE;
-		timestamp = 0;
 	}
 
 	std::shared_ptr<uint8_t> buffer; /* 帧数据 */

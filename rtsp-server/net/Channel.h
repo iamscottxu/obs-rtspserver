@@ -29,10 +29,10 @@ public:
     
 	Channel() = delete;
 
-	Channel(SOCKET sockfd) : sockfd_(sockfd) {}
+	explicit Channel(const SOCKET sockfd) : sockfd_(sockfd) {}
 
-	virtual ~Channel() {};
-    
+	virtual ~Channel() = default;
+
 	void SetReadCallback(const EventCallback& cb)
 	{ read_callback_ = cb; }
 
@@ -48,7 +48,7 @@ public:
 	SOCKET GetSocket() const { return sockfd_; }
 
 	int  GetEvents() const { return events_; }
-	void SetEvents(int events) { events_ = events; }
+	void SetEvents(const int events) { events_ = events; }
     
 	void EnableReading() 
 	{ events_ |= EVENT_IN; }
@@ -66,7 +66,7 @@ public:
 	bool IsWriting() const { return (events_ & EVENT_OUT) != 0; }
 	bool IsReading() const { return (events_ & EVENT_IN) != 0; }
     
-	void HandleEvent(int events)
+	void HandleEvent(int events) const
 	{	
 		if (events & (EVENT_PRI | EVENT_IN)) {
 			read_callback_();

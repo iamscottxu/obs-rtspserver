@@ -14,17 +14,16 @@
 #include <mutex>
 #include <thread>
 
-namespace xop
-{
-    
-typedef std::function<bool(void)> TimerEvent;
+namespace xop {
+
+typedef std::function<bool()> TimerEvent;
 typedef uint32_t TimerId;
 
 class Timer
 {
 public:
-	Timer(const TimerEvent& event, uint32_t msec)
-		: event_callback_(event)
+	Timer(TimerEvent event, const uint32_t msec)
+		: event_callback_(std::move(event))
 		, interval_(msec)
 	{
 		if (interval_ == 0) {
@@ -32,7 +31,7 @@ public:
 		}
 	}
 
-	static void Sleep(uint32_t msec)
+	static void Sleep(const uint32_t msec)
 	{ 
 		std::this_thread::sleep_for(std::chrono::milliseconds(msec));
 	}
@@ -42,7 +41,7 @@ public:
 		event_callback_ = event;
 	}
 
-	void Start(int64_t microseconds, bool repeat = false)
+	void Start(int64_t microseconds, const bool repeat = false)
 	{
 		is_repeat_ = repeat;
 		auto time_begin = std::chrono::high_resolution_clock::now();
@@ -71,7 +70,7 @@ public:
 private:
 	friend class TimerQueue;
 
-	void SetNextTimeout(int64_t time_point)
+	void SetNextTimeout(const int64_t time_point)
 	{
 		next_timeout_ = time_point + interval_;
 	}
@@ -97,7 +96,7 @@ public:
 	void HandleTimerEvent();
 
 private:
-	int64_t GetTimeNow();
+	int64_t GetTimeNow() const;
 
 	std::mutex mutex_;
 	std::unordered_map<TimerId, std::shared_ptr<Timer>> timers_;

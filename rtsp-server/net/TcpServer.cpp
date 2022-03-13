@@ -5,6 +5,7 @@
 #include "EventLoop.h"
 #include "Logger.h"
 #include <cstdio>  
+#include <utility>
 
 using namespace xop;
 using namespace std;
@@ -20,10 +21,10 @@ TcpServer::TcpServer(EventLoop* event_loop)
 
 TcpServer::~TcpServer()
 {
-	Stop();
+	TcpServer::Stop();
 }
 
-bool TcpServer::Start(std::string ip, uint16_t port)
+bool TcpServer::Start(const std::string &ip, const uint16_t port)
 {
 	/*Stop();
 
@@ -39,15 +40,14 @@ bool TcpServer::Start(std::string ip, uint16_t port)
 	}*/
 	//return false;
 
-	auto acceptor = unique_ptr<Acceptor>(new Acceptor(event_loop_));
+	auto acceptor = std::make_unique<Acceptor>(event_loop_);
 	acceptor->SetNewConnectionCallback([this](SOCKET sockfd) {
-		TcpConnection::Ptr conn = this->OnConnect(sockfd);
-		if (conn) {
+		if (const TcpConnection::Ptr conn = this->OnConnect(sockfd)) {
 			this->AddConnection(sockfd, conn);
-			conn->SetDisconnectCallback([this](TcpConnection::Ptr conn) {
-				auto scheduler = conn->GetTaskScheduler();
-				SOCKET sockfd = conn->GetSocket();
-				if (!scheduler->AddTriggerEvent([this, sockfd] {this->RemoveConnection(sockfd); })) {
+			conn->SetDisconnectCallback([this](const TcpConnection::Ptr
+				&conn) {
+				const auto scheduler = conn->GetTaskScheduler();
+				if (SOCKET sockfd = conn->GetSocket(); !scheduler->AddTriggerEvent([this, sockfd] {this->RemoveConnection(sockfd); })) {
 					scheduler->AddTimer([this, sockfd]() {this->RemoveConnection(sockfd); return false; }, 100);
 				}
 			});
@@ -104,12 +104,12 @@ TcpConnection::Ptr TcpServer::OnConnect(SOCKET sockfd)
 
 void TcpServer::AddConnection(SOCKET sockfd, TcpConnection::Ptr tcpConn)
 {
-	std::lock_guard<std::mutex> locker(mutex_);
+	std::lock_guard locker(mutex_);
 	connections_.emplace(sockfd, tcpConn);
 }
 
 void TcpServer::RemoveConnection(SOCKET sockfd)
 {
-	std::lock_guard<std::mutex> locker(mutex_);
+	std::lock_guard locker(mutex_);
 	connections_.erase(sockfd);
 }

@@ -24,8 +24,8 @@ uint16_t ReadUint16LE(char* data);
 class BufferReader
 {
 public:	
-	static const uint32_t kInitialSize = 2048;
-	BufferReader(uint32_t initialSize = kInitialSize);
+	static constexpr uint32_t kInitialSize = 2048;
+	explicit BufferReader(uint32_t initialSize = kInitialSize);
 	virtual ~BufferReader();
 
 	uint32_t ReadableBytes() const
@@ -61,7 +61,7 @@ public:
 		reader_index_ = 0; 
 	}
 
-	void Retrieve(size_t len) {
+	void Retrieve(const size_t len) {
 		if (len <= ReadableBytes()) {
 			reader_index_ += len;
 			if(reader_index_ == writer_index_) {

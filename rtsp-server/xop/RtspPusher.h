@@ -13,13 +13,13 @@ class RtspConnection;
 class RtspPusher : public Rtsp
 {
 public:
-	static std::shared_ptr<RtspPusher> Create(xop::EventLoop* loop);
-	virtual ~RtspPusher();
+	static std::shared_ptr<RtspPusher> Create(EventLoop * loop);
+	~RtspPusher() override;
 
 	void AddSession(MediaSession* session);
 	void RemoveSession(MediaSessionId session_id);
 
-	int  OpenUrl(std::string url, int msec = 3000);
+	int  OpenUrl(const std::string &url, int msec = 3000);
 	void Close();
 	bool IsConnected();
 
@@ -28,8 +28,8 @@ public:
 private:
 	friend class RtspConnection;
 
-	RtspPusher(xop::EventLoop *event_loop);
-	MediaSession::Ptr LookMediaSession(MediaSessionId session_id);
+	explicit RtspPusher(xop::EventLoop *event_loop);
+	MediaSession::Ptr LookMediaSession(MediaSessionId session_id) override;
 
 	xop::EventLoop* event_loop_ = nullptr;
 	xop::TaskScheduler* task_scheduler_ = nullptr;

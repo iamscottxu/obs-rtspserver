@@ -13,11 +13,9 @@ RtspServer::RtspServer(EventLoop* loop)
 }
 
 RtspServer::~RtspServer()
-{
-	
-}
+= default;
 
-std::shared_ptr<RtspServer> RtspServer::Create(xop::EventLoop* loop)
+std::shared_ptr<RtspServer> RtspServer::Create(EventLoop * loop)
 {
 	std::shared_ptr<RtspServer> server(new RtspServer(loop));
 	return server;
@@ -25,7 +23,7 @@ std::shared_ptr<RtspServer> RtspServer::Create(xop::EventLoop* loop)
 
 MediaSessionId RtspServer::AddSession(MediaSession* session)
 {
-    std::lock_guard<std::mutex> locker(mutex_);
+    std::lock_guard locker(mutex_);
 
     if (rtsp_suffix_map_.find(session->GetRtspUrlSuffix()) != rtsp_suffix_map_.end()) {
         return 0;
@@ -33,18 +31,17 @@ MediaSessionId RtspServer::AddSession(MediaSession* session)
 
     std::shared_ptr<MediaSession> media_session(session); 
     MediaSessionId sessionId = media_session->GetMediaSessionId();
-	rtsp_suffix_map_.emplace(std::move(media_session->GetRtspUrlSuffix()), sessionId);
+	rtsp_suffix_map_.emplace(media_session->GetRtspUrlSuffix(), sessionId);
 	media_sessions_.emplace(sessionId, std::move(media_session));
 
     return sessionId;
 }
 
-void RtspServer::RemoveSession(MediaSessionId sessionId)
+void RtspServer::RemoveSession(const MediaSessionId sessionId)
 {
-    std::lock_guard<std::mutex> locker(mutex_);
+    std::lock_guard locker(mutex_);
 
-    auto iter = media_sessions_.find(sessionId);
-    if(iter != media_sessions_.end()) {
+    if(const auto iter = media_sessions_.find(sessionId); iter != media_sessions_.end()) {
         rtsp_suffix_map_.erase(iter->second->GetRtspUrlSuffix());
         media_sessions_.erase(sessionId);
     }
@@ -52,10 +49,9 @@ void RtspServer::RemoveSession(MediaSessionId sessionId)
 
 MediaSession::Ptr RtspServer::LookMediaSession(const std::string &suffix)
 {
-    std::lock_guard<std::mutex> locker(mutex_);
+    std::lock_guard locker(mutex_);
 
-    auto iter = rtsp_suffix_map_.find(suffix);
-    if(iter != rtsp_suffix_map_.end()) {
+    if(const auto iter = rtsp_suffix_map_.find(suffix); iter != rtsp_suffix_map_.end()) {
         MediaSessionId id = iter->second;
         return media_sessions_[id];
     }
@@ -63,25 +59,24 @@ MediaSession::Ptr RtspServer::LookMediaSession(const std::string &suffix)
     return nullptr;
 }
 
-MediaSession::Ptr RtspServer::LookMediaSession(MediaSessionId session_id)
+MediaSession::Ptr RtspServer::LookMediaSession(const MediaSessionId session_id)
 {
-    std::lock_guard<std::mutex> locker(mutex_);
+    std::lock_guard locker(mutex_);
 
-    auto iter = media_sessions_.find(session_id);
-    if(iter != media_sessions_.end()) {
+    if(const auto iter = media_sessions_.find(session_id); iter != media_sessions_.end()) {
         return iter->second;
     }
 
     return nullptr;
 }
 
-bool RtspServer::PushFrame(MediaSessionId session_id, MediaChannelId channel_id, AVFrame frame)
+bool RtspServer::PushFrame(const MediaSessionId session_id, const MediaChannelId channel_id, const AVFrame frame)
 {
-    std::shared_ptr<MediaSession> sessionPtr = nullptr;
+    std::shared_ptr<MediaSession> sessionPtr;
 
     {
-        std::lock_guard<std::mutex> locker(mutex_);
-        auto iter = media_sessions_.find(session_id);
+        std::lock_guard locker(mutex_);
+        const auto iter = media_sessions_.find(session_id);
         if (iter != media_sessions_.end()) {
             sessionPtr = iter->second;
         }

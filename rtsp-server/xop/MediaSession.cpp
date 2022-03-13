@@ -9,6 +9,7 @@
 #include <ctime>
 #include <map>
 #include <forward_list>
+#include <utility>
 #include "net/Logger.h"
 #include "net/SocketUtil.h"
 
@@ -17,17 +18,18 @@ using namespace std;
 
 std::atomic_uint MediaSession::last_session_id_(1);
 
-MediaSession::MediaSession(std::string url_suffix, uint32_t max_channel_count)
-    : session_id_(++last_session_id_)
-    , suffix_(url_suffix)
-    , media_sources_(max_channel_count)
-    , multicast_port_(max_channel_count, 0)
-    , has_new_client_(false), buffer_(max_channel_count)
-    , max_channel_count_(max_channel_count)
+MediaSession::MediaSession(std::string url_suffix, const uint32_t max_channel_count)
+    : max_channel_count_(max_channel_count),
+      session_id_(++last_session_id_),
+      suffix_(std::move(url_suffix)),
+      media_sources_(max_channel_count),
+      buffer_(max_channel_count),
+      multicast_port_(max_channel_count, 0),
+      has_new_client_(false)
 {
 }
 
-MediaSession* MediaSession::CreateNew(std::string url_suffix, uint32_t max_channel_count)
+MediaSession* MediaSession::CreateNew(std::string url_suffix, const uint32_t max_channel_count)
 {
 	return new MediaSession(std::move(url_suffix), max_channel_count);
 }
@@ -52,7 +54,7 @@ void MediaSession::AddNotifyDisconnectedCallback(const NotifyDisconnectedCallbac
 bool MediaSession::AddSource(MediaChannelId channel_id, MediaSource* source)
 {
 	if (static_cast<uint8_t>(channel_id) >= max_channel_count_) return false;
-	source->SetSendFrameCallback([this](MediaChannelId channel_id, RtpPacket pkt) {
+	source->SetSendFrameCallback([this](const MediaChannelId channel_id, const RtpPacket pkt) {
 		std::lock_guard lock(map_mutex_);
 
 		std::forward_list<std::shared_ptr<RtpConnection>> clients;
@@ -124,7 +126,7 @@ bool MediaSession::StartMulticast()
 	return true;
 }
 
-std::string MediaSession::GetSdpMessage(std::string ip, std::string session_name, bool ipv6)
+std::string MediaSession::GetSdpMessage(const std::string ip, const std::string session_name, const bool ipv6) const
 {
 	if (media_sources_.empty()) return "";
                 
@@ -138,7 +140,7 @@ std::string MediaSession::GetSdpMessage(std::string ip, std::string session_name
 			"a=control:*\r\n" ,
 			static_cast<long>(std::time(nullptr)), ipv6 ? 6 : 4 , ip.c_str()); 
 
-	if(session_name != "") {
+	if(!session_name.empty()) {
 		snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf), 
 				"s=%s\r\n",
 				session_name.c_str());
@@ -176,10 +178,10 @@ std::string MediaSession::GetSdpMessage(std::string ip, std::string session_name
 		}
 	}
 
-	return std::string(buf);
+	return buf;
 }
 
-MediaSource* MediaSession::GetMediaSource(MediaChannelId channel_id)
+MediaSource* MediaSession::GetMediaSource(MediaChannelId channel_id) const
 {
 	if (static_cast<uint8_t>(channel_id) < max_channel_count_) {
 		return media_sources_[static_cast<uint8_t>(channel_id)].get();
@@ -203,7 +205,8 @@ bool MediaSession::HandleFrame(MediaChannelId channelId, AVFrame frame)
 	return true;
 }
 
-bool MediaSession::AddClient(SOCKET rtspfd, std::shared_ptr<RtpConnection> rtp_conn)
+bool MediaSession::AddClient(SOCKET rtspfd, const std::shared_ptr<RtpConnection>
+                             &rtp_conn)
 {
 	std::lock_guard lock(map_mutex_);
 
@@ -220,7 +223,7 @@ bool MediaSession::AddClient(SOCKET rtspfd, std::shared_ptr<RtpConnection> rtp_c
 	return false;
 }
 
-void MediaSession::RemoveClient(SOCKET rtspfd)
+void MediaSession::RemoveClient(const SOCKET rtspfd)
 {  
 	std::lock_guard lock(map_mutex_);
 

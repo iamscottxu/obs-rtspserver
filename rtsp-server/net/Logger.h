@@ -46,7 +46,7 @@ private:
 
 	std::mutex mutex_;
 	std::ofstream ofs_;
-	xop::LogWriteCallbackFun _writeCallback;
+	LogWriteCallbackFun _writeCallback{};
 };
  
 }

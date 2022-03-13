@@ -25,7 +25,7 @@ public:
         begin_time_point_ = std::chrono::high_resolution_clock::now();
     }
 
-    int64_t Elapsed()
+    int64_t Elapsed() const
     {
         return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - begin_time_point_).count();
     }

@@ -48,23 +48,20 @@ uint16_t xop::ReadUint16LE(char* data)
 	return value; 
 }
 
-const char BufferReader::kCRLF[] = "\r\n";
+constexpr char BufferReader::kCRLF[] = "\r\n";
 
-BufferReader::BufferReader(uint32_t initialSize)
+BufferReader::BufferReader(const uint32_t initialSize)
     : buffer_(initialSize)
 {
 	buffer_.resize(initialSize);
 }	
 
 BufferReader::~BufferReader()
-{
-	
-}
+= default;
 
-int BufferReader::Read(SOCKET sockfd)
+int BufferReader::Read(const SOCKET sockfd)
 {
-	const uint32_t size = WritableBytes();
-	if(size < MAX_BYTES_PER_READ) {
+	if(const uint32_t size = WritableBytes(); size < MAX_BYTES_PER_READ) {
 		const auto bufferReaderSize = static_cast<uint32_t>(buffer_.size());
 		if(bufferReaderSize > MAX_BUFFER_SIZE) {
 			return 0; 

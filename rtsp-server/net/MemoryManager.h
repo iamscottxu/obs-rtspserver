@@ -49,12 +49,12 @@ public:
 	~MemoryManager();
 
 	void* Alloc(uint32_t size);
-	void  Free(void* ptr);
+	static void  Free(void* ptr);
 
 private:
 	MemoryManager();
 
-	static const int kMaxMemoryPool = 3;
+	static constexpr int kMaxMemoryPool = 3;
 	MemoryPool memory_pools_[kMaxMemoryPool];
 };
 

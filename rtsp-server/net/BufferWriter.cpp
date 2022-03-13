@@ -49,13 +49,13 @@ void xop::WriteUint16LE(char* p, uint16_t value)
 	p[1] = value >> 8;
 }
 
-BufferWriter::BufferWriter(int capacity) 
+BufferWriter::BufferWriter(const int capacity) 
 	: max_queue_length_(capacity)
 {
 	
 }	
 
-bool BufferWriter::Append(std::shared_ptr<char> data, size_t size, uint32_t index)
+bool BufferWriter::Append(const std::shared_ptr<char> data, const size_t size, const uint32_t index)
 {
 	if (size <= index) {
 		return false;
@@ -70,7 +70,7 @@ bool BufferWriter::Append(std::shared_ptr<char> data, size_t size, uint32_t inde
 	return true;
 }
 
-bool BufferWriter::Append(const char* data, size_t size, uint32_t index)
+bool BufferWriter::Append(const char* data, const size_t size, const uint32_t index)
 {
 	if (size <= index) {
 		return false;
@@ -89,7 +89,7 @@ bool BufferWriter::Append(const char* data, size_t size, uint32_t index)
 	return true;
 }
 
-int BufferWriter::Send(SOCKET sockfd, int timeout)
+int BufferWriter::Send(const SOCKET sockfd, const int timeout)
 {		
 	if (timeout > 0) {
 		SocketUtil::SetBlock(sockfd, timeout); 
@@ -106,7 +106,7 @@ int BufferWriter::Send(SOCKET sockfd, int timeout)
 		
 		count -= 1;
 		Packet &pkt = buffer_.front();
-		ret = ::send(sockfd, pkt.data.get() + pkt.writeIndex, pkt.size - pkt.writeIndex, 0);
+		ret = send(sockfd, pkt.data.get() + pkt.writeIndex, pkt.size - pkt.writeIndex, 0);
 		if (ret > 0) {
 			pkt.writeIndex += ret;
 			if (pkt.size == pkt.writeIndex) {
@@ -118,7 +118,7 @@ int BufferWriter::Send(SOCKET sockfd, int timeout)
 #if defined(WIN32) || defined(_WIN32)
 			if (const int error = WSAGetLastError(); error == WSAEWOULDBLOCK || error == WSAEINPROGRESS || error == 0)
 #else
-                        if (errno == EINTR || errno == EAGAIN)
+            if (errno == EINTR || errno == EAGAIN)
 #endif
 			{
 				ret = 0;

@@ -51,23 +51,23 @@ public:
     std::string GetRtspUrlSuffix() const
     { return suffix_; }
 
-    void SetRtspUrlSuffix(std::string& suffix)
+    void SetRtspUrlSuffix(const std::string& suffix)
     { suffix_ = suffix; }
 
-    std::string GetSdpMessage(std::string ip, std::string session_name, bool ipv6 = false);
+    std::string GetSdpMessage(std::string ip, std::string session_name, bool ipv6 = false) const;
 
-    MediaSource* GetMediaSource(MediaChannelId channel_id);
+    MediaSource* GetMediaSource(MediaChannelId channel_id) const;
 
     bool HandleFrame(MediaChannelId channel_id, AVFrame frame);
 
-    bool AddClient(SOCKET rtspfd, std::shared_ptr<RtpConnection> rtp_conn);
+    bool AddClient(SOCKET rtspfd, const std::shared_ptr<RtpConnection> &rtp_conn);
     void RemoveClient(SOCKET rtspfd);
 
-    MediaSessionId GetMediaSessionId()
+    MediaSessionId GetMediaSessionId() const
     { return session_id_; }
 
     uint32_t GetNumClient() const
-    { return (uint32_t)clients_.size(); }
+    { return static_cast<uint32_t>(clients_.size()); }
 
     uint32_t GetMaxChannelCount() const
     { return max_channel_count_; }
@@ -124,14 +124,14 @@ public:
 
 	std::string GetAddr()
 	{
-		std::lock_guard<std::mutex> lock(mutex_);
+		std::lock_guard lock(mutex_);
 		std::string addr_str;
-		struct sockaddr_in addr = { 0 };
 		std::random_device rd;
 
 		for (int n = 0; n <= 10; n++) {
-			uint32_t range = 0xE8FFFFFF - 0xE8000100;
-			addr.sin_addr.s_addr = htonl(0xE8000100 + (rd()) % range);
+			sockaddr_in addr{};
+			constexpr uint32_t range = 0xE8FFFFFF - 0xE8000100;
+			addr.sin_addr.s_addr = htonl(0xE8000100 + rd() % range);
 			addr_str = inet_ntoa(addr.sin_addr);
 
 			if (addrs_.find(addr_str) != addrs_.end()) {
@@ -146,8 +146,8 @@ public:
 		return addr_str;
 	}
 
-	void Release(std::string addr) {
-		std::lock_guard<std::mutex> lock(mutex_);
+	void Release(const std::string &addr) {
+		std::lock_guard lock(mutex_);
 		addrs_.erase(addr);
 	}
 

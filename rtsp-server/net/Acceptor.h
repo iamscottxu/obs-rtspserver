@@ -18,8 +18,8 @@ class EventLoop;
 
 class Acceptor
 {
-public:	
-	Acceptor(EventLoop* eventLoop);
+public:
+	explicit Acceptor(EventLoop* eventLoop);
 	virtual ~Acceptor();
 
 	void SetNewConnectionCallback(const NewConnectionCallback& cb)

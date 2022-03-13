@@ -31,31 +31,29 @@ G711ASource* G711ASource::CreateNew()
 }
 
 G711ASource::~G711ASource()
-{
-	
-}
+= default;
 
-string G711ASource::GetMediaDescription(uint16_t port)
+string G711ASource::GetMediaDescription(const uint16_t port)
 {
 	char buf[100] = {0};
 	sprintf(buf, "m=audio %hu RTP/AVP 8", port);
 
-	return string(buf);
+	return buf;
 }
 	
 string G711ASource::GetAttribute()
 {
-    return string("a=rtpmap:8 PCMA/8000/1");
+    return "a=rtpmap:8 PCMA/8000/1";
 }
 
-bool G711ASource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
+bool G711ASource::HandleFrame(const MediaChannelId channel_id, const AVFrame frame)
 {
 	if (frame.size > MAX_RTP_PAYLOAD_SIZE) {
 		return false;
 	}
 
-	uint8_t *frame_buf  = frame.buffer.get();
-	size_t frame_size = frame.size;
+	const uint8_t *frame_buf  = frame.buffer.get();
+	const size_t frame_size = frame.size;
 
 	RtpPacket rtp_pkt;
 	rtp_pkt.type = frame.type;
@@ -66,7 +64,7 @@ bool G711ASource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 	memcpy(rtp_pkt.data.get() + RTP_TCP_HEAD_SIZE  + RTP_HEADER_SIZE, frame_buf, frame_size);
 
 	if (send_frame_callback_) {
-		send_frame_callback_(channel_id, rtp_pkt);
+		return send_frame_callback_(channel_id, rtp_pkt); //TODO
 	}
 
 	return true;
@@ -74,7 +72,7 @@ bool G711ASource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 
 uint32_t G711ASource::GetTimestamp()
 {
-	auto time_point = chrono::time_point_cast<chrono::microseconds>(chrono::steady_clock::now());
-	return (uint32_t)((time_point.time_since_epoch().count() + 500) / 1000 * 8);
+	const auto time_point = chrono::time_point_cast<chrono::microseconds>(chrono::steady_clock::now());
+	return static_cast<uint32_t>((time_point.time_since_epoch().count() + 500) / 1000 * 8);
 }
 

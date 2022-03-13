@@ -76,26 +76,26 @@ public:
 	uint16_t GetRtpPort() const;
 	uint16_t GetRtcpPort() const;
 
-	int BuildOptionRes(const char* buf, int buf_size);
-	int BuildDescribeRes(const char* buf, int buf_size, const char* sdp);
-	int BuildSetupMulticastRes(const char* buf, int buf_size, const char* multicast_ip, uint16_t port, uint32_t session_id);
-	int BuildSetupTcpRes(const char* buf, int buf_size, uint16_t rtp_chn, uint16_t rtcp_chn, uint32_t session_id);
-	int BuildSetupUdpRes(const char* buf, int buf_size, uint16_t rtp_chn, uint16_t rtcp_chn, uint32_t session_id);
-	int BuildPlayRes(const char* buf, int buf_size, const char* rtp_info, uint32_t session_id);
-	int BuildTeardownRes(const char* buf, int buf_size, uint32_t session_id);
-	int BuildGetParamterRes(const char* buf, int buf_size, uint32_t session_id);
-	int BuildNotFoundRes(const char* buf, int buf_size);
-	int BuildServerErrorRes(const char* buf, int buf_size);
-	int BuildUnsupportedRes(const char* buf, int buf_size);
-	int BuildUnauthorizedRes(const char* buf, int buf_size, const char* realm, const char* nonce);
+	int BuildOptionRes(const char* buf, int buf_size) const;
+	int BuildDescribeRes(const char* buf, int buf_size, const char* sdp) const;
+	int BuildSetupMulticastRes(const char* buf, int buf_size, const char* multicast_ip, uint16_t port, uint32_t session_id) const;
+	int BuildSetupTcpRes(const char* buf, int buf_size, uint16_t rtp_chn, uint16_t rtcp_chn, uint32_t session_id) const;
+	int BuildSetupUdpRes(const char* buf, int buf_size, uint16_t rtp_chn, uint16_t rtcp_chn, uint32_t session_id) const;
+	int BuildPlayRes(const char* buf, int buf_size, const char* rtp_info, uint32_t session_id) const;
+	int BuildTeardownRes(const char* buf, int buf_size, uint32_t session_id) const;
+	int BuildGetParamterRes(const char* buf, int buf_size, uint32_t session_id) const;
+	int BuildNotFoundRes(const char* buf, int buf_size) const;
+	int BuildServerErrorRes(const char* buf, int buf_size) const;
+	int BuildUnsupportedRes(const char* buf, int buf_size) const;
+	int BuildUnauthorizedRes(const char* buf, int buf_size, const char* realm, const char* nonce) const;
 
 private:
 	bool ParseRequestLine(const char* begin, const char* end);
 	bool ParseHeadersLine(const char* begin, const char* end);
 	bool ParseCSeq(std::string& message);
-	bool ParseAccept(std::string& message);
+	static bool ParseAccept(const std::string& message);
 	bool ParseTransport(std::string& message);
-	bool ParseSessionId(std::string& message);
+	static bool ParseSessionId(std::string& message);
 	bool ParseMediaChannel(std::string& message);
 	bool ParseAuthorization(std::string& message);
 

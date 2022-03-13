@@ -21,8 +21,8 @@ class EventLoop;
 
 class TcpServer
 {
-public:	
-	TcpServer(EventLoop* event_loop);
+public:
+	explicit TcpServer(EventLoop* event_loop);
 	virtual ~TcpServer();  
 
 	virtual bool Start(std::string ip, uint16_t port);

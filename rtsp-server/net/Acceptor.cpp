@@ -15,11 +15,9 @@ Acceptor::Acceptor(EventLoop* eventLoop)
 }
 
 Acceptor::~Acceptor()
-{
+= default;
 
-}
-
-int Acceptor::Listen(std::string ip, uint16_t port)
+int Acceptor::Listen(const std::string ip, const uint16_t port)
 {
 	std::lock_guard locker(mutex_);
 

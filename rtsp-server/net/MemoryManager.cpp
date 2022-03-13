@@ -2,7 +2,7 @@
 
 using namespace xop;
 
-void* xop::Alloc(uint32_t size)
+void* xop::Alloc(const uint32_t size)
 {
 	return MemoryManager::Instance().Alloc(size);
 }
@@ -13,9 +13,7 @@ void xop::Free(void *ptr)
 }
 
 MemoryPool::MemoryPool()
-{
-
-}
+= default;
 
 MemoryPool::~MemoryPool()
 {
@@ -24,7 +22,7 @@ MemoryPool::~MemoryPool()
 	}
 }
 
-void MemoryPool::Init(uint32_t size, uint32_t n)
+void MemoryPool::Init(const uint32_t size, const uint32_t n)
 {
 	if (memory_) {
 		return;
@@ -64,8 +62,7 @@ void* MemoryPool::Alloc(uint32_t size)
 
 void MemoryPool::Free(void* ptr)
 {
-	const auto block = reinterpret_cast<MemoryBlock *>(static_cast<char *>(ptr) - sizeof(MemoryBlock));
-	if (block->block_id != 0) {
+	if (const auto block = reinterpret_cast<MemoryBlock *>(static_cast<char *>(ptr) - sizeof(MemoryBlock)); block->block_id != 0) {
 		std::lock_guard locker(mutex_);
 		block->next = head_;
 		head_ = block;
@@ -81,9 +78,7 @@ MemoryManager::MemoryManager()
 }
 
 MemoryManager::~MemoryManager()
-{
-
-}
+= default;
 
 MemoryManager& MemoryManager::Instance()
 {
@@ -111,7 +106,7 @@ void* MemoryManager::Alloc(uint32_t size)
 
 void MemoryManager::Free(void* ptr)
 {
-	auto block = reinterpret_cast<MemoryBlock *>(static_cast<char *>(ptr) - sizeof(MemoryBlock));
+	const auto block = reinterpret_cast<MemoryBlock *>(static_cast<char *>(ptr) - sizeof(MemoryBlock));
 
 	if (MemoryPool *pool = block->pool; pool != nullptr && block->block_id > 0) {
 		pool->Free(ptr);

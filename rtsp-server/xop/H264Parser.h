@@ -15,10 +15,9 @@ class H264Parser
 public:    
     static Nal findNal(const uint8_t *data, uint32_t size);
 
-    static std::vector<uint8_t> RemoveEmulationBytes(std::vector<uint8_t> const from);
-        
-private:
-  
+    static std::vector<uint8_t> RemoveEmulationBytes(std::vector<uint8_t> const
+	    &from);
+
 };
     
 }

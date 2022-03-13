@@ -17,7 +17,7 @@ typedef std::function<void(void)> TriggerEvent;
 class TaskScheduler 
 {
 public:
-	TaskScheduler(int id=1);
+	explicit TaskScheduler(int id=1);
 	virtual ~TaskScheduler();
 
 	void Start();
@@ -26,16 +26,16 @@ public:
 	void RemoveTimer(TimerId timerId);
 	bool AddTriggerEvent(TriggerEvent callback);
 
-	virtual void UpdateChannel(ChannelPtr channel) { };
-	virtual void RemoveChannel(ChannelPtr& channel) { };
-	virtual bool HandleEvent(int timeout) { return false; };
+	virtual void UpdateChannel(ChannelPtr channel) { }
+	virtual void RemoveChannel(ChannelPtr& channel) { }
+	virtual bool HandleEvent(int timeout) { return false; }
 
 	int GetId() const 
 	{ return id_; }
 
 protected:
-	void Wake();
-	void HandleTriggerEvent();
+	void Wake() const;
+	void HandleTriggerEvent() const;
 
 	int id_ = 0;
 	std::atomic_bool is_shutdown_;
@@ -46,9 +46,9 @@ protected:
 	std::mutex mutex_;
 	TimerQueue timer_queue_;
 
-	static const char kTriggetEvent = 1;
-	static const char kTimerEvent = 2;
-	static const int  kMaxTriggetEvents = 50000;
+	static constexpr char kTriggetEvent = 1;
+	static constexpr char kTimerEvent = 2;
+	static constexpr int  kMaxTriggetEvents = 50000;
 };
 
 }

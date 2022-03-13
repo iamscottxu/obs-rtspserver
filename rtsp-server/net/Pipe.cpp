@@ -62,25 +62,25 @@ bool Pipe::Create()
 	return true;
 }
 
-int Pipe::Write(void *buf, int len)
+int Pipe::Write(void *buf, const int len) const
 {
 #if defined(WIN32) || defined(_WIN32)
-    return ::send(pipe_fd_[1], (char *)buf, len, 0);
+    return ::send(pipe_fd_[1], static_cast<char *>(buf), len, 0);
 #else
     return ::write(pipe_fd_[1], buf, len);
 #endif 
 }
 
-int Pipe::Read(void *buf, int len)
+int Pipe::Read(void *buf, const int len) const
 {
 #if defined(WIN32) || defined(_WIN32)
-    return recv(pipe_fd_[0], (char *)buf, len, 0);
+    return recv(pipe_fd_[0], static_cast<char *>(buf), len, 0);
 #else
     return ::read(pipe_fd_[0], buf, len);
 #endif 
 }
 
-void Pipe::Close()
+void Pipe::Close() const
 {
 #if defined(WIN32) || defined(_WIN32) 
 	closesocket(pipe_fd_[0]);

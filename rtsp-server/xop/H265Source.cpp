@@ -19,7 +19,7 @@
 using namespace xop;
 using namespace std;
 
-H265Source::H265Source(uint32_t framerate)
+H265Source::H265Source(const uint32_t framerate)
 	: framerate_(framerate)
 {
 	payload_    = 96;
@@ -27,30 +27,28 @@ H265Source::H265Source(uint32_t framerate)
 	clock_rate_ = 90000;
 }
 
-H265Source* H265Source::CreateNew(uint32_t framerate)
+H265Source* H265Source::CreateNew(const uint32_t framerate)
 {
     return new H265Source(framerate);
 }
 
 H265Source::~H265Source()
-{
-	
-}
+= default;
 
-string H265Source::GetMediaDescription(uint16_t port)
+string H265Source::GetMediaDescription(const uint16_t port)
 {
 	char buf[100] = {0};
 	sprintf(buf, "m=video %hu RTP/AVP 96", port);
 
-	return string(buf);
+	return buf;
 }
 	
 string H265Source::GetAttribute()
 {
-	return string("a=rtpmap:96 H265/90000");
+	return "a=rtpmap:96 H265/90000";
 }
 
-bool H265Source::HandleFrame(MediaChannelId channelId, AVFrame frame)
+bool H265Source::HandleFrame(const MediaChannelId channelId, const AVFrame frame)
 {
 	uint8_t *frame_buf  = frame.buffer.get();
 	size_t frame_size = frame.size;
@@ -73,9 +71,9 @@ bool H265Source::HandleFrame(MediaChannelId channelId, AVFrame frame)
 		}
 	}	
     else {
-		char nalUnitType = (frame_buf[0] & 0x7E) >> 1; 
+		const char nalUnitType = (frame_buf[0] & 0x7E) >> 1; 
 		char FU[3] = {
-			static_cast<char>((frame_buf[0] & 0x81) | (49 << 1)),
+			static_cast<char>(frame_buf[0] & 0x81 | 49 << 1),
 			static_cast<char>(frame_buf[1]),
 			static_cast<char>(0x80 | nalUnitType)
 		};
@@ -138,7 +136,7 @@ uint32_t H265Source::GetTimestamp()
 #else */
 	//auto time_point = chrono::time_point_cast<chrono::milliseconds>(chrono::system_clock::now());
 	//auto time_point = chrono::time_point_cast<chrono::milliseconds>(chrono::steady_clock::now());
-	auto time_point = chrono::time_point_cast<chrono::microseconds>(chrono::steady_clock::now());
-	return (uint32_t)((time_point.time_since_epoch().count() + 500) / 1000 * 90);
+const auto time_point = chrono::time_point_cast<chrono::microseconds>(chrono::steady_clock::now());
+	return static_cast<uint32_t>((time_point.time_since_epoch().count() + 500) / 1000 * 90);
 //#endif 
 }

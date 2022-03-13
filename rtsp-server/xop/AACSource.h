@@ -14,7 +14,7 @@ class AACSource : public MediaSource
 {
 public:
     static AACSource* CreateNew(uint32_t samplerate= 44100, uint8_t channels= 2, bool has_adts= true);
-    virtual ~AACSource();
+    ~AACSource() override;
 
     uint32_t GetSamplerate() const
     { return samplerate_; }
@@ -22,11 +22,11 @@ public:
     uint32_t GetChannels() const
     { return channels_; }
 
-    virtual std::string GetMediaDescription(uint16_t port= 0);
+    std::string GetMediaDescription(uint16_t port= 0) override;
 
-    virtual std::string GetAttribute();
+    std::string GetAttribute() override;
 
-    virtual bool HandleFrame(MediaChannelId channel_id, AVFrame frame);
+    bool HandleFrame(MediaChannelId channel_id, AVFrame frame) override;
 
     static uint32_t GetTimestamp(uint32_t samplerate = 44100);
 
@@ -37,8 +37,8 @@ private:
     uint8_t channels_ = 2;         
     bool has_adts_ = true;
 
-    static const size_t ADTS_SIZE = 7;
-    static const size_t AU_SIZE = 4;
+    static constexpr size_t ADTS_SIZE = 7;
+    static constexpr size_t AU_SIZE = 4;
 };
 
 }

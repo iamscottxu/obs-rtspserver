@@ -13,14 +13,14 @@ namespace xop {
 class CngMd5 : public Md5 {
 public:
 	CngMd5();
-	virtual ~CngMd5();
+	~CngMd5() override;
 
 	void GetMd5Hash(const unsigned char *data, size_t dataSize,
-			unsigned char *outHash);
+			unsigned char *outHash) override;
 
 private:
 #if defined(WIN32) || defined(_WIN32)
-	BCRYPT_ALG_HANDLE hAlgorithm_ = NULL;
+	BCRYPT_ALG_HANDLE hAlgorithm_ = nullptr;
 	DWORD cbHash_ = 0, cbHashObject_ = 0;
 #endif
 };

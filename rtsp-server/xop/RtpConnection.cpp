@@ -11,8 +11,8 @@ using namespace std;
 using namespace xop;
 
 RtpConnection::RtpConnection(const std::weak_ptr<RtspConnection> &rtsp_connection, const uint32_t max_channel_count)
-    : rtsp_connection_(rtsp_connection)
-    , ipv6_(rtsp_connection.lock()->IsIpv6())
+    : max_channel_count_(max_channel_count)
+    , rtsp_connection_(rtsp_connection)
     , local_rtp_port_(max_channel_count)
     , local_rtcp_port_(max_channel_count)
 	, rtpfd_(max_channel_count, 0)
@@ -20,7 +20,7 @@ RtpConnection::RtpConnection(const std::weak_ptr<RtspConnection> &rtsp_connectio
     , peer_rtp_addr_(max_channel_count)
     , peer_rtcp_sddr_(max_channel_count)
     , media_channel_info_(max_channel_count)
-    , max_channel_count_(max_channel_count)
+    , ipv6_(rtsp_connection.lock()->IsIpv6())
 {
 	std::random_device rd;
 
@@ -269,7 +269,7 @@ string RtpConnection::GetRtpInfo(const std::string& rtsp_url) const
 		}
 	}
 
-	return std::string(buf);
+	return buf;
 }
 
 void RtpConnection::SetFrameType(const FrameType frame_type)
@@ -320,7 +320,7 @@ int RtpConnection::SendRtpPacket(MediaChannelId channel_id, const RtpPacket &pkt
 	return ret ? 0 : -1;
 }
 
-int RtpConnection::SendRtpOverTcp(MediaChannelId channel_id, const RtpPacket pkt)
+int RtpConnection::SendRtpOverTcp(MediaChannelId channel_id, const RtpPacket &pkt) const
 {
 	const auto conn = rtsp_connection_.lock();
 	if (!conn) {
@@ -337,7 +337,7 @@ int RtpConnection::SendRtpOverTcp(MediaChannelId channel_id, const RtpPacket pkt
 	return pkt.size;
 }
 
-int RtpConnection::SendRtpOverUdp(MediaChannelId channel_id, const RtpPacket pkt)
+int RtpConnection::SendRtpOverUdp(MediaChannelId channel_id, const RtpPacket &pkt)
 {
 	const int ret = sendto(rtpfd_[static_cast<uint8_t>(channel_id)], reinterpret_cast<const char *>(pkt.data.get()) + 4, pkt.size- 4, 0, 
 	                       reinterpret_cast<sockaddr *>(&peer_rtp_addr_[static_cast<uint8_t>(channel_id)]),
