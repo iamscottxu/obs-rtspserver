@@ -12,6 +12,11 @@ Pipe::Pipe()
 	memset(pipe_fd_, 0, 2);
 }
 
+Pipe::~Pipe()
+{
+	Close();
+}
+
 bool Pipe::Create()
 {
 #if defined(__linux) || defined(__linux__)
