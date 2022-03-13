@@ -18,7 +18,7 @@
 #include <sys/time.h>
 #endif
 extern "C" {
-#include "libb64/include/b64/cencode.h"
+#include "b64/cencode.h"
 }
 
 using namespace xop;

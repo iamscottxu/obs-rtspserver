@@ -3,13 +3,13 @@ project(libb64)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-include_directories("include")
+include_directories("libb64/include")
 
 file(GLOB libb64_SOURCES
-	src/*.c)
+	libb64/src/*.c)
 
 file(GLOB libb64_HEADERS
-	include/b64/*.h)
+	libb64/include/b64/*.h)
 
 add_library(libb64 STATIC
 	${libb64_SOURCES}
