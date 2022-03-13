@@ -18,7 +18,15 @@ EpollTaskScheduler::EpollTaskScheduler(int id) : TaskScheduler(id)
 	this->UpdateChannel(wakeup_channel_);
 }
 
-EpollTaskScheduler::~EpollTaskScheduler() {}
+EpollTaskScheduler::~EpollTaskScheduler()
+{
+#if defined(__linux) || defined(__linux__)
+	if (epollfd_ >= 0) {
+		close(epollfd_);
+		epollfd_ = -1;
+	}
+#endif
+}
 
 void EpollTaskScheduler::UpdateChannel(ChannelPtr channel)
 {
