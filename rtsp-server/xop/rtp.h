@@ -1,5 +1,5 @@
 // PHZ
-// 2018-6-11
+// 2021-9-2
 
 #ifndef XOP_RTP_H
 #define XOP_RTP_H
@@ -14,6 +14,7 @@
 #define RTP_TCP_HEAD_SIZE	   4
 #define RTP_VPX_HEAD_SIZE      1
 
+#define RTP_HEADER_BIG_ENDIAN  0
 namespace xop
 {
 
@@ -26,13 +27,23 @@ enum class TransportMode
 
 typedef struct _RTP_header
 {
+#if RTP_HEADER_BIG_ENDIAN
+	/* 大端序 */
+	unsigned char version :   2;
+	unsigned char padding :   1;
+	unsigned char extension : 1;
+	unsigned char csrc :      4;
+	unsigned char marker :    1;
+	unsigned char payload :   7;
+#else
 	/* 小端序 */
-	unsigned char csrc:4;
-	unsigned char extension:1;
-	unsigned char padding:1;
-	unsigned char version:2;
-	unsigned char payload:7;
-	unsigned char marker:1;
+	unsigned char csrc :      4;
+	unsigned char extension : 1;
+	unsigned char padding :   1;
+	unsigned char version :   2;
+	unsigned char payload :   7;
+	unsigned char marker :    1;
+#endif 
 
 	unsigned short seq;
 	unsigned int   ts;
