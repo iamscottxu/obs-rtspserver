@@ -16,8 +16,8 @@ public:
 	EpollTaskScheduler(int id = 0);
 	~EpollTaskScheduler() override;
 
-	void UpdateChannel(ChannelPtr channel) override;
-	void RemoveChannel(ChannelPtr& channel) override;
+	void UpdateChannel(const ChannelPtr& channel) override;
+	void RemoveChannel(const ChannelPtr &channel) override;
 
 	// timeout: ms
 	bool HandleEvent(int timeout) override;

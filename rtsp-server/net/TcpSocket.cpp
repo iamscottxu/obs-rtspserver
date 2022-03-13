@@ -10,7 +10,7 @@
 
 using namespace xop;
 
-TcpSocket::TcpSocket(SOCKET sockfd, const bool ipv6)
+TcpSocket::TcpSocket(const SOCKET sockfd, const bool ipv6)
 	: sockfd_(sockfd), ipv6_(ipv6)
 {
     
@@ -22,7 +22,7 @@ TcpSocket::~TcpSocket()
 SOCKET TcpSocket::Create(const bool ipv6)
 {
 	ipv6_ = ipv6;
-	sockfd_ = ::socket(ipv6_ ? AF_INET6 : AF_INET, SOCK_STREAM, 0);
+	sockfd_ = ::socket(ipv6_ ? AF_INET6 : AF_INET, SOCK_STREAM, 0); //TODO
 	return sockfd_;
 }
 

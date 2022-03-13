@@ -86,7 +86,7 @@ MemoryManager& MemoryManager::Instance()
 	return s_mgr;
 }
 
-void* MemoryManager::Alloc(uint32_t size)
+void* MemoryManager::Alloc(const uint32_t size)
 {
 	for (auto &memory_pool : memory_pools_) {
 		if (size <= memory_pool.BolckSize()) {
@@ -112,6 +112,6 @@ void MemoryManager::Free(void* ptr)
 		pool->Free(ptr);
 	}
 	else {
-		::free(block);
+		free(block);
 	}
 }

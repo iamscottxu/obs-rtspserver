@@ -36,10 +36,10 @@ public:
 
 	std::shared_ptr<TaskScheduler> GetTaskScheduler();
 
-	bool AddTriggerEvent(TriggerEvent callback);
+	bool AddTriggerEvent(const TriggerEvent &callback);
 	TimerId AddTimer(TimerEvent timerEvent, uint32_t msec);
 	void RemoveTimer(TimerId timerId);	
-	void UpdateChannel(ChannelPtr channel);
+	void UpdateChannel(const ChannelPtr &channel);
 	void RemoveChannel(ChannelPtr& channel);
 	
 	void Loop();

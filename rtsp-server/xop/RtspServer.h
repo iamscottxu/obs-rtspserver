@@ -19,7 +19,7 @@ class RtspConnection;
 class RtspServer : public Rtsp, public TcpServer
 {
 public:    
-    static std::shared_ptr<RtspServer> Create(xop::EventLoop* loop);
+    static std::shared_ptr<RtspServer> Create(EventLoop * loop);
     ~RtspServer() override;
 
     MediaSessionId AddSession(MediaSession* session);

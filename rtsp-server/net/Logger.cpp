@@ -80,7 +80,7 @@ void Logger::Log(const Priority priority, const char* __file, const char* __func
 
 void Logger::Log2(const Priority priority, const char *fmt, ...)
 {
-	std::unique_lock<std::mutex> lock(mutex_);
+	std::unique_lock lock(mutex_);
 
 	char buf[4096] = { 0 };
 	sprintf(buf, "[%s] ", Priority_To_String[priority]);  
@@ -93,7 +93,7 @@ void Logger::Log2(const Priority priority, const char *fmt, ...)
 	_writeCallback(priority, std::string(buf));
 }
 
-void Logger::Write(const std::string info)
+void Logger::Write(const std::string &info)
 {
 	if (ofs_.is_open())
 	{

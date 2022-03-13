@@ -26,7 +26,7 @@ SelectTaskScheduler::SelectTaskScheduler(const int id)
 SelectTaskScheduler::~SelectTaskScheduler()
 = default;
 
-void SelectTaskScheduler::UpdateChannel(ChannelPtr channel)
+void SelectTaskScheduler::UpdateChannel(const ChannelPtr& channel)
 {
 	std::lock_guard lock(mutex_);
 
@@ -52,7 +52,7 @@ void SelectTaskScheduler::UpdateChannel(ChannelPtr channel)
 	}	
 }
 
-void SelectTaskScheduler::RemoveChannel(ChannelPtr& channel)
+void SelectTaskScheduler::RemoveChannel(const ChannelPtr &channel)
 {
 	std::lock_guard lock(mutex_);
 

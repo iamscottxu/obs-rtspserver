@@ -25,7 +25,7 @@ public:
 	void SetNewConnectionCallback(const NewConnectionCallback& cb)
 	{ new_connection_callback_ = cb; }
 
-	int  Listen(std::string ip, uint16_t port);
+	int  Listen(const std::string &ip, uint16_t port);
 	void Close();
 
 private:

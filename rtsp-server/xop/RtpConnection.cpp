@@ -10,7 +10,7 @@
 using namespace std;
 using namespace xop;
 
-RtpConnection::RtpConnection(const std::weak_ptr<RtspConnection> &rtsp_connection, const uint32_t max_channel_count)
+RtpConnection::RtpConnection(const std::weak_ptr<RtspConnection> &rtsp_connection, const uint8_t max_channel_count)
     : max_channel_count_(max_channel_count)
     , rtsp_connection_(rtsp_connection)
     , local_rtp_port_(max_channel_count)

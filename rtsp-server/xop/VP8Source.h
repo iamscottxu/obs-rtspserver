@@ -14,7 +14,7 @@ public:
 	static VP8Source *CreateNew(uint32_t framerate = 25);
 	~VP8Source() override;
 
-	void Setframerate(uint32_t framerate) { framerate_ = framerate; }
+	void Setframerate(const uint32_t framerate) { framerate_ = framerate; }
 
 	uint32_t GetFramerate() const { return framerate_; }
 

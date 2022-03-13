@@ -78,7 +78,7 @@ void SocketUtil::SetReuseAddr(const SOCKET sockfd)
 		   sizeof on);
 }
 
-void SocketUtil::SetReusePort(SOCKET sockfd)
+void SocketUtil::SetReusePort(const SOCKET sockfd)
 {
 #ifdef SO_REUSEPORT
 	int on = 1;
@@ -87,7 +87,7 @@ void SocketUtil::SetReusePort(SOCKET sockfd)
 #endif
 }
 
-void SocketUtil::SetNoDelay(SOCKET sockfd)
+void SocketUtil::SetNoDelay(const SOCKET sockfd)
 {
 #ifdef TCP_NODELAY
 	int on = 1;
@@ -96,13 +96,13 @@ void SocketUtil::SetNoDelay(SOCKET sockfd)
 #endif
 }
 
-void SocketUtil::SetKeepAlive(SOCKET sockfd)
+void SocketUtil::SetKeepAlive(const SOCKET sockfd)
 {
 	int on = 1;
 	setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<char *>(&on), sizeof on);
 }
 
-void SocketUtil::SetNoSigpipe(SOCKET sockfd)
+void SocketUtil::SetNoSigpipe(const SOCKET sockfd)
 {
 #ifdef SO_NOSIGPIPE
 	int on = 1;
@@ -110,12 +110,12 @@ void SocketUtil::SetNoSigpipe(SOCKET sockfd)
 #endif
 }
 
-void SocketUtil::SetSendBufSize(SOCKET sockfd, int size)
+void SocketUtil::SetSendBufSize(const SOCKET sockfd, int size)
 {
 	setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<char *>(&size), sizeof size);
 }
 
-void SocketUtil::SetRecvBufSize(SOCKET sockfd, int size)
+void SocketUtil::SetRecvBufSize(const SOCKET sockfd, int size)
 {
 	setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<char *>(&size), sizeof size);
 }
@@ -136,7 +136,7 @@ std::string SocketUtil::GetPeerIp(const SOCKET sockfd, const bool ipv6)
 	return str;
 }
 
-std::string SocketUtil::GetSocketIp(SOCKET sockfd, const bool ipv6)
+std::string SocketUtil::GetSocketIp(const SOCKET sockfd, const bool ipv6)
 {
 	if (ipv6) {
 		sockaddr_in6 addr = {0};
@@ -152,7 +152,7 @@ std::string SocketUtil::GetSocketIp(SOCKET sockfd, const bool ipv6)
 	return str;
 }
 
-uint16_t SocketUtil::GetPeerPort(SOCKET sockfd, const bool ipv6)
+uint16_t SocketUtil::GetPeerPort(const SOCKET sockfd, const bool ipv6)
 {
 	if (ipv6) {
 		sockaddr_in6 addr = {0};
@@ -166,7 +166,7 @@ uint16_t SocketUtil::GetPeerPort(SOCKET sockfd, const bool ipv6)
 	return 0;
 }
 
-int SocketUtil::GetPeerAddr(SOCKET sockfd, sockaddr_in *addr)
+int SocketUtil::GetPeerAddr(const SOCKET sockfd, sockaddr_in *addr)
 {
 	socklen_t addrlen = sizeof(struct sockaddr_in);
 	return getpeername(sockfd, reinterpret_cast<sockaddr *>(addr), &addrlen);
@@ -178,19 +178,19 @@ int SocketUtil::GetPeerAddr6(const SOCKET sockfd, sockaddr_in6 *addr)
 	return getpeername(sockfd, reinterpret_cast<sockaddr *>(addr), &addrlen);
 }
 
-int SocketUtil::GetSocketAddr(SOCKET sockfd, sockaddr_in *addr)
+int SocketUtil::GetSocketAddr(const SOCKET sockfd, sockaddr_in *addr)
 {
 	socklen_t addrlen = sizeof(struct sockaddr_in);
 	return getsockname(sockfd, reinterpret_cast<sockaddr *>(addr), &addrlen);
 }
 
-int SocketUtil::GetSocketAddr6(SOCKET sockfd, sockaddr_in6 *addr)
+int SocketUtil::GetSocketAddr6(const SOCKET sockfd, sockaddr_in6 *addr)
 {
 	socklen_t addrlen = sizeof(struct sockaddr_in6);
 	return getsockname(sockfd, reinterpret_cast<sockaddr *>(addr), &addrlen);
 }
 
-void SocketUtil::Close(SOCKET sockfd)
+void SocketUtil::Close(const SOCKET sockfd)
 {
 #if defined(WIN32) || defined(_WIN32)
 	::closesocket(sockfd);
@@ -199,8 +199,7 @@ void SocketUtil::Close(SOCKET sockfd)
 #endif
 }
 
-bool SocketUtil::Connect(SOCKET sockfd, const std::string &ip, const uint16_t port,
-                         const int timeout, const bool ipv6)
+bool SocketUtil::Connect(const SOCKET sockfd, const std::string &ip, const uint16_t port, const int timeout, const bool ipv6)
 {
 	bool is_connected = true;
 	if (timeout > 0) {
@@ -246,13 +245,13 @@ bool SocketUtil::Connect(SOCKET sockfd, const std::string &ip, const uint16_t po
 	return is_connected;
 }
 
-bool SocketUtil::IsIpv6Address(std::string ip)
+bool SocketUtil::IsIpv6Address(const std::string &ip)
 {
 	in6_addr addr6{};
 	return inet_pton(AF_INET6, ip.c_str(), &addr6) > 0;
 }
 
-bool SocketUtil::IsIpv6Socket(SOCKET sockfd)
+bool SocketUtil::IsIpv6Socket(const SOCKET sockfd)
 {
 	sockaddr_in6 addr = {0};
 	socklen_t addrlen = sizeof addr;

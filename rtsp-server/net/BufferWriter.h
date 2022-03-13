@@ -23,10 +23,10 @@ void WriteUint16LE(char* p, uint16_t value);
 class BufferWriter
 {
 public:
-	BufferWriter(int capacity = kMaxQueueLength);
-	virtual ~BufferWriter() {}
+	explicit BufferWriter(int capacity = kMaxQueueLength);
+	virtual ~BufferWriter() = default;
 
-	bool Append(std::shared_ptr<char> data, size_t size, uint32_t index=0);
+	bool Append(const std::shared_ptr<char> &data, size_t size, uint32_t index=0);
 	bool Append(const char* data, size_t size, uint32_t index=0);
 	int Send(SOCKET sockfd, int timeout=0);
 
@@ -43,8 +43,8 @@ private:
 	typedef struct 
 	{
 		std::shared_ptr<char> data;
-		size_t size;
-		uint32_t writeIndex;
+		size_t size{};
+		uint32_t writeIndex{};
 	} Packet;
 
 	std::queue<Packet> buffer_; 		

@@ -54,7 +54,7 @@ void TimerQueue::HandleTimerEvent()
 {
 	if(!timers_.empty()) {
 		std::lock_guard locker(mutex_);
-		int64_t timePoint = GetTimeNow();
+		const int64_t timePoint = GetTimeNow();
 		while(!timers_.empty() && events_.begin()->first.first<=timePoint)
 		{	
 			TimerId timerId = events_.begin()->first.second;

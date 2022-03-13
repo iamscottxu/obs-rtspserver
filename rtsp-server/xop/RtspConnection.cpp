@@ -419,7 +419,7 @@ bool RtspConnection::HandleAuthentication()
 	return true;
 }
 
-void RtspConnection::SendOptions(ConnectionMode mode)
+void RtspConnection::SendOptions(const ConnectionMode mode)
 {
 	const auto rtsp = rtsp_.lock();
 	if (!rtsp) {

@@ -10,7 +10,7 @@
 
 using namespace xop;
 
-EpollTaskScheduler::EpollTaskScheduler(int id) : TaskScheduler(id)
+EpollTaskScheduler::EpollTaskScheduler(const int id) : TaskScheduler(id)
 {
 #if defined(__linux) || defined(__linux__)
 	epollfd_ = epoll_create1(1024);
@@ -28,7 +28,7 @@ EpollTaskScheduler::~EpollTaskScheduler()
 #endif
 }
 
-void EpollTaskScheduler::UpdateChannel(ChannelPtr channel)
+void EpollTaskScheduler::UpdateChannel(const ChannelPtr &channel)
 {
 	std::lock_guard lock(mutex_);
 #if defined(__linux) || defined(__linux__)
@@ -65,7 +65,7 @@ void EpollTaskScheduler::Update(int operation, ChannelPtr &channel)
 #endif
 }
 
-void EpollTaskScheduler::RemoveChannel(ChannelPtr &channel)
+void EpollTaskScheduler::RemoveChannel(const ChannelPtr &channel)
 {
 	std::lock_guard lock(mutex_);
 #if defined(__linux) || defined(__linux__)

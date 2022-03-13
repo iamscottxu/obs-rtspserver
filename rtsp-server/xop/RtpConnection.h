@@ -23,7 +23,7 @@ class RtspConnection;
 
 class RtpConnection {
 public:
-    RtpConnection(const std::weak_ptr<RtspConnection> &rtsp_connection, uint32_t max_channel_count);
+    RtpConnection(const std::weak_ptr<RtspConnection> &rtsp_connection, uint8_t max_channel_count);
 	virtual ~RtpConnection();
 
     void SetClockRate(MediaChannelId channel_id, const uint32_t clock_rate)

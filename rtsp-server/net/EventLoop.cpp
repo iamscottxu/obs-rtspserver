@@ -119,11 +119,11 @@ void EventLoop::Quit()
 	threads_.clear();
 }
 	
-void EventLoop::UpdateChannel(ChannelPtr channel)
+void EventLoop::UpdateChannel(const ChannelPtr& channel)
 {
 	std::lock_guard locker(mutex_);
 	if (!task_schedulers_.empty()) {
-		task_schedulers_[0]->UpdateChannel(std::move(channel));
+		task_schedulers_[0]->UpdateChannel(channel);
 	}	
 }
 
@@ -152,7 +152,7 @@ void EventLoop::RemoveTimer(const TimerId timerId)
 	}	
 }
 
-bool EventLoop::AddTriggerEvent(const TriggerEvent callback)
+bool EventLoop::AddTriggerEvent(const TriggerEvent &callback)
 {   
 	std::lock_guard locker(mutex_);
 	if (!task_schedulers_.empty()) {

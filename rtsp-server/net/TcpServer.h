@@ -25,7 +25,7 @@ public:
 	explicit TcpServer(EventLoop* event_loop);
 	virtual ~TcpServer();  
 
-	virtual bool Start(std::string ip, uint16_t port);
+	virtual bool Start(const std::string &ip, uint16_t port);
 	virtual void Stop();
 
 	/*std::string GetIPAddress() const

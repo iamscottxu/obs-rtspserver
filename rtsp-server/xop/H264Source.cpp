@@ -25,7 +25,7 @@ using namespace xop;
 using namespace std;
 
 H264Source::H264Source(const vector<uint8_t> &sps, const vector<uint8_t> &pps,
-		       uint32_t framerate)
+		       const uint32_t framerate)
 	: framerate_(framerate),
 	  sps_(sps), pps_(pps)
 {
@@ -34,7 +34,7 @@ H264Source::H264Source(const vector<uint8_t> &sps, const vector<uint8_t> &pps,
 	clock_rate_ = 90000;
 }
 
-H264Source *H264Source::CreateNew(uint32_t framerate)
+H264Source *H264Source::CreateNew(const uint32_t framerate)
 {
 	return new H264Source(vector<uint8_t>(), vector<uint8_t>(), framerate);
 }
@@ -48,7 +48,7 @@ H264Source *H264Source::CreateNew(const vector<uint8_t> &sps,
 H264Source::~H264Source()
 = default;
 
-string H264Source::GetMediaDescription(uint16_t port)
+string H264Source::GetMediaDescription(const uint16_t port)
 {
 	char buf[100] = {0};
 	sprintf(buf, "m=video %hu RTP/AVP 96", port); // \r\nb=AS:2000
@@ -169,7 +169,7 @@ const auto time_point = chrono::time_point_cast<chrono::microseconds>(chrono::st
 //#endif
 }
 
-std::string H264Source::Base64Encode(const void *input, size_t size)
+std::string H264Source::Base64Encode(const void *input, const size_t size)
 {
 	std::vector<char> buffer(size / 3 * 4 + (size % 3 > 0 ? 4 : 0) + 1);
 	base64_encodestate b64encoder;
@@ -180,6 +180,6 @@ std::string H264Source::Base64Encode(const void *input, size_t size)
 				      static_cast<int>(size), buffer.data(), &b64encoder);
 	base64_encode_blockend(buffer.data() + length, &b64encoder);
 
-	return std::string(buffer.cbegin(), buffer.cend() - 1);
+	return std::string(buffer.cbegin(), buffer.cend() - 1); //TODO
 }
 

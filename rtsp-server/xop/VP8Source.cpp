@@ -25,7 +25,7 @@ VP8Source::VP8Source(const uint32_t framerate) : framerate_(framerate)
 	clock_rate_ = 90000;
 }
 
-VP8Source *VP8Source::CreateNew(uint32_t framerate)
+VP8Source *VP8Source::CreateNew(const uint32_t framerate)
 {
 	return new VP8Source(framerate);
 }

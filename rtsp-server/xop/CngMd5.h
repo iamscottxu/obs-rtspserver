@@ -5,7 +5,7 @@
 #include "Md5.h"
 
 #if defined(WIN32) || defined(_WIN32)
-#include <windows.h>
+#include <Windows.h>
 #include <bcrypt.h>
 #endif
 

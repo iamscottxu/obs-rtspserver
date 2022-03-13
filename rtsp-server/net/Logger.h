@@ -41,7 +41,7 @@ public:
 	void Log2(Priority priority, const char *fmt, ...);
 
 private:
-	void Write(std::string buf);
+	void Write(const std::string &buf);
 	Logger();
 
 	std::mutex mutex_;

@@ -1,9 +1,9 @@
 #ifndef XOP_MEMMORY_MANAGER_H
 #define XOP_MEMMORY_MANAGER_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdint>
 #include <mutex>
 
 namespace xop

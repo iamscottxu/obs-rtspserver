@@ -54,7 +54,7 @@ public:
     void SetRtspUrlSuffix(const std::string& suffix)
     { suffix_ = suffix; }
 
-    std::string GetSdpMessage(std::string ip, std::string session_name, bool ipv6 = false) const;
+    std::string GetSdpMessage(std::string ip, const std::string &session_name, bool ipv6 = false) const;
 
     MediaSource* GetMediaSource(MediaChannelId channel_id) const;
 

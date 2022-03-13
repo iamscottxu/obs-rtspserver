@@ -97,18 +97,18 @@ void TcpServer::Stop()
 	return;
 }
 
-TcpConnection::Ptr TcpServer::OnConnect(SOCKET sockfd)
+TcpConnection::Ptr TcpServer::OnConnect(const SOCKET sockfd)
 {
 	return std::make_shared<TcpConnection>(event_loop_->GetTaskScheduler().get(), sockfd);
 }
 
-void TcpServer::AddConnection(SOCKET sockfd, TcpConnection::Ptr tcpConn)
+void TcpServer::AddConnection(const SOCKET sockfd, TcpConnection::Ptr tcpConn)
 {
 	std::lock_guard locker(mutex_);
 	connections_.emplace(sockfd, tcpConn);
 }
 
-void TcpServer::RemoveConnection(SOCKET sockfd)
+void TcpServer::RemoveConnection(const SOCKET sockfd)
 {
 	std::lock_guard locker(mutex_);
 	connections_.erase(sockfd);
