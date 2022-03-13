@@ -1,0 +1,3 @@
+[submodule "rtsp-server/3rdpart/libb64/libb64"]
+	path = rtsp-server/3rdpart/libb64/libb64
+	url = https://github.com/libb64/libb64
