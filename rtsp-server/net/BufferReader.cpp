@@ -3,7 +3,6 @@
 
 #include "BufferReader.h"
 #include "Socket.h"
-#include <cstring>
 
 using namespace xop;
 uint32_t xop::ReadUint32BE(char *data)

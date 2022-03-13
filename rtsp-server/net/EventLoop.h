@@ -6,16 +6,11 @@
 
 #include <memory>
 #include <atomic>
-#include <unordered_map>
-#include <functional>
-#include <queue>
 #include <thread>
 #include <mutex>
 
 #include "TaskScheduler.h"
-#include "Pipe.h"
 #include "Timer.h"
-#include "RingBuffer.h"
 
 #define TASK_SCHEDULER_PRIORITY_LOW 0
 #define TASK_SCHEDULER_PRIORITY_NORMAL 1

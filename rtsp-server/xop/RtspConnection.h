@@ -12,10 +12,8 @@
 #include "RtspMessage.h"
 #include "DigestAuthentication.h"
 #include "rtsp.h"
-#include <iostream>
 #include <functional>
 #include <memory>
-#include <vector>
 #include <cstdint>
 
 namespace xop {

@@ -9,11 +9,8 @@
 
 #include <string>
 #include <mutex>
-#include <thread>
 #include <fstream>
-#include <cstring>
 #include <iostream>
-#include <sstream>
 
 namespace xop {
 

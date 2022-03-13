@@ -5,7 +5,6 @@
 #define XOP_RING_BUFFER_H
 
 #include <vector>
-#include <memory>
 #include <atomic>
 #include <iostream>
 

@@ -6,12 +6,9 @@
 
 #include "media.h"
 #include "rtp.h"
-#include "net/Socket.h"
 #include <string>
-#include <memory>
 #include <cstdint>
 #include <functional>
-#include <map>
 
 namespace xop {
 

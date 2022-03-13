@@ -8,7 +8,6 @@
 #include <vector>
 #include <string>
 #include <algorithm>
-#include <memory>
 #include "Socket.h"
 
 namespace xop {

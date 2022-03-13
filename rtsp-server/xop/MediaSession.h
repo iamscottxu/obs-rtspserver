@@ -13,6 +13,7 @@
 #include <atomic>
 #include <random>
 #include <cstdint>
+#include <map>
 #include <unordered_set>
 #include "media.h"
 #include "H264Source.h"

@@ -3,8 +3,6 @@
 #include "TcpServer.h"
 #include "Acceptor.h"
 #include "EventLoop.h"
-#include "Logger.h"
-#include <cstdio>
 #include <utility>
 
 using namespace xop;

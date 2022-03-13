@@ -1,7 +1,6 @@
 #ifndef _XOP_BASEMD5_H
 #define _XOP_BASEMD5_H
 
-#include <string>
 #include "Md5.h"
 
 namespace xop {

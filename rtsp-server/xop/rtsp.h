@@ -9,10 +9,6 @@
 #include <cstdio>
 #include <string>
 #include "MediaSession.h"
-#include "net/Acceptor.h"
-#include "net/EventLoop.h"
-#include "net/Socket.h"
-#include "net/Timer.h"
 #include "net/Logger.h"
 
 namespace xop {

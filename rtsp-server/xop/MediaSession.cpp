@@ -11,7 +11,6 @@
 #include <forward_list>
 #include <utility>
 #include "net/Logger.h"
-#include "net/SocketUtil.h"
 
 using namespace xop;
 using namespace std;

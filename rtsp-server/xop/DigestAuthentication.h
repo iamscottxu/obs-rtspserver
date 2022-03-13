@@ -4,7 +4,6 @@
 #ifndef RTSP_DIGEST_AUTHENTICATION_H
 #define RTSP_DIGEST_AUTHENTICATION_H
 
-#include <cstdint>
 #include <string>
 #include "Md5.h"
 

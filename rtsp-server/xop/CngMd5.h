@@ -1,7 +1,6 @@
 #ifndef _XOP_CNGMD5_H
 #define _XOP_CNGMD5_H
 
-#include <string>
 #include "Md5.h"
 
 #if defined(WIN32) || defined(_WIN32)

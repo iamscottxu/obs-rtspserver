@@ -1,7 +1,5 @@
 #include "RtspServer.h"
 #include "RtspConnection.h"
-#include "net/SocketUtil.h"
-#include "net/Logger.h"
 
 using namespace xop;
 using namespace std;

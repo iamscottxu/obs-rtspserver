@@ -7,7 +7,6 @@
 #include <cstdint>
 #include <memory>
 #include <queue>
-#include <string>
 #include "Socket.h"
 
 namespace xop {

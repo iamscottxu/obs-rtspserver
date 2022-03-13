@@ -14,7 +14,6 @@
 #include "rtp.h"
 #include "media.h"
 #include "net/Socket.h"
-#include "net/TcpConnection.h"
 
 namespace xop {
 

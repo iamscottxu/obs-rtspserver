@@ -1,8 +1,6 @@
 #ifndef XOP_MEMMORY_MANAGER_H
 #define XOP_MEMMORY_MANAGER_H
 
-#include <cstdio>
-#include <cstdlib>
 #include <cstdint>
 #include <mutex>
 
