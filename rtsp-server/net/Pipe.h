@@ -6,11 +6,9 @@
 
 #include "TcpSocket.h"
 
-namespace xop
-{
-	
-class Pipe
-{
+namespace xop {
+
+class Pipe {
 public:
 	Pipe();
 	virtual ~Pipe();
@@ -21,7 +19,7 @@ public:
 
 	SOCKET Read() const { return pipe_fd_[0]; }
 	SOCKET Write() const { return pipe_fd_[1]; }
-	
+
 private:
 	SOCKET pipe_fd_[2]{};
 };

@@ -11,48 +11,51 @@
 #include "Channel.h"
 #include "SocketUtil.h"
 
-namespace xop
-{
+namespace xop {
 
-class TcpConnection : public std::enable_shared_from_this<TcpConnection>
-{
+class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 public:
 	using Ptr = std::shared_ptr<TcpConnection>;
-	using DisconnectCallback = std::function<void(std::shared_ptr<TcpConnection> conn)> ;
-	using CloseCallback = std::function<void(std::shared_ptr<TcpConnection> conn)>;
-	using ReadCallback = std::function<bool(std::shared_ptr<TcpConnection> conn, xop::BufferReader& buffer)>;
+	using DisconnectCallback =
+		std::function<void(std::shared_ptr<TcpConnection> conn)>;
+	using CloseCallback =
+		std::function<void(std::shared_ptr<TcpConnection> conn)>;
+	using ReadCallback =
+		std::function<bool(std::shared_ptr<TcpConnection> conn,
+				   xop::BufferReader &buffer)>;
 
 	TcpConnection(TaskScheduler *task_scheduler, SOCKET sockfd);
 	virtual ~TcpConnection();
 
-	virtual TaskScheduler* GetTaskScheduler() const 
-	{ return task_scheduler_; }
+	virtual TaskScheduler *GetTaskScheduler() const
+	{
+		return task_scheduler_;
+	}
 
-	void SetReadCallback(const ReadCallback& cb)
-	{ read_cb_ = cb; }
+	void SetReadCallback(const ReadCallback &cb) { read_cb_ = cb; }
 
-	void SetCloseCallback(const CloseCallback& cb)
-	{ close_cb_ = cb; }
+	void SetCloseCallback(const CloseCallback &cb) { close_cb_ = cb; }
 
 	void Send(const std::shared_ptr<char> &data, size_t size);
 	void Send(const char *data, size_t size);
-    
+
 	void Disconnect();
 
-	bool IsClosed() const 
-	{ return is_closed_; }
+	bool IsClosed() const { return is_closed_; }
 
-	bool IsIpv6() const
-	{ return ipv6_; }
+	bool IsIpv6() const { return ipv6_; }
 
-	SOCKET GetSocket() const
-	{ return channel_->GetSocket(); }
+	SOCKET GetSocket() const { return channel_->GetSocket(); }
 
 	uint16_t GetPort() const
-	{ return SocketUtil::GetPeerPort(channel_->GetSocket(), ipv6_); }
+	{
+		return SocketUtil::GetPeerPort(channel_->GetSocket(), ipv6_);
+	}
 
 	std::string GetIp() const
-	{ return SocketUtil::GetPeerIp(channel_->GetSocket(), ipv6_); }
+	{
+		return SocketUtil::GetPeerIp(channel_->GetSocket(), ipv6_);
+	}
 
 protected:
 	friend class TcpServer;
@@ -60,12 +63,14 @@ protected:
 	virtual void HandleRead();
 	virtual void HandleWrite();
 	virtual void HandleClose();
-	virtual void HandleError();	
+	virtual void HandleError();
 
-	void SetDisconnectCallback(const DisconnectCallback& cb)
-	{ disconnect_cb_ = cb; }
+	void SetDisconnectCallback(const DisconnectCallback &cb)
+	{
+		disconnect_cb_ = cb;
+	}
 
-	TaskScheduler* task_scheduler_;
+	TaskScheduler *task_scheduler_;
 	std::unique_ptr<BufferReader> read_buffer_;
 	std::unique_ptr<BufferWriter> write_buffer_;
 	std::atomic_bool is_closed_;
@@ -83,4 +88,4 @@ private:
 
 }
 
-#endif 
+#endif

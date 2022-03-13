@@ -24,99 +24,103 @@
 #include "net/Socket.h"
 #include "net/RingBuffer.h"
 
-namespace xop
-{
+namespace xop {
 
 class RtpConnection;
 
-class MediaSession
-{
+class MediaSession {
 public:
-    using Ptr = std::shared_ptr<MediaSession>;
-	using NotifyConnectedCallback = std::function<void (MediaSessionId sessionId, std::string peer_ip, uint16_t peer_port)> ;
-	using NotifyDisconnectedCallback = std::function<void (MediaSessionId sessionId, std::string peer_ip, uint16_t peer_port)> ;
+	using Ptr = std::shared_ptr<MediaSession>;
+	using NotifyConnectedCallback =
+		std::function<void(MediaSessionId sessionId,
+				   std::string peer_ip, uint16_t peer_port)>;
+	using NotifyDisconnectedCallback =
+		std::function<void(MediaSessionId sessionId,
+				   std::string peer_ip, uint16_t peer_port)>;
 
-    static MediaSession* CreateNew(std::string url_suffix="live", uint32_t max_channel_count =2);
+	static MediaSession *CreateNew(std::string url_suffix = "live",
+				       uint32_t max_channel_count = 2);
 	virtual ~MediaSession();
 
-    bool AddSource(MediaChannelId channel_id, MediaSource* source);
-    bool RemoveSource(MediaChannelId channel_id);
+	bool AddSource(MediaChannelId channel_id, MediaSource *source);
+	bool RemoveSource(MediaChannelId channel_id);
 
-    bool StartMulticast();
+	bool StartMulticast();
 
-    void AddNotifyConnectedCallback(const NotifyConnectedCallback &callback);
+	void
+	AddNotifyConnectedCallback(const NotifyConnectedCallback &callback);
 
-    void AddNotifyDisconnectedCallback(const NotifyDisconnectedCallback &callback);
+	void AddNotifyDisconnectedCallback(
+		const NotifyDisconnectedCallback &callback);
 
-    std::string GetRtspUrlSuffix() const
-    { return suffix_; }
+	std::string GetRtspUrlSuffix() const { return suffix_; }
 
-    void SetRtspUrlSuffix(const std::string& suffix)
-    { suffix_ = suffix; }
+	void SetRtspUrlSuffix(const std::string &suffix) { suffix_ = suffix; }
 
-    std::string GetSdpMessage(std::string ip, const std::string &session_name, bool ipv6 = false) const;
+	std::string GetSdpMessage(std::string ip,
+				  const std::string &session_name,
+				  bool ipv6 = false) const;
 
-    MediaSource* GetMediaSource(MediaChannelId channel_id) const;
+	MediaSource *GetMediaSource(MediaChannelId channel_id) const;
 
-    bool HandleFrame(MediaChannelId channel_id, AVFrame frame);
+	bool HandleFrame(MediaChannelId channel_id, AVFrame frame);
 
-    bool AddClient(SOCKET rtspfd, const std::shared_ptr<RtpConnection> &rtp_conn);
-    void RemoveClient(SOCKET rtspfd);
+	bool AddClient(SOCKET rtspfd,
+		       const std::shared_ptr<RtpConnection> &rtp_conn);
+	void RemoveClient(SOCKET rtspfd);
 
-    MediaSessionId GetMediaSessionId() const
-    { return session_id_; }
+	MediaSessionId GetMediaSessionId() const { return session_id_; }
 
-    uint32_t GetNumClient() const
-    { return static_cast<uint32_t>(clients_.size()); }
+	uint32_t GetNumClient() const
+	{
+		return static_cast<uint32_t>(clients_.size());
+	}
 
-    uint32_t GetMaxChannelCount() const
-    { return max_channel_count_; }
+	uint32_t GetMaxChannelCount() const { return max_channel_count_; }
 
-    bool IsMulticast() const
-    { return is_multicast_; }
+	bool IsMulticast() const { return is_multicast_; }
 
-    std::string GetMulticastIp() const
-    { return multicast_ip_; }
+	std::string GetMulticastIp() const { return multicast_ip_; }
 
-    uint16_t GetMulticastPort(MediaChannelId channel_id) const
-    {
-	    if (static_cast<uint8_t>(channel_id) >= multicast_port_.size()) {
+	uint16_t GetMulticastPort(MediaChannelId channel_id) const
+	{
+		if (static_cast<uint8_t>(channel_id) >=
+		    multicast_port_.size()) {
 			return 0;
-		}         
-        return multicast_port_[static_cast<uint8_t>(channel_id)];
-    }
+		}
+		return multicast_port_[static_cast<uint8_t>(channel_id)];
+	}
 
 private:
-    friend class MediaSource;
-    friend class RtspServer;
-    MediaSession(std::string url_suffix, uint32_t max_channel_count);
+	friend class MediaSource;
+	friend class RtspServer;
+	MediaSession(std::string url_suffix, uint32_t max_channel_count);
 
-    uint32_t max_channel_count_ = 0;
+	uint32_t max_channel_count_ = 0;
 
-    MediaSessionId session_id_ = 0;
-    std::string suffix_;
+	MediaSessionId session_id_ = 0;
+	std::string suffix_;
 
-    std::vector<std::unique_ptr<MediaSource>> media_sources_;
-    std::vector<RingBuffer<AVFrame>> buffer_;
+	std::vector<std::unique_ptr<MediaSource>> media_sources_;
+	std::vector<RingBuffer<AVFrame>> buffer_;
 
-    std::vector<NotifyConnectedCallback> notify_connected_callbacks_;
-    std::vector<NotifyDisconnectedCallback> notify_disconnected_callbacks_;
-    std::mutex mutex_;
-    std::mutex map_mutex_;
-    std::map<SOCKET, std::weak_ptr<RtpConnection>> clients_;
+	std::vector<NotifyConnectedCallback> notify_connected_callbacks_;
+	std::vector<NotifyDisconnectedCallback> notify_disconnected_callbacks_;
+	std::mutex mutex_;
+	std::mutex map_mutex_;
+	std::map<SOCKET, std::weak_ptr<RtpConnection>> clients_;
 
-    bool is_multicast_ = false;
-    std::vector<uint16_t> multicast_port_;
-    std::string multicast_ip_;
-    std::atomic_bool has_new_client_;
+	bool is_multicast_ = false;
+	std::vector<uint16_t> multicast_port_;
+	std::string multicast_ip_;
+	std::atomic_bool has_new_client_;
 
-    static std::atomic_uint last_session_id_;
+	static std::atomic_uint last_session_id_;
 };
 
-class MulticastAddr
-{
+class MulticastAddr {
 public:
-	static MulticastAddr& instance()
+	static MulticastAddr &instance()
 	{
 		static MulticastAddr s_multi_addr;
 		return s_multi_addr;
@@ -136,8 +140,7 @@ public:
 
 			if (addrs_.find(addr_str) != addrs_.end()) {
 				addr_str.clear();
-			}
-			else {
+			} else {
 				addrs_.insert(addr_str);
 				break;
 			}
@@ -146,7 +149,8 @@ public:
 		return addr_str;
 	}
 
-	void Release(const std::string &addr) {
+	void Release(const std::string &addr)
+	{
 		std::lock_guard lock(mutex_);
 		addrs_.erase(addr);
 	}

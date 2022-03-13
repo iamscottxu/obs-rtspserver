@@ -7,18 +7,18 @@ Md5::Md5() = default;
 Md5::~Md5() = default;
 
 void Md5::GetMd5Hash(const unsigned char *data, size_t dataSize,
-                     unsigned char *outHash)
+		     unsigned char *outHash)
 {
-
 }
 
 void Md5::GetMd5Hash(const std::string &str, unsigned char *outHash)
 {
-	GetMd5Hash(reinterpret_cast<const unsigned char *>(str.c_str()), str.length(), outHash);
+	GetMd5Hash(reinterpret_cast<const unsigned char *>(str.c_str()),
+		   str.length(), outHash);
 }
 
 std::string Md5::GetMd5HashString(const unsigned char *data,
-                                  const size_t dataSize)
+				  const size_t dataSize)
 {
 	unsigned char hash[MD5_HASH_LENGTH];
 	GetMd5Hash(data, dataSize, hash);
@@ -33,6 +33,7 @@ std::string Md5::GetMd5HashString(const unsigned char *data,
 
 std::string Md5::GetMd5HashString(const std::string &str)
 {
-	return GetMd5HashString(reinterpret_cast<const unsigned char *>(str.c_str()),
-				str.length());
+	return GetMd5HashString(
+		reinterpret_cast<const unsigned char *>(str.c_str()),
+		str.length());
 }

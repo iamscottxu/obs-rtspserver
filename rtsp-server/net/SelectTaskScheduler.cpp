@@ -9,12 +9,11 @@
 
 using namespace xop;
 
-#define SELECT_CTL_ADD	0
-#define SELECT_CTL_MOD  1
-#define SELECT_CTL_DEL	2
+#define SELECT_CTL_ADD 0
+#define SELECT_CTL_MOD 1
+#define SELECT_CTL_DEL 2
 
-SelectTaskScheduler::SelectTaskScheduler(const int id)
-	: TaskScheduler(id)
+SelectTaskScheduler::SelectTaskScheduler(const int id) : TaskScheduler(id)
 {
 	FD_ZERO(&fd_read_backup_);
 	FD_ZERO(&fd_write_backup_);
@@ -23,40 +22,39 @@ SelectTaskScheduler::SelectTaskScheduler(const int id)
 	this->SelectTaskScheduler::UpdateChannel(wakeup_channel_);
 }
 
-SelectTaskScheduler::~SelectTaskScheduler()
-= default;
+SelectTaskScheduler::~SelectTaskScheduler() = default;
 
-void SelectTaskScheduler::UpdateChannel(const ChannelPtr& channel)
+void SelectTaskScheduler::UpdateChannel(const ChannelPtr &channel)
 {
 	std::lock_guard lock(mutex_);
 
-	if(SOCKET socket = channel->GetSocket(); channels_.find(socket) != channels_.end()) {
-		if(channel->IsNoneEvent()) {
+	if (SOCKET socket = channel->GetSocket();
+	    channels_.find(socket) != channels_.end()) {
+		if (channel->IsNoneEvent()) {
 			is_fd_read_reset_ = true;
 			is_fd_write_reset_ = true;
 			is_fd_exp_reset_ = true;
 			channels_.erase(socket);
-		}
-		else {
+		} else {
 			//is_fd_read_reset_ = true;
 			is_fd_write_reset_ = true;
 		}
-	}
-	else {
-		if(!channel->IsNoneEvent()) {
+	} else {
+		if (!channel->IsNoneEvent()) {
 			channels_.emplace(socket, channel);
 			is_fd_read_reset_ = true;
 			is_fd_write_reset_ = true;
 			is_fd_exp_reset_ = true;
-		}	
-	}	
+		}
+	}
 }
 
 void SelectTaskScheduler::RemoveChannel(const ChannelPtr &channel)
 {
 	std::lock_guard lock(mutex_);
 
-	if(const SOCKET fd = channel->GetSocket(); channels_.find(fd) != channels_.end()) {
+	if (const SOCKET fd = channel->GetSocket();
+	    channels_.find(fd) != channels_.end()) {
 		is_fd_read_reset_ = true;
 		is_fd_write_reset_ = true;
 		is_fd_exp_reset_ = true;
@@ -65,12 +63,12 @@ void SelectTaskScheduler::RemoveChannel(const ChannelPtr &channel)
 }
 
 bool SelectTaskScheduler::HandleEvent(int timeout)
-{	
-	if(channels_.empty()) {
+{
+	if (channels_.empty()) {
 		if (timeout <= 0) {
 			timeout = 10;
 		}
-         
+
 		Timer::Sleep(timeout);
 		return true;
 	}
@@ -85,32 +83,32 @@ bool SelectTaskScheduler::HandleEvent(int timeout)
 	bool fd_write_reset = false;
 	bool fd_exp_reset = false;
 
-	if(is_fd_read_reset_ || is_fd_write_reset_ || is_fd_exp_reset_) {
+	if (is_fd_read_reset_ || is_fd_write_reset_ || is_fd_exp_reset_) {
 		if (is_fd_exp_reset_) {
 			maxfd_ = 0;
 		}
-          
+
 		std::lock_guard lock(mutex_);
-		for(const auto &iter : channels_) {
+		for (const auto &iter : channels_) {
 			int events = iter.second->GetEvents();
 			const SOCKET fd = iter.second->GetSocket();
 
-			if (is_fd_read_reset_ && (events&EVENT_IN)) {
+			if (is_fd_read_reset_ && (events & EVENT_IN)) {
 				FD_SET(fd, &fd_read);
 			}
 
-			if(is_fd_write_reset_ && (events&EVENT_OUT)) {
+			if (is_fd_write_reset_ && (events & EVENT_OUT)) {
 				FD_SET(fd, &fd_write);
 			}
 
-			if(is_fd_exp_reset_) {
+			if (is_fd_exp_reset_) {
 				FD_SET(fd, &fd_exp);
-				if(fd > maxfd_) {
+				if (fd > maxfd_) {
 					maxfd_ = fd;
 				}
-			}		
+			}
 		}
-        
+
 		fd_read_reset = is_fd_read_reset_;
 		fd_write_reset = is_fd_write_reset_;
 		fd_exp_reset = is_fd_exp_reset_;
@@ -118,53 +116,49 @@ bool SelectTaskScheduler::HandleEvent(int timeout)
 		is_fd_write_reset_ = false;
 		is_fd_exp_reset_ = false;
 	}
-	
-	if(fd_read_reset) {
+
+	if (fd_read_reset) {
 		FD_ZERO(&fd_read_backup_);
-		memcpy(&fd_read_backup_, &fd_read, sizeof(fd_set)); 
-	}
-	else {
+		memcpy(&fd_read_backup_, &fd_read, sizeof(fd_set));
+	} else {
 		memcpy(&fd_read, &fd_read_backup_, sizeof(fd_set));
 	}
-       
 
-	if(fd_write_reset) {
+	if (fd_write_reset) {
 		FD_ZERO(&fd_write_backup_);
 		memcpy(&fd_write_backup_, &fd_write, sizeof(fd_set));
-	}
-	else {
+	} else {
 		memcpy(&fd_write, &fd_write_backup_, sizeof(fd_set));
 	}
-     
 
-	if(fd_exp_reset) {
+	if (fd_exp_reset) {
 		FD_ZERO(&fd_exp_backup_);
 		memcpy(&fd_exp_backup_, &fd_exp, sizeof(fd_set));
-	}
-	else {
+	} else {
 		memcpy(&fd_exp, &fd_exp_backup_, sizeof(fd_set));
 	}
 
-	if(timeout <= 0) {
+	if (timeout <= 0) {
 		timeout = 10;
 	}
 
-	const timeval tv = { timeout/1000, timeout%1000*1000 };
-	const int ret = select(static_cast<int>(maxfd_)+1, &fd_read, &fd_write, &fd_exp, &tv); 	
+	const timeval tv = {timeout / 1000, timeout % 1000 * 1000};
+	const int ret = select(static_cast<int>(maxfd_) + 1, &fd_read,
+			       &fd_write, &fd_exp, &tv);
 	if (ret < 0) {
 #if defined(WIN32) || defined(_WIN32)
 #else
-	if(errno == EINTR) {
-		return true;
-	}					
-#endif 
+		if (errno == EINTR) {
+			return true;
+		}
+#endif
 		return false;
 	}
 
 	std::forward_list<std::pair<ChannelPtr, int>> event_list;
-	if(ret > 0) {
+	if (ret > 0) {
 		std::lock_guard lock(mutex_);
-		for(const auto &iter : channels_) {
+		for (const auto &iter : channels_) {
 			int events = 0;
 			const SOCKET socket = iter.second->GetSocket();
 
@@ -180,18 +174,15 @@ bool SelectTaskScheduler::HandleEvent(int timeout)
 				events |= (EVENT_HUP); // close
 			}
 
-			if(events != 0) {
+			if (events != 0) {
 				event_list.emplace_front(iter.second, events);
 			}
 		}
-	}	
+	}
 
-	for(const auto& iter: event_list) {
+	for (const auto &iter : event_list) {
 		iter.first->HandleEvent(iter.second);
 	}
 
 	return true;
 }
-
-
-

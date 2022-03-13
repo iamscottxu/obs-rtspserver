@@ -13,38 +13,36 @@
 #include <functional>
 #include <map>
 
-namespace xop
-{
+namespace xop {
 
-class MediaSource
-{
+class MediaSource {
 public:
-	using SendFrameCallback = std::function<bool (MediaChannelId channel_id, RtpPacket pkt)>;
+	using SendFrameCallback =
+		std::function<bool(MediaChannelId channel_id, RtpPacket pkt)>;
 
 	MediaSource() = default;
 	virtual ~MediaSource() = default;
 
-	virtual MediaType GetMediaType() const
-	{ return media_type_; }
+	virtual MediaType GetMediaType() const { return media_type_; }
 
-	virtual std::string GetMediaDescription(uint16_t port=0) = 0;
+	virtual std::string GetMediaDescription(uint16_t port = 0) = 0;
 
-	virtual std::string GetAttribute()  = 0;
+	virtual std::string GetAttribute() = 0;
 
 	virtual bool HandleFrame(MediaChannelId channelId, AVFrame frame) = 0;
 	virtual void SetSendFrameCallback(const SendFrameCallback callback)
-	{ send_frame_callback_ = callback; }
+	{
+		send_frame_callback_ = callback;
+	}
 
-	virtual uint32_t GetPayloadType() const
-	{ return payload_; }
+	virtual uint32_t GetPayloadType() const { return payload_; }
 
-	virtual uint32_t GetClockRate() const
-	{ return clock_rate_; }
+	virtual uint32_t GetClockRate() const { return clock_rate_; }
 
 protected:
 	MediaType media_type_ = MediaType::NONE;
-	uint32_t  payload_    = 0;
-	uint32_t  clock_rate_ = 0;
+	uint32_t payload_ = 0;
+	uint32_t clock_rate_ = 0;
 	SendFrameCallback send_frame_callback_;
 };
 

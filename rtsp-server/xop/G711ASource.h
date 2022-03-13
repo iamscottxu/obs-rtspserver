@@ -7,22 +7,18 @@
 #include "MediaSource.h"
 #include "rtp.h"
 
-namespace xop
-{
+namespace xop {
 
-class G711ASource : public MediaSource
-{
+class G711ASource : public MediaSource {
 public:
-	static G711ASource* CreateNew();
+	static G711ASource *CreateNew();
 	~G711ASource() override;
 
-	uint32_t GetSampleRate() const
-	{ return samplerate_; }
+	uint32_t GetSampleRate() const { return samplerate_; }
 
-	uint32_t GetChannels() const
-	{ return channels_; }
+	uint32_t GetChannels() const { return channels_; }
 
-	std::string GetMediaDescription(uint16_t port=0) override;
+	std::string GetMediaDescription(uint16_t port = 0) override;
 
 	std::string GetAttribute() override;
 
@@ -33,8 +29,8 @@ public:
 private:
 	G711ASource();
 
-	uint32_t samplerate_ = 8000;   
-	uint32_t channels_ = 1;       
+	uint32_t samplerate_ = 8000;
+	uint32_t channels_ = 1;
 };
 
 }

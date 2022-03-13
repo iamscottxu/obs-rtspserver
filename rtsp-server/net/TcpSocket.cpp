@@ -1,7 +1,7 @@
 // PHZ
 // 2018-5-15
 // Scott Xu
-// 2020-12-2 Add IPv6 Support. 
+// 2020-12-2 Add IPv6 Support.
 
 #include "TcpSocket.h"
 #include "Socket.h"
@@ -13,11 +13,9 @@ using namespace xop;
 TcpSocket::TcpSocket(const SOCKET sockfd, const bool ipv6)
 	: sockfd_(sockfd), ipv6_(ipv6)
 {
-    
 }
 
-TcpSocket::~TcpSocket()
-= default;
+TcpSocket::~TcpSocket() = default;
 
 SOCKET TcpSocket::Create(const bool ipv6)
 {
@@ -28,8 +26,7 @@ SOCKET TcpSocket::Create(const bool ipv6)
 
 bool TcpSocket::Bind(const std::string &ip, const uint16_t port) const
 {
-	if (!SocketUtil::Bind(sockfd_, ip, port, ipv6_))
-	{
+	if (!SocketUtil::Bind(sockfd_, ip, port, ipv6_)) {
 		LOG_ERROR(" <socket=%d> bind <%s:%u> failed.\n", sockfd_,
 			  ip.c_str(), port);
 		return false;
@@ -40,8 +37,7 @@ bool TcpSocket::Bind(const std::string &ip, const uint16_t port) const
 
 bool TcpSocket::Listen(const int backlog) const
 {
-	if(::listen(sockfd_, backlog) == SOCKET_ERROR)
-	{
+	if (::listen(sockfd_, backlog) == SOCKET_ERROR) {
 		LOG_ERROR("<socket=%d> listen failed.\n", sockfd_);
 		return false;
 	}
@@ -53,13 +49,11 @@ SOCKET TcpSocket::Accept() const
 {
 	sockaddr *psockaddr;
 	socklen_t addrlen;
-	if (ipv6_)
-	{
+	if (ipv6_) {
 		sockaddr_in6 addr = {0};
 		addrlen = sizeof addr;
 		psockaddr = reinterpret_cast<sockaddr *>(&addr);
-	} else
-	{
+	} else {
 		sockaddr_in addr = {0};
 		addrlen = sizeof addr;
 		psockaddr = reinterpret_cast<sockaddr *>(&addr);
@@ -70,10 +64,10 @@ SOCKET TcpSocket::Accept() const
 	return socket_fd;
 }
 
-bool TcpSocket::Connect(const std::string &ip, const uint16_t port, const int timeout) const
-{ 
-	if (!SocketUtil::Connect(sockfd_, ip, port, timeout, ipv6_))
-	{
+bool TcpSocket::Connect(const std::string &ip, const uint16_t port,
+			const int timeout) const
+{
+	if (!SocketUtil::Connect(sockfd_, ip, port, timeout, ipv6_)) {
 		LOG_ERROR("<socket=%d> connect failed.\n", sockfd_);
 		return false;
 	}
@@ -84,7 +78,7 @@ bool TcpSocket::Connect(const std::string &ip, const uint16_t port, const int ti
 void TcpSocket::Close()
 {
 #if defined(WIN32) || defined(_WIN32)
-        closesocket(sockfd_);
+	closesocket(sockfd_);
 #else
 	::close(sockfd_);
 #endif

@@ -6,12 +6,12 @@
 using namespace xop;
 
 TcpConnection::TcpConnection(TaskScheduler *task_scheduler, const SOCKET sockfd)
-	: task_scheduler_(task_scheduler)
-	, read_buffer_(new BufferReader)
-	, write_buffer_(new BufferWriter(500))
-	, is_closed_(false)
-	, channel_(new Channel(sockfd))
-	, ipv6_(SocketUtil::IsIpv6Socket(sockfd))
+	: task_scheduler_(task_scheduler),
+	  read_buffer_(new BufferReader),
+	  write_buffer_(new BufferWriter(500)),
+	  is_closed_(false),
+	  channel_(new Channel(sockfd)),
+	  ipv6_(SocketUtil::IsIpv6Socket(sockfd))
 {
 	channel_->SetReadCallback([this] { this->HandleRead(); });
 	channel_->SetWriteCallback([this] { this->HandleWrite(); });
@@ -59,9 +59,7 @@ void TcpConnection::Disconnect()
 {
 	std::lock_guard<std::mutex> lock(mutex_);
 	auto conn = shared_from_this();
-	task_scheduler_->AddTriggerEvent([conn]() {
-		conn->Close();
-	});
+	task_scheduler_->AddTriggerEvent([conn]() { conn->Close(); });
 }
 
 void TcpConnection::HandleRead()
@@ -73,14 +71,17 @@ void TcpConnection::HandleRead()
 			return;
 		}
 
-		if (const int ret = read_buffer_->Read(channel_->GetSocket()); ret <= 0) {
+		if (const int ret = read_buffer_->Read(channel_->GetSocket());
+		    ret <= 0) {
 			this->Close();
 			return;
 		}
 	}
 
 	if (read_cb_) {
-		if (const bool ret = read_cb_(shared_from_this(), *read_buffer_); !ret) {
+		if (const bool ret =
+			    read_cb_(shared_from_this(), *read_buffer_);
+		    !ret) {
 			std::lock_guard lock(mutex_);
 			this->Close();
 		}
@@ -92,7 +93,7 @@ void TcpConnection::HandleWrite()
 	if (is_closed_) {
 		return;
 	}
-	
+
 	//std::lock_guard<std::mutex> lock(mutex_);
 	if (!mutex_.try_lock()) {
 		return;
@@ -101,7 +102,8 @@ void TcpConnection::HandleWrite()
 	bool empty;
 	//do
 	//{
-	if (const int ret = write_buffer_->Send(channel_->GetSocket()); ret < 0) {
+	if (const int ret = write_buffer_->Send(channel_->GetSocket());
+	    ret < 0) {
 		this->Close();
 		mutex_.unlock();
 		return;
@@ -114,8 +116,7 @@ void TcpConnection::HandleWrite()
 			channel_->DisableWriting();
 			task_scheduler_->UpdateChannel(channel_);
 		}
-	}
-	else if(!channel_->IsWriting()) {
+	} else if (!channel_->IsWriting()) {
 		channel_->EnableWriting();
 		task_scheduler_->UpdateChannel(channel_);
 	}
@@ -131,11 +132,11 @@ void TcpConnection::Close()
 
 		if (close_cb_) {
 			close_cb_(shared_from_this());
-		}			
+		}
 
 		if (disconnect_cb_) {
 			disconnect_cb_(shared_from_this());
-		}	
+		}
 	}
 }
 

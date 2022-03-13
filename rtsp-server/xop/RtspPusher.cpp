@@ -7,27 +7,23 @@
 
 using namespace xop;
 
-RtspPusher::RtspPusher(EventLoop *event_loop)
-	: event_loop_(event_loop)
-{
-
-}
+RtspPusher::RtspPusher(EventLoop *event_loop) : event_loop_(event_loop) {}
 
 RtspPusher::~RtspPusher()
 {
 	this->Close();
 }
 
-std::shared_ptr<RtspPusher> RtspPusher::Create(EventLoop * loop)
+std::shared_ptr<RtspPusher> RtspPusher::Create(EventLoop *loop)
 {
 	std::shared_ptr<RtspPusher> pusher(new RtspPusher(loop));
 	return pusher;
 }
 
-void RtspPusher::AddSession(MediaSession* session)
+void RtspPusher::AddSession(MediaSession *session)
 {
-    std::lock_guard locker(mutex_);
-    media_session_.reset(session);
+	std::lock_guard locker(mutex_);
+	media_session_.reset(session);
 }
 
 void RtspPusher::RemoveSession(MediaSessionId session_id)
@@ -61,33 +57,33 @@ int RtspPusher::OpenUrl(const std::string &url, const int msec)
 	if (rtsp_conn_ != nullptr) {
 		std::shared_ptr<RtspConnection> rtspConn = rtsp_conn_;
 		SOCKET sockfd = rtspConn->GetSocket();
-		task_scheduler_->AddTriggerEvent([sockfd, rtspConn]() {
-			rtspConn->Disconnect();
-		});
+		task_scheduler_->AddTriggerEvent(
+			[sockfd, rtspConn]() { rtspConn->Disconnect(); });
 		rtsp_conn_ = nullptr;
 	}
 
 	TcpSocket tcpSocket;
 	tcpSocket.Create();
-	if (!tcpSocket.Connect(rtsp_url_info_.ip, rtsp_url_info_.port, timeout))
-	{
+	if (!tcpSocket.Connect(rtsp_url_info_.ip, rtsp_url_info_.port,
+			       timeout)) {
 		tcpSocket.Close();
 		return -1;
 	}
 
 	task_scheduler_ = event_loop_->GetTaskScheduler().get(); //TODO
-	rtsp_conn_.reset(new RtspConnection(shared_from_this(), task_scheduler_, tcpSocket.GetSocket()));
-    event_loop_->AddTriggerEvent([this]() {
-		rtsp_conn_->SendOptions(RtspConnection::ConnectionMode::RTSP_PUSHER);
-    });
+	rtsp_conn_.reset(new RtspConnection(shared_from_this(), task_scheduler_,
+					    tcpSocket.GetSocket()));
+	event_loop_->AddTriggerEvent([this]() {
+		rtsp_conn_->SendOptions(
+			RtspConnection::ConnectionMode::RTSP_PUSHER);
+	});
 
 	timeout -= static_cast<int>(timestamp.Elapsed());
 	if (timeout < 0) {
 		timeout = 1000;
 	}
 
-	do
-	{
+	do {
 		Timer::Sleep(100);
 		timeout -= 100;
 	} while (!rtsp_conn_->IsRecord() && timeout > 0);
@@ -95,9 +91,8 @@ int RtspPusher::OpenUrl(const std::string &url, const int msec)
 	if (!rtsp_conn_->IsRecord()) {
 		std::shared_ptr<RtspConnection> rtspConn = rtsp_conn_;
 		SOCKET sockfd = rtspConn->GetSocket();
-		task_scheduler_->AddTriggerEvent([sockfd, rtspConn]() {
-			rtspConn->Disconnect();
-		});
+		task_scheduler_->AddTriggerEvent(
+			[sockfd, rtspConn]() { rtspConn->Disconnect(); });
 		rtsp_conn_ = nullptr;
 		return -1;
 	}
@@ -112,9 +107,8 @@ void RtspPusher::Close()
 	if (rtsp_conn_ != nullptr) {
 		std::shared_ptr<RtspConnection> rtsp_conn = rtsp_conn_;
 		SOCKET sockfd = rtsp_conn->GetSocket();
-		task_scheduler_->AddTriggerEvent([sockfd, rtsp_conn]() {
-			rtsp_conn->Disconnect();
-		});
+		task_scheduler_->AddTriggerEvent(
+			[sockfd, rtsp_conn]() { rtsp_conn->Disconnect(); });
 		rtsp_conn_ = nullptr;
 	}
 }

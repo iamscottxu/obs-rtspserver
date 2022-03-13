@@ -13,17 +13,15 @@
 #include "Socket.h"
 #include "TcpConnection.h"
 
-namespace xop
-{
+namespace xop {
 
 class Acceptor;
 class EventLoop;
 
-class TcpServer
-{
+class TcpServer {
 public:
-	explicit TcpServer(EventLoop* event_loop);
-	virtual ~TcpServer();  
+	explicit TcpServer(EventLoop *event_loop);
+	virtual ~TcpServer();
 
 	virtual bool Start(const std::string &ip, uint16_t port);
 	virtual void Stop();
@@ -39,10 +37,10 @@ protected:
 	virtual void AddConnection(SOCKET sockfd, TcpConnection::Ptr tcpConn);
 	virtual void RemoveConnection(SOCKET sockfd);
 
-	EventLoop* event_loop_;
+	EventLoop *event_loop_;
 	//uint16_t port_;
 	//std::string ip_;
-	std::vector<std::unique_ptr<Acceptor>> acceptors_; 
+	std::vector<std::unique_ptr<Acceptor>> acceptors_;
 	//bool is_started_;
 	std::mutex mutex_;
 	std::unordered_map<SOCKET, std::shared_ptr<TcpConnection>> connections_;
@@ -50,4 +48,4 @@ protected:
 
 }
 
-#endif 
+#endif

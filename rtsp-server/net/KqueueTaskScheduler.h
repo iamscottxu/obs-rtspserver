@@ -8,10 +8,8 @@
 #include <mutex>
 #include <unordered_map>
 
-namespace xop
-{	
-class KqueueTaskScheduler : public TaskScheduler
-{
+namespace xop {
+class KqueueTaskScheduler : public TaskScheduler {
 public:
 	explicit KqueueTaskScheduler(int id = 0);
 	~KqueueTaskScheduler() override;
@@ -23,9 +21,9 @@ public:
 	bool HandleEvent(int timeout) override;
 
 private:
-	void Update(int operation, ChannelPtr& channel);
+	void Update(int operation, ChannelPtr &channel);
 
-        int kqueuefd_ = -1;
+	int kqueuefd_ = -1;
 	std::mutex mutex_;
 	std::unordered_map<int, ChannelPtr> channels_;
 };

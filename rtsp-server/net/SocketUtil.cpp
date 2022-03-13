@@ -9,7 +9,8 @@
 
 using namespace xop;
 
-bool SocketUtil::Bind(const SOCKET sockfd, const std::string &ip, const uint16_t port, const bool ipv6)
+bool SocketUtil::Bind(const SOCKET sockfd, const std::string &ip,
+		      const uint16_t port, const bool ipv6)
 {
 	sockaddr *psockaddr;
 	socklen_t addrlen;
@@ -39,11 +40,11 @@ bool SocketUtil::Bind(const SOCKET sockfd, const std::string &ip, const uint16_t
 void SocketUtil::SetNonBlock(const SOCKET fd)
 {
 #if defined(WIN32) || defined(_WIN32)
-        unsigned long on = 1;
+	unsigned long on = 1;
 	ioctlsocket(fd, FIONBIO, &on);
 #else
-        int flags = fcntl(fd, F_GETFL, 0);
-        fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+	int flags = fcntl(fd, F_GETFL, 0);
+	fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 #endif
 }
 
@@ -53,19 +54,20 @@ void SocketUtil::SetBlock(const SOCKET fd, const int write_timeout)
 	unsigned long on = 0;
 	ioctlsocket(fd, FIONBIO, &on);
 #else
-        int flags = fcntl(fd, F_GETFL, 0);
-        fcntl(fd, F_SETFL, flags & (~O_NONBLOCK));
+	int flags = fcntl(fd, F_GETFL, 0);
+	fcntl(fd, F_SETFL, flags & (~O_NONBLOCK));
 #endif
 	if (write_timeout > 0) {
 #ifdef SO_SNDTIMEO
 #if defined(WIN32) || defined(_WIN32)
 		auto ms = static_cast<unsigned long>(write_timeout);
-		setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<char *>(&ms),
+		setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO,
+			   reinterpret_cast<char *>(&ms),
 			   sizeof(unsigned long));
 #else
-                struct timeval tv = {write_timeout / 1000,
-                                     (write_timeout % 1000) * 1000};
-                setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv, sizeof tv);
+		struct timeval tv = {write_timeout / 1000,
+				     (write_timeout % 1000) * 1000};
+		setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv, sizeof tv);
 #endif
 #endif
 	}
@@ -74,8 +76,8 @@ void SocketUtil::SetBlock(const SOCKET fd, const int write_timeout)
 void SocketUtil::SetReuseAddr(const SOCKET sockfd)
 {
 	constexpr int on = 1;
-	setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&on),
-		   sizeof on);
+	setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
+		   reinterpret_cast<const char *>(&on), sizeof on);
 }
 
 void SocketUtil::SetReusePort(const SOCKET sockfd)
@@ -91,15 +93,16 @@ void SocketUtil::SetNoDelay(const SOCKET sockfd)
 {
 #ifdef TCP_NODELAY
 	int on = 1;
-	int ret = setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char *>(&on),
-			     sizeof on);
+	int ret = setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY,
+			     reinterpret_cast<char *>(&on), sizeof on);
 #endif
 }
 
 void SocketUtil::SetKeepAlive(const SOCKET sockfd)
 {
 	int on = 1;
-	setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<char *>(&on), sizeof on);
+	setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE,
+		   reinterpret_cast<char *>(&on), sizeof on);
 }
 
 void SocketUtil::SetNoSigpipe(const SOCKET sockfd)
@@ -112,12 +115,14 @@ void SocketUtil::SetNoSigpipe(const SOCKET sockfd)
 
 void SocketUtil::SetSendBufSize(const SOCKET sockfd, int size)
 {
-	setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<char *>(&size), sizeof size);
+	setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF,
+		   reinterpret_cast<char *>(&size), sizeof size);
 }
 
 void SocketUtil::SetRecvBufSize(const SOCKET sockfd, int size)
 {
-	setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<char *>(&size), sizeof size);
+	setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF,
+		   reinterpret_cast<char *>(&size), sizeof size);
 }
 
 std::string SocketUtil::GetPeerIp(const SOCKET sockfd, const bool ipv6)
@@ -169,25 +174,29 @@ uint16_t SocketUtil::GetPeerPort(const SOCKET sockfd, const bool ipv6)
 int SocketUtil::GetPeerAddr(const SOCKET sockfd, sockaddr_in *addr)
 {
 	socklen_t addrlen = sizeof(struct sockaddr_in);
-	return getpeername(sockfd, reinterpret_cast<sockaddr *>(addr), &addrlen);
+	return getpeername(sockfd, reinterpret_cast<sockaddr *>(addr),
+			   &addrlen);
 }
 
 int SocketUtil::GetPeerAddr6(const SOCKET sockfd, sockaddr_in6 *addr)
 {
 	socklen_t addrlen = sizeof(struct sockaddr_in6);
-	return getpeername(sockfd, reinterpret_cast<sockaddr *>(addr), &addrlen);
+	return getpeername(sockfd, reinterpret_cast<sockaddr *>(addr),
+			   &addrlen);
 }
 
 int SocketUtil::GetSocketAddr(const SOCKET sockfd, sockaddr_in *addr)
 {
 	socklen_t addrlen = sizeof(struct sockaddr_in);
-	return getsockname(sockfd, reinterpret_cast<sockaddr *>(addr), &addrlen);
+	return getsockname(sockfd, reinterpret_cast<sockaddr *>(addr),
+			   &addrlen);
 }
 
 int SocketUtil::GetSocketAddr6(const SOCKET sockfd, sockaddr_in6 *addr)
 {
 	socklen_t addrlen = sizeof(struct sockaddr_in6);
-	return getsockname(sockfd, reinterpret_cast<sockaddr *>(addr), &addrlen);
+	return getsockname(sockfd, reinterpret_cast<sockaddr *>(addr),
+			   &addrlen);
 }
 
 void SocketUtil::Close(const SOCKET sockfd)
@@ -195,11 +204,13 @@ void SocketUtil::Close(const SOCKET sockfd)
 #if defined(WIN32) || defined(_WIN32)
 	::closesocket(sockfd);
 #else
-        ::close(sockfd);
+	::close(sockfd);
 #endif
 }
 
-bool SocketUtil::Connect(const SOCKET sockfd, const std::string &ip, const uint16_t port, const int timeout, const bool ipv6)
+bool SocketUtil::Connect(const SOCKET sockfd, const std::string &ip,
+			 const uint16_t port, const int timeout,
+			 const bool ipv6)
 {
 	bool is_connected = true;
 	if (timeout > 0) {
@@ -231,8 +242,9 @@ bool SocketUtil::Connect(const SOCKET sockfd, const std::string &ip, const uint1
 			FD_ZERO(&fd_write);
 			FD_SET(sockfd, &fd_write);
 			const timeval tv = {timeout / 1000,
-			                    timeout % 1000 * 1000};
-			select(static_cast<int>(sockfd) + 1, nullptr, &fd_write, nullptr, &tv);
+					    timeout % 1000 * 1000};
+			select(static_cast<int>(sockfd) + 1, nullptr, &fd_write,
+			       nullptr, &tv);
 			if (FD_ISSET(sockfd, &fd_write)) {
 				is_connected = true;
 			}
@@ -255,8 +267,8 @@ bool SocketUtil::IsIpv6Socket(const SOCKET sockfd)
 {
 	sockaddr_in6 addr = {0};
 	socklen_t addrlen = sizeof addr;
-        getsockname(sockfd, reinterpret_cast<sockaddr *>(&addr), &addrlen);
-        if (addr.sin6_family == AF_INET6)
+	getsockname(sockfd, reinterpret_cast<sockaddr *>(&addr), &addrlen);
+	if (addr.sin6_family == AF_INET6)
 		return true;
 	return false;
 }

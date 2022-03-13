@@ -26,10 +26,9 @@ using namespace std;
 
 H264Source::H264Source(const vector<uint8_t> &sps, const vector<uint8_t> &pps,
 		       const uint32_t framerate)
-	: framerate_(framerate),
-	  sps_(sps), pps_(pps)
+	: framerate_(framerate), sps_(sps), pps_(pps)
 {
-	payload_    = 96; 
+	payload_ = 96;
 	media_type_ = MediaType::H264;
 	clock_rate_ = 90000;
 }
@@ -40,13 +39,13 @@ H264Source *H264Source::CreateNew(const uint32_t framerate)
 }
 
 H264Source *H264Source::CreateNew(const vector<uint8_t> &sps,
-				  const vector<uint8_t> &pps, const uint32_t framerate)
+				  const vector<uint8_t> &pps,
+				  const uint32_t framerate)
 {
 	return new H264Source(sps, pps, framerate);
 }
 
-H264Source::~H264Source()
-= default;
+H264Source::~H264Source() = default;
 
 string H264Source::GetMediaDescription(const uint16_t port)
 {
@@ -61,18 +60,18 @@ string H264Source::GetAttribute()
 
 	if (!sps_.empty() && !pps_.empty()) {
 		const auto fmtp = "a=fmtp:96 packetization-mode=1;"
-				   "profile-level-id=%06X;"
-				   "sprop-parameter-sets=%s,%s";
+				  "profile-level-id=%06X;"
+				  "sprop-parameter-sets=%s,%s";
 
 		const auto pps_base64 = Base64Encode(pps_.data(), pps_.size());
 		const auto sps_base64 = Base64Encode(sps_.data(), sps_.size());
 
-		const uint32_t profile_level_id = (sps_.at(1) << 16) |
-					    (sps_.at(2) << 8) | sps_.at(3);
+		const uint32_t profile_level_id =
+			(sps_.at(1) << 16) | (sps_.at(2) << 8) | sps_.at(3);
 
 		const size_t buf_size = 1 + strlen(fmtp) + 6 +
-				       sps_base64.length() +
-				  pps_base64.length();
+					sps_base64.length() +
+					pps_base64.length();
 		auto buf = vector<char>(buf_size);
 
 		sprintf(buf.data(), fmtp, profile_level_id, sps_base64.c_str(),
@@ -81,92 +80,102 @@ string H264Source::GetAttribute()
 		sdp.append(buf.data());
 	}
 
-        return sdp;
+	return sdp;
 }
 
-bool H264Source::HandleFrame(const MediaChannelId channel_id, const AVFrame frame)
+bool H264Source::HandleFrame(const MediaChannelId channel_id,
+			     const AVFrame frame)
 {
-    uint8_t *frame_buf  = frame.buffer.get();
-    size_t frame_size = frame.size;
-    RtpPacket rtp_pkt;
+	uint8_t *frame_buf = frame.buffer.get();
+	size_t frame_size = frame.size;
+	RtpPacket rtp_pkt;
 
 	rtp_pkt.type = frame.type;
 	//rtp_pkt.timestamp = frame.timestamp == 0 ? GetTimestamp() : frame.timestamp;
 	rtp_pkt.timestamp = frame.timestamp;
 
-    if (frame_size <= MAX_RTP_PAYLOAD_SIZE) {
+	if (frame_size <= MAX_RTP_PAYLOAD_SIZE) {
 		rtp_pkt.size = frame_size + RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE;
 		rtp_pkt.last = 1;
 
-        memcpy(rtp_pkt.data.get() + RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE, frame_buf, frame_size); 
+		memcpy(rtp_pkt.data.get() + RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE,
+		       frame_buf, frame_size);
 
-        if (send_frame_callback_) {
+		if (send_frame_callback_) {
 			if (!send_frame_callback_(channel_id, rtp_pkt)) {
 				return false;
-			}        
-        }
-    }
-    else {
-	    char FU_A[2] = {
-		    static_cast<char>((frame_buf[0] & 0xE0) | 28),
-		    static_cast<char>(0x80 | (frame_buf[0] & 0x1f))
-	    };
+			}
+		}
+	} else {
+		char FU_A[2] = {static_cast<char>((frame_buf[0] & 0xE0) | 28),
+				static_cast<char>(0x80 |
+						  (frame_buf[0] & 0x1f))};
 
-        frame_buf  += 1;
-        frame_size -= 1;
+		frame_buf += 1;
+		frame_size -= 1;
 
-        while (frame_size + 2 > MAX_RTP_PAYLOAD_SIZE) {
-            rtp_pkt.size = RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE + MAX_RTP_PAYLOAD_SIZE;
-            rtp_pkt.last = 0;
-	        uint8_t *rtp_pkt_data = rtp_pkt.data.get() + RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE;
+		while (frame_size + 2 > MAX_RTP_PAYLOAD_SIZE) {
+			rtp_pkt.size = RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE +
+				       MAX_RTP_PAYLOAD_SIZE;
+			rtp_pkt.last = 0;
+			uint8_t *rtp_pkt_data = rtp_pkt.data.get() +
+						RTP_TCP_HEAD_SIZE +
+						RTP_HEADER_SIZE;
 
-            *(rtp_pkt_data++) = FU_A[0];
-            *(rtp_pkt_data++) = FU_A[1];
-            memcpy(rtp_pkt_data, frame_buf, MAX_RTP_PAYLOAD_SIZE - 2);
+			*(rtp_pkt_data++) = FU_A[0];
+			*(rtp_pkt_data++) = FU_A[1];
+			memcpy(rtp_pkt_data, frame_buf,
+			       MAX_RTP_PAYLOAD_SIZE - 2);
 
-            if (send_frame_callback_) {
-                if (!send_frame_callback_(channel_id, rtp_pkt))
-                    return false;
-            }
+			if (send_frame_callback_) {
+				if (!send_frame_callback_(channel_id, rtp_pkt))
+					return false;
+			}
 
-            frame_buf  += MAX_RTP_PAYLOAD_SIZE - 2;
-            frame_size -= MAX_RTP_PAYLOAD_SIZE - 2;
+			frame_buf += MAX_RTP_PAYLOAD_SIZE - 2;
+			frame_size -= MAX_RTP_PAYLOAD_SIZE - 2;
 
-            FU_A[1] &= ~0x80;
-        }
+			FU_A[1] &= ~0x80;
+		}
 
-        {
-            rtp_pkt.size = RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE + 2 + frame_size;
-            rtp_pkt.last = 1;
-	        uint8_t *rtp_pkt_data = rtp_pkt.data.get() + RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE;
+		{
+			rtp_pkt.size = RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE + 2 +
+				       frame_size;
+			rtp_pkt.last = 1;
+			uint8_t *rtp_pkt_data = rtp_pkt.data.get() +
+						RTP_TCP_HEAD_SIZE +
+						RTP_HEADER_SIZE;
 
-            FU_A[1] |= 0x40;
-            *(rtp_pkt_data++) = FU_A[0];
-            *(rtp_pkt_data++) = FU_A[1];
-            memcpy(rtp_pkt_data, frame_buf, frame_size);
+			FU_A[1] |= 0x40;
+			*(rtp_pkt_data++) = FU_A[0];
+			*(rtp_pkt_data++) = FU_A[1];
+			memcpy(rtp_pkt_data, frame_buf, frame_size);
 
-            if (send_frame_callback_) {
-				if (!send_frame_callback_(channel_id, rtp_pkt)) {
+			if (send_frame_callback_) {
+				if (!send_frame_callback_(channel_id,
+							  rtp_pkt)) {
 					return false;
 				}
-            }
-        }
-    }
+			}
+		}
+	}
 
-    return true;
+	return true;
 }
 
 uint32_t H264Source::GetTimestamp()
 {
-/* #if defined(__linux) || defined(__linux__)
+	/* #if defined(__linux) || defined(__linux__)
 	struct timeval tv = {0};
 	gettimeofday(&tv, NULL);
 	uint32_t ts = ((tv.tv_sec*1000)+((tv.tv_usec+500)/1000))*90; // 90: _clockRate/1000;
 	return ts;
 #else  */
-const auto time_point = chrono::time_point_cast<chrono::microseconds>(chrono::steady_clock::now());
-	return static_cast<uint32_t>((time_point.time_since_epoch().count() + 500) / 1000 * 90);
-//#endif
+	const auto time_point = chrono::time_point_cast<chrono::microseconds>(
+		chrono::steady_clock::now());
+	return static_cast<uint32_t>(
+		(time_point.time_since_epoch().count() + 500) / 1000 * 90);
+	//#endif
 }
 
 std::string H264Source::Base64Encode(const void *input, const size_t size)
@@ -176,10 +185,9 @@ std::string H264Source::Base64Encode(const void *input, const size_t size)
 	base64_init_encodestate(&b64encoder);
 
 	const auto length = base64_encode_block(
-		static_cast<const char *>(input),
-				      static_cast<int>(size), buffer.data(), &b64encoder);
+		static_cast<const char *>(input), static_cast<int>(size),
+		buffer.data(), &b64encoder);
 	base64_encode_blockend(buffer.data() + length, &b64encoder);
 
 	return std::string(buffer.cbegin(), buffer.cend() - 1); //TODO
 }
-

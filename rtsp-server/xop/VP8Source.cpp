@@ -97,6 +97,6 @@ uint32_t VP8Source::GetTimestamp()
 {
 	const auto time_point = chrono::time_point_cast<chrono::microseconds>(
 		chrono::steady_clock::now());
-	return static_cast<uint32_t>((time_point.time_since_epoch().count() + 500) / 1000 *
-	                             90);
+	return static_cast<uint32_t>(
+		(time_point.time_since_epoch().count() + 500) / 1000 * 90);
 }

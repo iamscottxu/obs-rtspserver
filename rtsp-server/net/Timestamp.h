@@ -10,30 +10,33 @@
 #include <cstdint>
 #include <chrono>
 
-namespace xop
-{
-    
-class Timestamp
-{
+namespace xop {
+
+class Timestamp {
 public:
-    Timestamp()
-        : begin_time_point_(std::chrono::high_resolution_clock::now())
-    { }
+	Timestamp()
+		: begin_time_point_(std::chrono::high_resolution_clock::now())
+	{
+	}
 
-    void reset()
-    {
-        begin_time_point_ = std::chrono::high_resolution_clock::now();
-    }
+	void reset()
+	{
+		begin_time_point_ = std::chrono::high_resolution_clock::now();
+	}
 
-    int64_t Elapsed() const
-    {
-        return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - begin_time_point_).count();
-    }
+	int64_t Elapsed() const
+	{
+		return std::chrono::duration_cast<std::chrono::milliseconds>(
+			       std::chrono::high_resolution_clock::now() -
+			       begin_time_point_)
+			.count();
+	}
 
-    static std::string Localtime();
+	static std::string Localtime();
 
 private:
-    std::chrono::time_point<std::chrono::high_resolution_clock> begin_time_point_;
+	std::chrono::time_point<std::chrono::high_resolution_clock>
+		begin_time_point_;
 };
 
 }

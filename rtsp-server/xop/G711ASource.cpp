@@ -1,7 +1,7 @@
 // PHZ
 // 2018-5-16
 
-#if defined(WIN32) || defined(_WIN32) 
+#if defined(WIN32) || defined(_WIN32)
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -20,18 +20,17 @@ using namespace std;
 
 G711ASource::G711ASource()
 {
-	payload_    = 8;
+	payload_ = 8;
 	media_type_ = MediaType::PCMA;
 	clock_rate_ = 8000;
 }
 
-G711ASource* G711ASource::CreateNew()
+G711ASource *G711ASource::CreateNew()
 {
-    return new G711ASource();
+	return new G711ASource();
 }
 
-G711ASource::~G711ASource()
-= default;
+G711ASource::~G711ASource() = default;
 
 string G711ASource::GetMediaDescription(const uint16_t port)
 {
@@ -40,19 +39,20 @@ string G711ASource::GetMediaDescription(const uint16_t port)
 
 	return buf;
 }
-	
+
 string G711ASource::GetAttribute()
 {
-    return "a=rtpmap:8 PCMA/8000/1";
+	return "a=rtpmap:8 PCMA/8000/1";
 }
 
-bool G711ASource::HandleFrame(const MediaChannelId channel_id, const AVFrame frame)
+bool G711ASource::HandleFrame(const MediaChannelId channel_id,
+			      const AVFrame frame)
 {
 	if (frame.size > MAX_RTP_PAYLOAD_SIZE) {
 		return false;
 	}
 
-	const uint8_t *frame_buf  = frame.buffer.get();
+	const uint8_t *frame_buf = frame.buffer.get();
 	const size_t frame_size = frame.size;
 
 	RtpPacket rtp_pkt;
@@ -61,7 +61,8 @@ bool G711ASource::HandleFrame(const MediaChannelId channel_id, const AVFrame fra
 	rtp_pkt.size = frame_size + RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE;
 	rtp_pkt.last = 1;
 
-	memcpy(rtp_pkt.data.get() + RTP_TCP_HEAD_SIZE  + RTP_HEADER_SIZE, frame_buf, frame_size);
+	memcpy(rtp_pkt.data.get() + RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE,
+	       frame_buf, frame_size);
 
 	if (send_frame_callback_) {
 		return send_frame_callback_(channel_id, rtp_pkt); //TODO
@@ -72,7 +73,8 @@ bool G711ASource::HandleFrame(const MediaChannelId channel_id, const AVFrame fra
 
 uint32_t G711ASource::GetTimestamp()
 {
-	const auto time_point = chrono::time_point_cast<chrono::microseconds>(chrono::steady_clock::now());
-	return static_cast<uint32_t>((time_point.time_since_epoch().count() + 500) / 1000 * 8);
+	const auto time_point = chrono::time_point_cast<chrono::microseconds>(
+		chrono::steady_clock::now());
+	return static_cast<uint32_t>(
+		(time_point.time_since_epoch().count() + 500) / 1000 * 8);
 }
-

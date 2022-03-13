@@ -1,7 +1,7 @@
 // PHZ
 // 2018-5-15
 // Scott Xu
-// 2020-12-2 Add IPv6 Support. 
+// 2020-12-2 Add IPv6 Support.
 
 #ifndef XOP_SOCKET_UTIL_H
 #define XOP_SOCKET_UTIL_H
@@ -9,15 +9,14 @@
 #include "Socket.h"
 #include <string>
 
-namespace xop
-{
-    
-class SocketUtil
-{
+namespace xop {
+
+class SocketUtil {
 public:
-	static bool Bind(SOCKET sockfd, const std::string &ip, uint16_t port, bool ipv6 = false);
+	static bool Bind(SOCKET sockfd, const std::string &ip, uint16_t port,
+			 bool ipv6 = false);
 	static void SetNonBlock(SOCKET fd);
-	static void SetBlock(SOCKET fd, int write_timeout=0);
+	static void SetBlock(SOCKET fd, int write_timeout = 0);
 	static void SetReuseAddr(SOCKET fd);
 	static void SetReusePort(SOCKET sockfd);
 	static void SetNoDelay(SOCKET sockfd);
@@ -42,7 +41,3 @@ public:
 }
 
 #endif // _SOCKET_UTIL_H
-
-
-
-

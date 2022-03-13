@@ -8,50 +8,46 @@
 #include <cstdint>
 #include "media.h"
 
-#define RTP_HEADER_SIZE   	   12
-#define MAX_RTP_PAYLOAD_SIZE   1420 //1460  1500-20-12-8
-#define RTP_VERSION			   2
-#define RTP_TCP_HEAD_SIZE	   4
-#define RTP_VPX_HEAD_SIZE      1
+#define RTP_HEADER_SIZE 12
+#define MAX_RTP_PAYLOAD_SIZE 1420 //1460  1500-20-12-8
+#define RTP_VERSION 2
+#define RTP_TCP_HEAD_SIZE 4
+#define RTP_VPX_HEAD_SIZE 1
 
-#define RTP_HEADER_BIG_ENDIAN  0
-namespace xop
-{
+#define RTP_HEADER_BIG_ENDIAN 0
+namespace xop {
 
-enum class TransportMode
-{
+enum class TransportMode {
 	RTP_OVER_TCP = 1,
 	RTP_OVER_UDP = 2,
 	RTP_OVER_MULTICAST = 3,
 };
 
-typedef struct _RTP_header
-{
+typedef struct _RTP_header {
 #if RTP_HEADER_BIG_ENDIAN
 	/* 大端序 */
-	unsigned char version :   2;
-	unsigned char padding :   1;
+	unsigned char version : 2;
+	unsigned char padding : 1;
 	unsigned char extension : 1;
-	unsigned char csrc :      4;
-	unsigned char marker :    1;
-	unsigned char payload :   7;
+	unsigned char csrc : 4;
+	unsigned char marker : 1;
+	unsigned char payload : 7;
 #else
 	/* 小端序 */
-	unsigned char csrc :      4;
+	unsigned char csrc : 4;
 	unsigned char extension : 1;
-	unsigned char padding :   1;
-	unsigned char version :   2;
-	unsigned char payload :   7;
-	unsigned char marker :    1;
-#endif 
+	unsigned char padding : 1;
+	unsigned char version : 2;
+	unsigned char payload : 7;
+	unsigned char marker : 1;
+#endif
 
 	unsigned short seq;
-	unsigned int   ts;
-	unsigned int   ssrc;
+	unsigned int ts;
+	unsigned int ssrc;
 } RtpHeader;
 
-struct MediaChannelInfo
-{
+struct MediaChannelInfo {
 	RtpHeader rtp_header;
 
 	// tcp
@@ -74,21 +70,21 @@ struct MediaChannelInfo
 	bool is_record;
 };
 
-struct RtpPacket
-{
-	RtpPacket() : data(new uint8_t[1600], std::default_delete<uint8_t[]>()),
-	              size(0),
-	              timestamp(0),
-	              type(FrameType::NONE),
-	              last(0)
+struct RtpPacket {
+	RtpPacket()
+		: data(new uint8_t[1600], std::default_delete<uint8_t[]>()),
+		  size(0),
+		  timestamp(0),
+		  type(FrameType::NONE),
+		  last(0)
 	{
 	}
 
 	std::shared_ptr<uint8_t> data;
 	uint16_t size;
 	uint32_t timestamp;
-	FrameType  type;
-	uint8_t  last;
+	FrameType type;
+	uint8_t last;
 };
 
 }

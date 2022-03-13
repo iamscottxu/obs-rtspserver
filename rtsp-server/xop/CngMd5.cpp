@@ -13,49 +13,51 @@ CngMd5::CngMd5() : Md5()
 {
 
 #if defined(WIN32) || defined(_WIN32)
-        DWORD cbData = 0;
+	DWORD cbData = 0;
 	NTSTATUS status;
 	if (!NT_SUCCESS(status = BCryptOpenAlgorithmProvider(
 				&hAlgorithm_, BCRYPT_MD5_ALGORITHM, NULL, 0))) {
-		LOG_ERROR("**** Error 0x%x returned by BCryptOpenAlgorithmProvider",
+		LOG_ERROR(
+			"**** Error 0x%x returned by BCryptOpenAlgorithmProvider",
 			status);
 		return;
 	}
 	if (!NT_SUCCESS(status = BCryptGetProperty(
 				hAlgorithm_, BCRYPT_OBJECT_LENGTH,
-						   (PBYTE)&cbHashObject_,
-						   sizeof(DWORD), &cbData,
-						   0))) {
+				(PBYTE)&cbHashObject_, sizeof(DWORD), &cbData,
+				0))) {
 		LOG_ERROR("**** Error 0x%x returned by BCryptGetProperty",
-			status);
+			  status);
 		return;
 	}
 	if (!NT_SUCCESS(status = BCryptGetProperty(
-				hAlgorithm_, BCRYPT_HASH_LENGTH, (PBYTE)&cbHash_,
-				sizeof(DWORD), &cbData, 0))) {
+				hAlgorithm_, BCRYPT_HASH_LENGTH,
+				(PBYTE)&cbHash_, sizeof(DWORD), &cbData, 0))) {
 		LOG_ERROR("**** Error 0x%x returned by BCryptGetProperty",
-			status);
+			  status);
 		return;
 	}
 #endif
 }
 
-CngMd5::~CngMd5() {
+CngMd5::~CngMd5()
+{
 #if defined(WIN32) || defined(_WIN32)
-	if (hAlgorithm_) BCryptCloseAlgorithmProvider(hAlgorithm_, 0);
+	if (hAlgorithm_)
+		BCryptCloseAlgorithmProvider(hAlgorithm_, 0);
 #endif
 }
 
 void CngMd5::GetMd5Hash(const unsigned char *data, const size_t dataSize,
-			  unsigned char *outHash)
+			unsigned char *outHash)
 {
 #if defined(WIN32) || defined(_WIN32)
 	if (cbHash_ > MD5_HASH_LENGTH) {
 		LOG_ERROR("**** The generated hash value is too long");
 		goto Cleanup;
 	}
-	const auto pbHashObject =
-		static_cast<PBYTE>(HeapAlloc(GetProcessHeap(), 0, cbHashObject_));
+	const auto pbHashObject = static_cast<PBYTE>(
+		HeapAlloc(GetProcessHeap(), 0, cbHashObject_));
 	if (nullptr == pbHashObject) {
 		LOG_ERROR("**** memory allocation failed");
 		goto Cleanup;
@@ -64,27 +66,30 @@ void CngMd5::GetMd5Hash(const unsigned char *data, const size_t dataSize,
 	BCRYPT_HASH_HANDLE hHash = nullptr;
 	NTSTATUS status;
 	if (!NT_SUCCESS(status = BCryptCreateHash(hAlgorithm_, &hHash,
-						  pbHashObject,
-						  cbHashObject_, NULL, 0, 0))) {
+						  pbHashObject, cbHashObject_,
+						  NULL, 0, 0))) {
 		LOG_ERROR("**** Error 0x%x returned by BCryptCreateHash",
-			status);
+			  status);
 		goto Cleanup;
 	}
 
-	if (!NT_SUCCESS(status = BCryptHashData(hHash, const_cast<PBYTE>(data), dataSize, 0))) {
-		LOG_ERROR("**** Error 0x%x returned by BCryptHashData",
-			status);
+	if (!NT_SUCCESS(status = BCryptHashData(hHash, const_cast<PBYTE>(data),
+						dataSize, 0))) {
+		LOG_ERROR("**** Error 0x%x returned by BCryptHashData", status);
 		goto Cleanup;
 	}
 
 	//close the hash
-	if (!NT_SUCCESS(status = BCryptFinishHash(hHash, outHash, cbHash_, 0))) {
+	if (!NT_SUCCESS(status =
+				BCryptFinishHash(hHash, outHash, cbHash_, 0))) {
 		LOG_ERROR("**** Error 0x%x returned by BCryptFinishHash",
-			status);
+			  status);
 	}
 
 Cleanup:
-	if (hHash) BCryptDestroyHash(hHash);
-	if (pbHashObject) HeapFree(GetProcessHeap(), 0, pbHashObject);
+	if (hHash)
+		BCryptDestroyHash(hHash);
+	if (pbHashObject)
+		HeapFree(GetProcessHeap(), 0, pbHashObject);
 #endif
 }

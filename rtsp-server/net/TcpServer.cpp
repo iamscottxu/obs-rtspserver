@@ -4,19 +4,17 @@
 #include "Acceptor.h"
 #include "EventLoop.h"
 #include "Logger.h"
-#include <cstdio>  
+#include <cstdio>
 #include <utility>
 
 using namespace xop;
 using namespace std;
 
-TcpServer::TcpServer(EventLoop* event_loop)
-	: event_loop_(event_loop)
-	//, port_(0)
-	//, acceptor_(new Acceptor(event_loop_))
-	//, is_started_(false)
+TcpServer::TcpServer(EventLoop *event_loop) : event_loop_(event_loop)
+//, port_(0)
+//, acceptor_(new Acceptor(event_loop_))
+//, is_started_(false)
 {
-
 }
 
 TcpServer::~TcpServer()
@@ -45,15 +43,25 @@ bool TcpServer::Start(const std::string &ip, const uint16_t port)
 		if (const TcpConnection::Ptr conn = this->OnConnect(sockfd)) {
 			this->AddConnection(sockfd, conn);
 			conn->SetDisconnectCallback([this](const TcpConnection::Ptr
-				&conn) {
+								   &conn) {
 				const auto scheduler = conn->GetTaskScheduler();
-				if (SOCKET sockfd = conn->GetSocket(); !scheduler->AddTriggerEvent([this, sockfd] {this->RemoveConnection(sockfd); })) {
-					scheduler->AddTimer([this, sockfd]() {this->RemoveConnection(sockfd); return false; }, 100);
+				if (SOCKET sockfd = conn->GetSocket();
+				    !scheduler->AddTriggerEvent([this, sockfd] {
+					    this->RemoveConnection(sockfd);
+				    })) {
+					scheduler->AddTimer(
+						[this, sockfd]() {
+							this->RemoveConnection(
+								sockfd);
+							return false;
+						},
+						100);
 				}
 			});
 		}
 	});
-	if (acceptor->Listen(ip, port) < 0) return false;
+	if (acceptor->Listen(ip, port) < 0)
+		return false;
 	acceptors_.push_back(std::move(acceptor));
 	return true;
 }
@@ -99,7 +107,8 @@ void TcpServer::Stop()
 
 TcpConnection::Ptr TcpServer::OnConnect(const SOCKET sockfd)
 {
-	return std::make_shared<TcpConnection>(event_loop_->GetTaskScheduler().get(), sockfd);
+	return std::make_shared<TcpConnection>(
+		event_loop_->GetTaskScheduler().get(), sockfd);
 }
 
 void TcpServer::AddConnection(const SOCKET sockfd, TcpConnection::Ptr tcpConn)

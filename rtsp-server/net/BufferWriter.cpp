@@ -7,7 +7,7 @@
 
 using namespace xop;
 
-void xop::WriteUint32BE(char* p, uint32_t value)
+void xop::WriteUint32BE(char *p, uint32_t value)
 {
 	p[0] = value >> 24;
 	p[1] = value >> 16;
@@ -15,7 +15,7 @@ void xop::WriteUint32BE(char* p, uint32_t value)
 	p[3] = value & 0xff;
 }
 
-void xop::WriteUint32LE(char* p, uint32_t value)
+void xop::WriteUint32LE(char *p, uint32_t value)
 {
 	p[0] = value & 0xff;
 	p[1] = value >> 8;
@@ -23,63 +23,61 @@ void xop::WriteUint32LE(char* p, uint32_t value)
 	p[3] = value >> 24;
 }
 
-void xop::WriteUint24BE(char* p, uint32_t value)
+void xop::WriteUint24BE(char *p, uint32_t value)
 {
 	p[0] = value >> 16;
 	p[1] = value >> 8;
 	p[2] = value & 0xff;
 }
 
-void xop::WriteUint24LE(char* p, uint32_t value)
+void xop::WriteUint24LE(char *p, uint32_t value)
 {
 	p[0] = value & 0xff;
 	p[1] = value >> 8;
 	p[2] = value >> 16;
 }
 
-void xop::WriteUint16BE(char* p, uint16_t value)
+void xop::WriteUint16BE(char *p, uint16_t value)
 {
 	p[0] = value >> 8;
 	p[1] = value & 0xff;
 }
 
-void xop::WriteUint16LE(char* p, uint16_t value)
+void xop::WriteUint16LE(char *p, uint16_t value)
 {
 	p[0] = value & 0xff;
 	p[1] = value >> 8;
 }
 
-BufferWriter::BufferWriter(const int capacity) 
-	: max_queue_length_(capacity)
-{
-	
-}	
+BufferWriter::BufferWriter(const int capacity) : max_queue_length_(capacity) {}
 
-bool BufferWriter::Append(const std::shared_ptr<char> &data, const size_t size, const uint32_t index)
+bool BufferWriter::Append(const std::shared_ptr<char> &data, const size_t size,
+			  const uint32_t index)
 {
 	if (size <= index) {
 		return false;
 	}
-   
+
 	if (static_cast<int>(buffer_.size()) >= max_queue_length_) {
 		return false;
 	}
-     
+
 	Packet pkt = {data, size, index};
 	buffer_.emplace(std::move(pkt));
 	return true;
 }
 
-bool BufferWriter::Append(const char* data, const size_t size, const uint32_t index)
+bool BufferWriter::Append(const char *data, const size_t size,
+			  const uint32_t index)
 {
 	if (size <= index) {
 		return false;
 	}
-     
+
 	if (static_cast<int>(buffer_.size()) >= max_queue_length_) {
 		return false;
 	}
-     
+
 	Packet pkt;
 	pkt.data.reset(new char[size + 512], std::default_delete<char[]>());
 	memcpy(pkt.data.get(), data, size);
@@ -90,35 +88,36 @@ bool BufferWriter::Append(const char* data, const size_t size, const uint32_t in
 }
 
 int BufferWriter::Send(const SOCKET sockfd, const int timeout)
-{		
+{
 	if (timeout > 0) {
-		SocketUtil::SetBlock(sockfd, timeout); 
+		SocketUtil::SetBlock(sockfd, timeout);
 	}
-      
+
 	int ret;
 	int count = 1;
 
-	do
-	{
+	do {
 		if (buffer_.empty()) {
 			return 0;
 		}
-		
+
 		count -= 1;
 		Packet &pkt = buffer_.front();
-		ret = send(sockfd, pkt.data.get() + pkt.writeIndex, pkt.size - pkt.writeIndex, 0);
+		ret = send(sockfd, pkt.data.get() + pkt.writeIndex,
+			   pkt.size - pkt.writeIndex, 0);
 		if (ret > 0) {
 			pkt.writeIndex += ret;
 			if (pkt.size == pkt.writeIndex) {
 				count += 1;
 				buffer_.pop();
 			}
-		}
-		else if (ret < 0) {
+		} else if (ret < 0) {
 #if defined(WIN32) || defined(_WIN32)
-			if (const int error = WSAGetLastError(); error == WSAEWOULDBLOCK || error == WSAEINPROGRESS || error == 0)
+			if (const int error = WSAGetLastError();
+			    error == WSAEWOULDBLOCK ||
+			    error == WSAEINPROGRESS || error == 0)
 #else
-            if (errno == EINTR || errno == EAGAIN)
+			if (errno == EINTR || errno == EAGAIN)
 #endif
 			{
 				ret = 0;
@@ -129,8 +128,6 @@ int BufferWriter::Send(const SOCKET sockfd, const int timeout)
 	if (timeout > 0) {
 		SocketUtil::SetNonBlock(sockfd);
 	}
-    
+
 	return ret;
 }
-
-

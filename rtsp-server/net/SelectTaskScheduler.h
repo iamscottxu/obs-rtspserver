@@ -17,11 +17,9 @@
 #include <unistd.h>
 #endif
 
-namespace xop
-{	
+namespace xop {
 
-class SelectTaskScheduler : public TaskScheduler
-{
+class SelectTaskScheduler : public TaskScheduler {
 public:
 	explicit SelectTaskScheduler(int id = 0);
 	~SelectTaskScheduler() override;
@@ -29,7 +27,7 @@ public:
 	void UpdateChannel(const ChannelPtr &channel) override;
 	void RemoveChannel(const ChannelPtr &channel) override;
 	bool HandleEvent(int timeout) override;
-	
+
 private:
 	fd_set fd_read_backup_{};
 	fd_set fd_write_backup_{};

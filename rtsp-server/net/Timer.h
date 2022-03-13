@@ -19,12 +19,10 @@ namespace xop {
 typedef std::function<bool()> TimerEvent;
 typedef uint32_t TimerId;
 
-class Timer
-{
+class Timer {
 public:
 	Timer(TimerEvent event, const uint32_t msec)
-		: event_callback_(std::move(event))
-		, interval_(msec)
+		: event_callback_(std::move(event)), interval_(msec)
 	{
 		if (interval_ == 0) {
 			interval_ = 1;
@@ -32,11 +30,11 @@ public:
 	}
 
 	static void Sleep(const uint32_t msec)
-	{ 
+	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(msec));
 	}
 
-	void SetEventCallback(const TimerEvent& event)
+	void SetEventCallback(const TimerEvent &event)
 	{
 		event_callback_ = event;
 	}
@@ -47,25 +45,27 @@ public:
 		auto time_begin = std::chrono::high_resolution_clock::now();
 		int64_t elapsed = 0;
 
-		do
-		{
-			std::this_thread::sleep_for(std::chrono::microseconds(microseconds - elapsed));
+		do {
+			std::this_thread::sleep_for(std::chrono::microseconds(
+				microseconds - elapsed));
 			time_begin = std::chrono::high_resolution_clock::now();
-			if(event_callback_) {
+			if (event_callback_) {
 				event_callback_();
 			}
-			elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - time_begin).count();
+			elapsed =
+				std::chrono::duration_cast<
+					std::chrono::microseconds>(
+					std::chrono::high_resolution_clock::now() -
+					time_begin)
+					.count();
 			if (elapsed < 0) {
 				elapsed = 0;
 			}
-            
+
 		} while (is_repeat_);
 	}
 
-	void Stop()
-	{
-		is_repeat_ = false;
-	}	
+	void Stop() { is_repeat_ = false; }
 
 private:
 	friend class TimerQueue;
@@ -75,21 +75,17 @@ private:
 		next_timeout_ = time_point + interval_;
 	}
 
-	int64_t getNextTimeout() const
-	{
-		return next_timeout_;
-	}
+	int64_t getNextTimeout() const { return next_timeout_; }
 
 	bool is_repeat_ = false;
 	TimerEvent event_callback_ = [] { return false; };
 	uint32_t interval_ = 0;
-	int64_t  next_timeout_ = 0;
+	int64_t next_timeout_ = 0;
 };
 
-class TimerQueue
-{
+class TimerQueue {
 public:
-	TimerId AddTimer(const TimerEvent& event, uint32_t msec);
+	TimerId AddTimer(const TimerEvent &event, uint32_t msec);
 	void RemoveTimer(TimerId timerId);
 
 	int64_t GetTimeRemaining();
@@ -106,7 +102,4 @@ private:
 
 }
 
-#endif 
-
-
-
+#endif

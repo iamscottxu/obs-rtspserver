@@ -8,7 +8,7 @@ BaseMd5::BaseMd5() : Md5() {}
 BaseMd5::~BaseMd5() = default;
 
 void BaseMd5::GetMd5Hash(const unsigned char *data, const size_t dataSize,
-                         unsigned char *outHash)
+			 unsigned char *outHash)
 {
 	md5::md5_state_t state;
 

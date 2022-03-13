@@ -7,15 +7,12 @@
 
 using namespace xop;
 
-Acceptor::Acceptor(EventLoop* eventLoop)
-    : event_loop_(eventLoop)
-    , tcp_socket_(new TcpSocket())
-{	
-	
+Acceptor::Acceptor(EventLoop *eventLoop)
+	: event_loop_(eventLoop), tcp_socket_(new TcpSocket())
+{
 }
 
-Acceptor::~Acceptor()
-= default;
+Acceptor::~Acceptor() = default;
 
 int Acceptor::Listen(const std::string &ip, const uint16_t port)
 {
@@ -24,7 +21,8 @@ int Acceptor::Listen(const std::string &ip, const uint16_t port)
 	if (tcp_socket_->GetSocket() > 0) {
 		tcp_socket_->Close();
 	}
-	const SOCKET sockfd = tcp_socket_->Create(SocketUtil::IsIpv6Address(ip));
+	const SOCKET sockfd =
+		tcp_socket_->Create(SocketUtil::IsIpv6Address(ip));
 	channel_ptr_.reset(new Channel(sockfd));
 	SocketUtil::SetReuseAddr(sockfd);
 	SocketUtil::SetReusePort(sockfd);
@@ -60,10 +58,8 @@ void Acceptor::OnAccept()
 	if (const auto sockfd = tcp_socket_->Accept(); sockfd > 0) {
 		if (new_connection_callback_) {
 			new_connection_callback_(sockfd);
-		}
-		else {
+		} else {
 			SocketUtil::Close(sockfd);
 		}
 	}
 }
-

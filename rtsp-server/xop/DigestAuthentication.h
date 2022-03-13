@@ -8,33 +8,29 @@
 #include <string>
 #include "Md5.h"
 
-namespace xop
-{
+namespace xop {
 
-class DigestAuthentication
-{
+class DigestAuthentication {
 public:
-	DigestAuthentication(std::string realm, std::string username, std::string password);
+	DigestAuthentication(std::string realm, std::string username,
+			     std::string password);
 	virtual ~DigestAuthentication();
 
-	std::string GetRealm() const
-	{ return realm_; }
+	std::string GetRealm() const { return realm_; }
 
-	std::string GetUsername() const
-	{ return username_; }
+	std::string GetUsername() const { return username_; }
 
-	std::string GetPassword() const
-	{ return password_; }
+	std::string GetPassword() const { return password_; }
 
 	std::string GetNonce() const;
-	std::string GetResponse(std::string nonce, std::string cmd, std::string url) const;
+	std::string GetResponse(std::string nonce, std::string cmd,
+				std::string url) const;
 
 private:
-
 	std::string realm_;
 	std::string username_;
 	std::string password_;
-	Md5* md5_;
+	Md5 *md5_;
 };
 
 }

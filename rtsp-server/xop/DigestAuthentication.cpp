@@ -15,10 +15,12 @@
 
 using namespace xop;
 
-DigestAuthentication::DigestAuthentication(std::string realm, std::string username, std::string password)
-	: realm_(std::move(realm))
-	, username_(std::move(username))
-	, password_(std::move(password))
+DigestAuthentication::DigestAuthentication(std::string realm,
+					   std::string username,
+					   std::string password)
+	: realm_(std::move(realm)),
+	  username_(std::move(username)),
+	  password_(std::move(password))
 {
 #if defined(WIN32) || defined(_WIN32)
 	md5_ = new CngMd5();
@@ -43,18 +45,20 @@ std::string DigestAuthentication::GetNonce() const
 	const auto timePoint =
 		std::chrono::time_point_cast<std::chrono::milliseconds>(
 			std::chrono::steady_clock::now());
-	const uint32_t timestamp = static_cast<uint32_t>(timePoint.time_since_epoch().count());
+	const uint32_t timestamp =
+		static_cast<uint32_t>(timePoint.time_since_epoch().count());
 
 	return md5_->GetMd5HashString(std::to_string(timestamp + rd()));
 }
 
-std::string DigestAuthentication::GetResponse(const std::string nonce, const std::string cmd, const std::string url) const
+std::string DigestAuthentication::GetResponse(const std::string nonce,
+					      const std::string cmd,
+					      const std::string url) const
 {
 	//md5(md5(<username>:<realm> : <password>) :<nonce> : md5(<cmd>:<url>))
-	const auto hex1 = md5_->GetMd5HashString(username_ + ":" + realm_ + ":" +
-	                                        password_);
+	const auto hex1 = md5_->GetMd5HashString(username_ + ":" + realm_ +
+						 ":" + password_);
 	const auto hex2 = md5_->GetMd5HashString(cmd + ":" + url);
 	auto response = md5_->GetMd5HashString(hex1 + ":" + nonce + ":" + hex2);
 	return response;
 }
-

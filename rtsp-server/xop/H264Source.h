@@ -8,11 +8,9 @@
 #include "rtp.h"
 #include <vector>
 
-namespace xop
-{ 
+namespace xop {
 
-class H264Source : public MediaSource
-{
+class H264Source : public MediaSource {
 public:
 	static H264Source *CreateNew(uint32_t framerate = 25);
 
@@ -21,11 +19,9 @@ public:
 				     uint32_t framerate = 25);
 	~H264Source() override;
 
-	void SetFramerate(uint32_t framerate)
-	{ framerate_ = framerate; }
+	void SetFramerate(uint32_t framerate) { framerate_ = framerate; }
 
-	uint32_t GetFramerate() const 
-	{ return framerate_; }
+	uint32_t GetFramerate() const { return framerate_; }
 
 	std::string GetMediaDescription(uint16_t port) override;
 
@@ -34,11 +30,10 @@ public:
 	bool HandleFrame(MediaChannelId channel_id, AVFrame frame) override;
 
 	static uint32_t GetTimestamp();
-	
+
 private:
 	H264Source(const std::vector<uint8_t> &sps,
-		   const std::vector<uint8_t> &pps,
-		   uint32_t framerate);
+		   const std::vector<uint8_t> &pps, uint32_t framerate);
 
 	static std::string Base64Encode(const void *input, size_t size);
 
@@ -50,10 +45,7 @@ private:
 
 	std::vector<uint8_t> pps_;
 };
-	
+
 }
 
 #endif
-
-
-

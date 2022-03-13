@@ -9,29 +9,29 @@
 #include "Channel.h"
 #include "TcpSocket.h"
 
-namespace xop
-{
+namespace xop {
 
 typedef std::function<void(SOCKET)> NewConnectionCallback;
 
 class EventLoop;
 
-class Acceptor
-{
+class Acceptor {
 public:
-	explicit Acceptor(EventLoop* eventLoop);
+	explicit Acceptor(EventLoop *eventLoop);
 	virtual ~Acceptor();
 
-	void SetNewConnectionCallback(const NewConnectionCallback& cb)
-	{ new_connection_callback_ = cb; }
+	void SetNewConnectionCallback(const NewConnectionCallback &cb)
+	{
+		new_connection_callback_ = cb;
+	}
 
-	int  Listen(const std::string &ip, uint16_t port);
+	int Listen(const std::string &ip, uint16_t port);
 	void Close();
 
 private:
 	void OnAccept();
 
-	EventLoop* event_loop_ = nullptr;
+	EventLoop *event_loop_ = nullptr;
 	std::mutex mutex_;
 	std::unique_ptr<TcpSocket> tcp_socket_;
 	ChannelPtr channel_ptr_;
@@ -40,6 +40,4 @@ private:
 
 }
 
-#endif 
-
-
+#endif

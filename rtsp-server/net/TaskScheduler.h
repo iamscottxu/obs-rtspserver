@@ -9,15 +9,13 @@
 #include "Timer.h"
 #include "RingBuffer.h"
 
-namespace xop
-{
+namespace xop {
 
 typedef std::function<void()> TriggerEvent;
 
-class TaskScheduler 
-{
+class TaskScheduler {
 public:
-	explicit TaskScheduler(int id=1);
+	explicit TaskScheduler(int id = 1);
 	virtual ~TaskScheduler();
 
 	void Start();
@@ -26,12 +24,11 @@ public:
 	void RemoveTimer(TimerId timerId);
 	bool AddTriggerEvent(TriggerEvent callback);
 
-	virtual void UpdateChannel(const ChannelPtr& channel) { }
-	virtual void RemoveChannel(const ChannelPtr& channel) {}
+	virtual void UpdateChannel(const ChannelPtr &channel) {}
+	virtual void RemoveChannel(const ChannelPtr &channel) {}
 	virtual bool HandleEvent(int timeout) { return false; }
 
-	int GetId() const 
-	{ return id_; }
+	int GetId() const { return id_; }
 
 protected:
 	void Wake() const;
@@ -48,9 +45,8 @@ protected:
 
 	static constexpr char kTriggetEvent = 1;
 	static constexpr char kTimerEvent = 2;
-	static constexpr int  kMaxTriggetEvents = 50000;
+	static constexpr int kMaxTriggetEvents = 50000;
 };
 
 }
-#endif  
-
+#endif
