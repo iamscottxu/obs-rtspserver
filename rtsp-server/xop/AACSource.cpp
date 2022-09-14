@@ -9,6 +9,7 @@
 #include "AACSource.h"
 //#include <stdlib.h>
 #include <cstdio>
+#include <cstring>
 #include <chrono>
 #include <array>
 #include <vector>
