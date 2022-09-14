@@ -25,11 +25,11 @@ DigestAuthentication::DigestAuthentication(std::string realm,
 #if defined(WIN32) || defined(_WIN32)
 	md5_ = new CngMd5();
 #elif defined(__linux) || defined(__linux__)
-	md5 = new BaseMd5();
+	md5_ = new BaseMd5();
 #elif defined(__APPLE__) || defined(__MACH__)
-	md5 = new MacMd5();
+	md5_ = new MacMd5();
 #else
-	md5 = new BaseMd5();
+	md5_ = new BaseMd5();
 #endif
 }
 
