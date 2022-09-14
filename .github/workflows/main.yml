@@ -36,14 +36,15 @@ jobs:
       latest_created_at: ${{ steps.latest_release.outputs.created_at }}
       latest_published_at: ${{ steps.latest_release.outputs.published_at }}
     steps:
-      - name: Get latest release info
+      - name: Get v27.2.4 release info
         id: latest_release
         uses: kaliber5/action-get-release@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           owner: 'obsproject'
           repo: 'obs-studio'
-          latest: true
+          tag_name: '27.2.4'
+          #latest: true
           
   get_plugin_info:
     name: '01 - Get plugin git info'
