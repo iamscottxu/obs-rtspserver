@@ -9,6 +9,7 @@
 
 #include "H265Source.h"
 #include <cstdio>
+#include <cstring>
 #include <chrono>
 #if defined(WIN32) || defined(_WIN32)
 

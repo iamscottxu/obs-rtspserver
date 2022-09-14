@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 #include <cstdio>
+#include <cstring>
 #include <chrono>
 #if defined(WIN32) || defined(_WIN32)
 
