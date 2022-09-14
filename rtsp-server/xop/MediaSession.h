@@ -191,7 +191,7 @@ public:
 				addr_bytes[4 + plan_size] = local_addr_bytes[plan_size] & (0xff << (8 - plan_remainder));
 			//group id
 			const uint32_t group_id = rd();
-			memcpy(addr_bytes + 13, &group_id, sizeof uint32_t);
+			memcpy(addr_bytes + 13, &group_id, sizeof(uint32_t));
 			inet_ntop(AF_INET6, &addr6, addr6_str,
 				  INET6_ADDRSTRLEN);
 			if (addrs_.find(addr6_str) == addrs_.end()) {
