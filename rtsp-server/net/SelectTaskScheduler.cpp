@@ -141,9 +141,14 @@ bool SelectTaskScheduler::HandleEvent(int timeout)
 		timeout = 10;
 	}
 
-	const timeval tv = {timeout / 1000, timeout % 1000 * 1000};
-	const int ret = select(static_cast<int>(maxfd_) + 1, &fd_read,
+#if defined(WIN32) || defined(_WIN32)
+    const timeval tv = {timeout / 1000, timeout % 1000 * 1000};
+#else
+    timeval tv = {timeout / 1000, timeout % 1000 * 1000};
+#endif
+    const int ret = select(static_cast<int>(maxfd_) + 1, &fd_read,
 			       &fd_write, &fd_exp, &tv);
+
 	if (ret < 0) {
 #if defined(WIN32) || defined(_WIN32)
 #else
