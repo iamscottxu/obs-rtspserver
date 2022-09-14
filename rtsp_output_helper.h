@@ -16,20 +16,20 @@ public:
 	RtspOutputHelper(std::string outputName);
 	~RtspOutputHelper();
 	static RtspOutputHelper *CreateRtspOutput(obs_data_t *settings, obs_data_t *hotkey);
-	void UpdateSettings(obs_data_t *settings);
-	obs_data_t *GetSettings();
+	void UpdateSettings(obs_data_t *settings) const;
+	obs_data_t *GetSettings() const;
 	void UpdateEncoder();
-	bool Start();
-	void Stop();
-	std::string GetLastError();
-	obs_data_t *HotkeysSave();
+	bool Start() const;
+	void Stop() const;
+	std::string GetLastError() const;
+	obs_data_t *HotkeysSave() const;
 	void SignalConnect(const char *signal, signal_callback_t callback,
-			   void *data);
+			   void *data) const;
 	void SignalDisconnect(const char *signal, signal_callback_t callback,
-			      void *data);
-	std::string GetOutputName();
-	uint64_t GetTotalBytes();
-	bool IsActive();
+			      void *data) const;
+	std::string GetOutputName() const;
+	uint64_t GetTotalBytes() const;
+	bool IsActive() const;
 
 private:
 	RtspOutputHelper(obs_output_t *obsOutput);

@@ -23,20 +23,20 @@ public Q_SLOTS:
 private Q_SLOTS:
 	void onPushButtonStartClicked();
 	void onPushButtonStopClicked();
-	void onPushButtonAddressCopyClicked();
-	void onCheckBoxEnableMulticastClicked(int checked);
-	void onSpinBoxPortValueChanged(int value);
-	void onLineEditUrlSuffixValueChanged(const QString value);
-	void onCheckBoxEnableAuthenticationClicked(bool checked);
-	void onLineEditRealmTextChanged(const QString value);
-	void onLineEditUsernameTextChanged(const QString value);
-	void onLineEditPasswordTextChanged(const QString value);
+	void onPushButtonAddressCopyClicked() const;
+	void onCheckBoxEnableMulticastClicked(int checked) const;
+	void onSpinBoxPortValueChanged(int value) const;
+	void onLineEditUrlSuffixValueChanged(const QString &value) const;
+	void onCheckBoxEnableAuthenticationClicked(bool checked) const;
+	void onLineEditRealmTextChanged(const QString &value) const;
+	void onLineEditUsernameTextChanged(const QString &value) const;
+	void onLineEditPasswordTextChanged(const QString &value) const;
 
 	void onStatusTimerTimeout();
 
-	void onButtonStatusChanging(bool outputStarted, bool outputStopped);
+	void onButtonStatusChanging(bool outputStarted, bool outputStopped) const;
 	void onStatusTimerStatusChanging(bool start);
-	void onLabelMessageStatusChanging(bool showError);
+	void onLabelMessageStatusChanging(bool showError) const;
 
 Q_SIGNALS:
 	void setButtonStatus(bool outputStarted, bool outputStopped);
@@ -60,8 +60,8 @@ private:
 	static void OnOutputStart(void *data, calldata_t *cd);
 	static void OnOutputStop(void *data, calldata_t *cd);
 
-	void LoadConfig(config_t *config);
-	void SaveConfig(config_t *config);
+	void LoadConfig(config_t *config) const;
+	void SaveConfig(config_t *config) const;
 };
 
 #endif // RTSP_PROPERTIES_H

@@ -81,7 +81,10 @@ public:
 
 	bool IsMulticast() const { return is_multicast_; }
 
-	std::string GetMulticastIp() const { return multicast_ip_; }
+	std::string GetMulticastIp(const bool ipv6) const
+	{
+		return ipv6 ? multicast_ip6_ : multicast_ip_;
+	}
 
 	uint16_t GetMulticastPort(MediaChannelId channel_id) const
 	{
@@ -114,6 +117,7 @@ private:
 	bool is_multicast_ = false;
 	std::vector<uint16_t> multicast_port_;
 	std::string multicast_ip_;
+	std::string multicast_ip6_;
 	std::atomic_bool has_new_client_;
 
 	static std::atomic_uint last_session_id_;
@@ -127,26 +131,93 @@ public:
 		return s_multi_addr;
 	}
 
+	std::string GetAddr6()
+	{
+		std::lock_guard lock(mutex_);
+		std::random_device rd;
+		char addr6_str[INET6_ADDRSTRLEN];
+		for (int n = 0; n <= 10; n++) {
+			in6_addr addr6{};
+			uint8_t *addr_bytes = addr6.s6_addr;
+			addr_bytes[0] = 0xff;
+			addr_bytes[1] =        //flgs: |0|R|P|T|
+				0x00 << 7 |          //0: reserved
+				0x00 << 6 |          //R: default
+				0x00 << 5 |          //P: default
+				0x01 << 4;           //T: dynamic
+			addr_bytes[1] |= 0x02; //scop: Link-Local scope
+			//group id
+			uint32_t group_id = rd();
+			memcpy(addr_bytes + 2, &group_id, 4);
+			group_id = rd();
+			memcpy(addr_bytes + 6, &group_id, 4);
+			group_id = rd();
+			memcpy(addr_bytes + 10, &group_id, 4);
+			group_id = rd();
+			memcpy(addr_bytes + 14, &group_id, 2);
+			inet_ntop(AF_INET6, &addr6, addr6_str,
+				  INET6_ADDRSTRLEN);
+			if (addrs_.find(addr6_str) == addrs_.end()) {
+				addrs_.insert(addr6_str);
+				break;
+			}
+		}
+		return addr6_str;
+	}
+
+	std::string GetAddr6(const in6_addr local_addr6, uint8_t plen)
+	{
+		std::lock_guard lock(mutex_);
+		std::random_device rd;
+		char addr6_str[INET6_ADDRSTRLEN];
+		for (int n = 0; n <= 10; n++) {
+			in6_addr addr6{};
+			uint8_t *addr_bytes = addr6.s6_addr;
+			const uint8_t *local_addr_bytes = local_addr6.s6_addr;
+			addr_bytes[0] = 0xff;
+			addr_bytes[1] =          //flgs: |0|R|P|T|
+				0x00 << 7 |            //0: reserved
+				0x00 << 6 |            //R: default
+				0x01 << 5 |            //P: RFC3306
+				0x01 << 4;             //T: dynamic
+			addr_bytes[1] |= 0x02;   //scop: Link-Local scope
+			addr_bytes[2] = 0x01;    //reserved
+			addr_bytes[3] = plen;    //plen
+			//network prefix
+			const size_t plan_size = plen / 8;
+			memcpy(addr_bytes + 4, local_addr_bytes, plan_size);
+			const uint8_t plan_remainder = plen % 8;
+			if (plan_remainder > 0)
+				addr_bytes[4 + plan_size] = local_addr_bytes[plan_size] & (0xff << (8 - plan_remainder));
+			//group id
+			const uint32_t group_id = rd();
+			memcpy(addr_bytes + 13, &group_id, sizeof uint32_t);
+			inet_ntop(AF_INET6, &addr6, addr6_str,
+				  INET6_ADDRSTRLEN);
+			if (addrs_.find(addr6_str) == addrs_.end()) {
+				addrs_.insert(addr6_str);
+				break;
+			}
+		}
+		return addr6_str;
+	}
+
 	std::string GetAddr()
 	{
 		std::lock_guard lock(mutex_);
-		std::string addr_str;
 		std::random_device rd;
 
+		char addr_str[INET_ADDRSTRLEN];
 		for (int n = 0; n <= 10; n++) {
-			sockaddr_in addr{};
+			in_addr addr{};
 			constexpr uint32_t range = 0xE8FFFFFF - 0xE8000100;
-			addr.sin_addr.s_addr = htonl(0xE8000100 + rd() % range);
-			addr_str = inet_ntoa(addr.sin_addr);
-
-			if (addrs_.find(addr_str) != addrs_.end()) {
-				addr_str.clear();
-			} else {
+			addr.s_addr = htonl(0xE8000100 + rd() % range);
+			inet_ntop(AF_INET, &addr, addr_str, INET_ADDRSTRLEN);
+			if (addrs_.find(addr_str) == addrs_.end()) {
 				addrs_.insert(addr_str);
 				break;
 			}
 		}
-
 		return addr_str;
 	}
 

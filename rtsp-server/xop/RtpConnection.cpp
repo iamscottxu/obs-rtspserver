@@ -118,7 +118,7 @@ bool RtpConnection::SetupRtpOverUdp(MediaChannelId channel_id,
 			local_rtp_port_[static_cast<uint8_t>(channel_id)] + 1;
 
 		rtpfd_[static_cast<uint8_t>(channel_id)] =
-			::socket(ipv6_ ? AF_INET6 : AF_INET, SOCK_DGRAM, 0);
+			socket(ipv6_ ? AF_INET6 : AF_INET, SOCK_DGRAM, 0);
 		if (!SocketUtil::Bind(
 			    rtpfd_[static_cast<uint8_t>(channel_id)],
 			    ipv6_ ? "::0" : "0.0.0.0", //TODO: Bing all address?
@@ -130,7 +130,7 @@ bool RtpConnection::SetupRtpOverUdp(MediaChannelId channel_id,
 		}
 
 		rtcpfd_[static_cast<uint8_t>(channel_id)] =
-			::socket(ipv6_ ? AF_INET6 : AF_INET, SOCK_DGRAM, 0);
+			socket(ipv6_ ? AF_INET6 : AF_INET, SOCK_DGRAM, 0);
 		if (!SocketUtil::Bind(
 			    rtcpfd_[static_cast<uint8_t>(channel_id)],
 			    ipv6_ ? "::0" : "0.0.0.0", //TODO: Bing all address?
@@ -193,9 +193,9 @@ bool RtpConnection::SetupRtpOverUdp(MediaChannelId channel_id,
 
 bool RtpConnection::SetupRtpOverMulticast(MediaChannelId channel_id,
 					  const std::string &ip,
-					  const uint16_t port)
+					  const uint16_t port,
+					  const bool ipv6)
 {
-	const bool ipv6 = SocketUtil::IsIpv6Address(ip);
 	std::random_device rd;
 	for (int n = 0; n <= 10; n++) {
 		if (n == 10) {
@@ -205,12 +205,12 @@ bool RtpConnection::SetupRtpOverMulticast(MediaChannelId channel_id,
 		local_rtp_port_[static_cast<uint8_t>(channel_id)] = rd() &
 								    0xfffe;
 		rtpfd_[static_cast<uint8_t>(channel_id)] =
-			::socket(ipv6 ? AF_INET6 : AF_INET, SOCK_DGRAM, 0);
+			::socket(ipv6_ ? AF_INET6 : AF_INET, SOCK_DGRAM, 0);
 		if (!SocketUtil::Bind(
 			    rtpfd_[static_cast<uint8_t>(channel_id)],
-			    ipv6 ? "::0" : "0.0.0.0",
+			    ipv6_ ? "::0" : "0.0.0.0",
 			    local_rtp_port_[static_cast<uint8_t>(channel_id)],
-			    ipv6)) {
+			    ipv6_)) {
 			SocketUtil::Close(
 				rtpfd_[static_cast<uint8_t>(channel_id)]);
 			continue;
@@ -277,14 +277,13 @@ string RtpConnection::GetMulticastIp(MediaChannelId channel_id)
 		const auto peer_rtp_addr =
 			&peer_rtp_addr_[static_cast<uint8_t>(channel_id)];
 		char str[INET6_ADDRSTRLEN] = "::0";
-		inet_ntop(AF_INET6, &peer_rtp_addr->sin6_addr, str,
-			  sizeof(str));
+		inet_ntop(AF_INET6, &peer_rtp_addr->sin6_addr, str, sizeof str);
 		return str;
 	} else {
 		const auto peer_rtp_addr = reinterpret_cast<sockaddr_in *>(
 			&peer_rtp_addr_[static_cast<uint8_t>(channel_id)]);
 		char str[INET_ADDRSTRLEN] = "0.0.0.0";
-		inet_ntop(AF_INET, &peer_rtp_addr->sin_addr, str, sizeof(str));
+		inet_ntop(AF_INET, &peer_rtp_addr->sin_addr, str, sizeof str);
 		return str;
 	}
 }
@@ -412,7 +411,8 @@ int RtpConnection::SendRtpOverUdp(MediaChannelId channel_id,
 		pkt.size - 4, 0,
 		reinterpret_cast<sockaddr *>(
 			&peer_rtp_addr_[static_cast<uint8_t>(channel_id)]),
-		sizeof(struct sockaddr_in));
+		ipv6_ ? sizeof(struct sockaddr_in6)
+		      : sizeof(struct sockaddr_in));
 
 	if (ret < 0) {
 		Teardown();

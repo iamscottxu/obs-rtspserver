@@ -36,7 +36,7 @@ int Acceptor::Listen(const std::string &ip, const uint16_t port)
 		return -1;
 	}
 
-	channel_ptr_->SetReadCallback([this]() { this->OnAccept(); });
+	channel_ptr_->SetReadCallback([this] { this->OnAccept(); });
 	channel_ptr_->EnableReading();
 	event_loop_->UpdateChannel(channel_ptr_);
 	return 0;

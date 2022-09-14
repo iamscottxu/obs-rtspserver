@@ -14,7 +14,8 @@ RtspProperties::RtspProperties(std::string rtspOutputName, QWidget *parent)
 	: QDialog(parent),
 	  ui(new Ui::RtspProperties),
 	  statusTimer(new QTimer(this)),
-	  rtspOutputHelper(new RtspOutputHelper(std::move(rtspOutputName)))
+	  rtspOutputHelper(new RtspOutputHelper(std::move(rtspOutputName))),
+	  settings(rtspOutputHelper->GetSettings())
 {
 	ui->setupUi(this);
 
@@ -56,9 +57,8 @@ RtspProperties::RtspProperties(std::string rtspOutputName, QWidget *parent)
 	ui->labelVersion->setText(VERSION_STRING);
 #endif
 
-	settings = rtspOutputHelper->GetSettings();
 	onButtonStatusChanging(!rtspOutputHelper->IsActive(),
-			       rtspOutputHelper->IsActive());
+	                       rtspOutputHelper->IsActive());
 	rtspOutputHelper->SignalConnect("start", OnOutputStart, this);
 	rtspOutputHelper->SignalConnect("stop", OnOutputStop, this);
 
@@ -103,7 +103,7 @@ void RtspProperties::onPushButtonStopClicked()
 	setButtonStatus(false, false);
 }
 
-void RtspProperties::onPushButtonAddressCopyClicked()
+void RtspProperties::onPushButtonAddressCopyClicked() const
 {
 	QString url = "rtsp://localhost";
 	if (ui->spinBoxPort->value() != 554) {
@@ -115,17 +115,17 @@ void RtspProperties::onPushButtonAddressCopyClicked()
 	QApplication::clipboard()->setText(url);
 }
 
-void RtspProperties::onCheckBoxEnableMulticastClicked(int checked)
+void RtspProperties::onCheckBoxEnableMulticastClicked(const int checked) const
 {
 	obs_data_set_bool(settings, "multicast", checked);
 }
 
-void RtspProperties::onSpinBoxPortValueChanged(int value)
+void RtspProperties::onSpinBoxPortValueChanged(const int value) const
 {
 	obs_data_set_int(settings, "port", value);
 }
 
-void RtspProperties::onLineEditUrlSuffixValueChanged(const QString value)
+void RtspProperties::onLineEditUrlSuffixValueChanged(const QString &value) const
 {
 	//auto rx = QRegExp("^[-A-Za-z0-9+&@#%=~_|]+(/[-A-Za-z0-9+&@#%=~_|]+)*$");
 	//if (!rx.exactMatch(value))
@@ -134,24 +134,24 @@ void RtspProperties::onLineEditUrlSuffixValueChanged(const QString value)
 			    value.toStdString().c_str());
 }
 
-void RtspProperties::onCheckBoxEnableAuthenticationClicked(bool checked)
+void RtspProperties::onCheckBoxEnableAuthenticationClicked(const bool checked) const
 {
 	obs_data_set_bool(settings, "authentication", checked);
 }
 
-void RtspProperties::onLineEditRealmTextChanged(const QString value)
+void RtspProperties::onLineEditRealmTextChanged(const QString &value) const
 {
 	obs_data_set_string(settings, "authentication_realm",
 			    value.toStdString().c_str());
 }
 
-void RtspProperties::onLineEditUsernameTextChanged(const QString value)
+void RtspProperties::onLineEditUsernameTextChanged(const QString &value) const
 {
 	obs_data_set_string(settings, "authentication_username",
 			    value.toStdString().c_str());
 }
 
-void RtspProperties::onLineEditPasswordTextChanged(const QString value)
+void RtspProperties::onLineEditPasswordTextChanged(const QString &value) const
 {
 	obs_data_set_string(settings, "authentication_password",
 			    value.toStdString().c_str());
@@ -168,8 +168,8 @@ void RtspProperties::onStatusTimerTimeout()
 		bitps / 1000 + (bitps % 1000 >= 500 ? 1 : 0)));
 }
 
-void RtspProperties::onButtonStatusChanging(bool outputStarted,
-					    bool outputStopped)
+void RtspProperties::onButtonStatusChanging(const bool outputStarted,
+                                            const bool outputStopped) const
 {
 	ui->checkBoxEnableMulticast->setEnabled(outputStarted);
 	ui->spinBoxPort->setEnabled(outputStarted);
@@ -184,7 +184,7 @@ void RtspProperties::onButtonStatusChanging(bool outputStarted,
 	ui->pushButtonStop->setEnabled(outputStopped);
 }
 
-void RtspProperties::onStatusTimerStatusChanging(bool start)
+void RtspProperties::onStatusTimerStatusChanging(const bool start)
 {
 	if (start) {
 		lastTotalBytes = 0;
@@ -196,7 +196,7 @@ void RtspProperties::onStatusTimerStatusChanging(bool start)
 	}
 }
 
-void RtspProperties::onLabelMessageStatusChanging(bool showError)
+void RtspProperties::onLabelMessageStatusChanging(const bool showError) const
 {
 	if (showError)
 		ui->labelMessage->setText(
@@ -271,7 +271,7 @@ void RtspProperties::OnOutputStart(void *data, calldata_t *cd)
 
 void RtspProperties::OnOutputStop(void *data, calldata_t *cd)
 {
-	auto page = static_cast<RtspProperties *>(data);
+	const auto page = static_cast<RtspProperties *>(data);
 	if (const auto code = calldata_int(cd, "code");
 	    code != OBS_OUTPUT_SUCCESS)
 		page->setLabelMessageStatus(true);
@@ -279,7 +279,7 @@ void RtspProperties::OnOutputStop(void *data, calldata_t *cd)
 	page->setStatusTimerStatus(false);
 }
 
-void RtspProperties::LoadConfig(config_t *config)
+void RtspProperties::LoadConfig(config_t *config) const
 {
 	ui->checkBoxAuto->setChecked(
 		config_get_bool(config, CONFIG_SECTIION, "AutoStart"));
@@ -297,7 +297,7 @@ void RtspProperties::LoadConfig(config_t *config)
 		config_get_bool(config, CONFIG_SECTIION, "AudioTrack6"));
 }
 
-void RtspProperties::SaveConfig(config_t *config)
+void RtspProperties::SaveConfig(config_t *config) const
 {
 	if (!config)
 		return;

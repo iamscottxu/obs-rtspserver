@@ -37,6 +37,9 @@ MediaSession *MediaSession::CreateNew(std::string url_suffix,
 
 MediaSession::~MediaSession()
 {
+	if (!multicast_ip6_.empty()) {
+		MulticastAddr::instance().Release(multicast_ip6_);
+	}
 	if (!multicast_ip_.empty()) {
 		MulticastAddr::instance().Release(multicast_ip_);
 	}
@@ -93,11 +96,9 @@ bool MediaSession::AddSource(MediaChannelId channel_id, MediaSource *source)
 			if (int id = iter->GetId(); id >= 0) {
 				if (auto iter2 = packets.find(id);
 				    iter2 != packets.end()) {
-					int ret = 0;
 					count++;
-					ret = iter->SendRtpPacket(
-						channel_id, iter2->second);
-					if (is_multicast_ && ret == 0) {
+					if (const int ret = iter->SendRtpPacket(
+						channel_id, iter2->second); is_multicast_ && ret == 0) {
 						break;
 					}
 				}
@@ -122,8 +123,9 @@ bool MediaSession::StartMulticast()
 		return true;
 	}
 
+	multicast_ip6_ = MulticastAddr::instance().GetAddr6();
 	multicast_ip_ = MulticastAddr::instance().GetAddr();
-	if (multicast_ip_.empty()) {
+	if (multicast_ip6_.empty() || multicast_ip_.empty()) {
 		return false;
 	}
 
@@ -176,8 +178,8 @@ std::string MediaSession::GetSdpMessage(const std::string ip,
 
 				snprintf(buf + strlen(buf),
 					 sizeof(buf) - strlen(buf),
-					 "c=IN IP%d %s/255\r\n", ipv6 ? 6 : 4,
-					 multicast_ip_.c_str());
+					 "c=IN IP%d %s/%d\r\n", ipv6 ? 6 : 4,
+					 ipv6 ? multicast_ip6_.c_str() : multicast_ip_.c_str(), ipv6 ? 255 : 8);
 			} else {
 				snprintf(buf + strlen(buf),
 					 sizeof(buf) - strlen(buf), "%s\r\n",

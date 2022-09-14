@@ -305,7 +305,7 @@ void RtspConnection::HandleCmdSetup()
 
 	if (media_session->IsMulticast()) {
 		const std::string multicast_ip =
-			media_session->GetMulticastIp();
+			media_session->GetMulticastIp(IsIpv6());
 		if (rtsp_request_->GetTransportMode() ==
 		    TransportMode::RTP_OVER_MULTICAST) {
 			const uint16_t port =
@@ -313,7 +313,7 @@ void RtspConnection::HandleCmdSetup()
 			const uint16_t session_id =
 				rtp_conn_->GetRtpSessionId();
 			if (!rtp_conn_->SetupRtpOverMulticast(
-				    channel_id, multicast_ip, port)) {
+				    channel_id, multicast_ip, port, IsIpv6())) {
 				goto server_error;
 			}
 
