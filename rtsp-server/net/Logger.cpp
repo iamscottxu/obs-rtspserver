@@ -10,6 +10,7 @@
 #include "Logger.h"
 #include "Timestamp.h"
 #include <cstdarg>
+#include <cstring>
 #include <iostream>
 
 using namespace xop;
