@@ -41,7 +41,7 @@ void KqueueTaskScheduler::UpdateChannel(const ChannelPtr &channel)
 #endif
 }
 
-void KqueueTaskScheduler::Update(int operation, ChannelPtr &channel)
+void KqueueTaskScheduler::Update(int operation, const ChannelPtr &channel)
 {
 #if defined(__APPLE__) || defined(__MACH__)
 	struct kevent events[2] = {0};

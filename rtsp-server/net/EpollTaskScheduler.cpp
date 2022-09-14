@@ -49,7 +49,7 @@ void EpollTaskScheduler::UpdateChannel(const ChannelPtr &channel)
 #endif
 }
 
-void EpollTaskScheduler::Update(int operation, ChannelPtr &channel)
+void EpollTaskScheduler::Update(int operation, const ChannelPtr &channel)
 {
 #if defined(__linux) || defined(__linux__)
 	struct epoll_event event = {0};

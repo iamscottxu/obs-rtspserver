@@ -21,7 +21,7 @@ public:
 	bool HandleEvent(int timeout) override;
 
 private:
-	void Update(int operation, ChannelPtr &channel);
+	void Update(int operation, const ChannelPtr &channel);
 
 	int epollfd_ = -1;
 	std::mutex mutex_;
