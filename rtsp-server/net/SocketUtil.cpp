@@ -241,10 +241,16 @@ bool SocketUtil::Connect(const SOCKET sockfd, const std::string &ip,
 			fd_set fd_write{};
 			FD_ZERO(&fd_write);
 			FD_SET(sockfd, &fd_write);
-			const timeval tv = {timeout / 1000,
+#if defined(WIN32) || defined(_WIN32)
+            const timeval tv = {timeout / 1000,
 					    timeout % 1000 * 1000};
-			select(static_cast<int>(sockfd) + 1, nullptr, &fd_write,
+#else
+            timeval tv = {timeout / 1000,
+					    timeout % 1000 * 1000};
+#endif
+            select(static_cast<int>(sockfd) + 1, nullptr, &fd_write,
 			       nullptr, &tv);
+
 			if (FD_ISSET(sockfd, &fd_write)) {
 				is_connected = true;
 			}
