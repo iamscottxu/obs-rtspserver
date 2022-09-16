@@ -23,7 +23,7 @@ if(CMAKE_VERSION VERSION_LESS "3.7.0")
 endif()
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
-find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Core Widgets REQUIRED)
 
 set(OBS_RTSPSERVER_SOURCES
 	rtsp_main.cpp
@@ -54,8 +54,8 @@ target_link_libraries(obs-rtspserver PRIVATE
 	rtsp-server
 	obs-frontend-api
 	libobs
-	Qt5::Core
-	Qt5::Widgets)
+	Qt6::Core
+	Qt6::Widgets)
 
 add_definitions(-DVERSION_STRING="${OBS_PLUGUIN_VERSION}")
 		
