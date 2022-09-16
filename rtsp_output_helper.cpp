@@ -107,9 +107,11 @@ void RtspOutputHelper::CreateVideoEncoder()
 {
 	obs_encoder_t *encoder;
 	if (outputSettings.adv_out)
-		encoder = obs_get_encoder_by_name("streaming_h264");
+		//encoder = obs_get_encoder_by_name("streaming_h264"); //OBS 27.2.4 Or Older
+		encoder = obs_get_encoder_by_name("advanced_video_stream");
 	else
-		encoder = obs_get_encoder_by_name("simple_h264_stream");
+		//encoder = obs_get_encoder_by_name("simple_h264_stream"); //OBS 27.2.4 Or Older
+		encoder = obs_get_encoder_by_name("simple_video_stream");
 	obs_encoder_release(videoEncoder);
 	videoEncoder = obs_video_encoder_create(
 		obs_encoder_get_id(encoder), "rtsp_output_video",
@@ -126,12 +128,14 @@ void RtspOutputHelper::CreateVideoEncoder()
 void RtspOutputHelper::CreateAudioEncoder()
 {
 	obs_encoder_t *encoder;
-	if (outputSettings.adv_out) {
-		if ((encoder = obs_get_encoder_by_name("adv_stream_aac")) ==
+	if (outputSettings.adv_out)
+		/*if ((encoder = obs_get_encoder_by_name("adv_stream_aac")) ==
 		    nullptr)
 			encoder = obs_get_encoder_by_name(
-				"avc_aac_stream"); //OBS 26.0.2 Or Older
-	} else
+				"avc_aac_stream");*/ //OBS 26.0.2 Or Older
+		encoder = obs_get_encoder_by_name("adv_stream_aac");
+
+	else
 		encoder = obs_get_encoder_by_name("simple_aac");
 
 	for (const auto audioEncoder : audioEncoders)
