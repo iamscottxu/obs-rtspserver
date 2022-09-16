@@ -104,7 +104,7 @@ int BufferWriter::Send(const SOCKET sockfd, const int timeout)
 		count -= 1;
 		Packet &pkt = buffer_.front();
 		ret = send(sockfd, pkt.data.get() + pkt.writeIndex,
-			   pkt.size - pkt.writeIndex, 0);
+			   static_cast<uint32_t>(pkt.size) - pkt.writeIndex, 0);
 		if (ret > 0) {
 			pkt.writeIndex += ret;
 			if (pkt.size == pkt.writeIndex) {

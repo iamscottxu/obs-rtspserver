@@ -37,7 +37,7 @@ public:
 			       : false;
 	}
 
-	uint32_t Size() const { return buffer_.size(); }
+	size_t Size() const { return buffer_.size(); }
 
 private:
 	typedef struct {

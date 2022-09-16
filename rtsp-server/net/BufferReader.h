@@ -25,9 +25,9 @@ public:
 	explicit BufferReader(uint32_t initialSize = kInitialSize);
 	virtual ~BufferReader();
 
-	uint32_t ReadableBytes() const { return writer_index_ - reader_index_; }
+	size_t ReadableBytes() const { return writer_index_ - reader_index_; }
 
-	uint32_t WritableBytes() const { return buffer_.size() - writer_index_; }
+	size_t WritableBytes() const { return buffer_.size() - writer_index_; }
 
 	char *Peek() { return Begin() + reader_index_; }
 
@@ -77,10 +77,10 @@ public:
 	void RetrieveUntil(const char *end) { Retrieve(end - Peek()); }
 
 	int Read(SOCKET sockfd);
-	uint32_t ReadAll(std::string &data);
-	uint32_t ReadUntilCrlf(std::string &data);
+	size_t ReadAll(std::string &data);
+	size_t ReadUntilCrlf(std::string &data);
 
-	uint32_t Size() const { return buffer_.size(); }
+	size_t Size() const { return buffer_.size(); }
 
 private:
 	char *Begin() { return &*buffer_.begin(); }

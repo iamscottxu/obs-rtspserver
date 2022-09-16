@@ -54,7 +54,7 @@ bool RtspConnection::OnRead(BufferReader &buffer)
 {
 	KeepAlive();
 
-	if (const int size = buffer.ReadableBytes(); size <= 0) {
+	if (const size_t size = buffer.ReadableBytes(); size <= 0) {
 		return false; //close
 	}
 

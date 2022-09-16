@@ -48,7 +48,7 @@ string VP8Source::GetAttribute()
 bool VP8Source::HandleFrame(const MediaChannelId channel_id, AVFrame frame)
 {
 	uint8_t *frame_buf = frame.buffer.get();
-	uint32_t frame_size = frame.size;
+	size_t frame_size = frame.size;
 
 	if (frame.timestamp == 0) {
 		frame.timestamp = GetTimestamp();
@@ -59,7 +59,7 @@ bool VP8Source::HandleFrame(const MediaChannelId channel_id, AVFrame frame)
 	uint8_t vp8_payload_descriptor = 0x10;
 
 	while (frame_size > 0) {
-		uint32_t payload_size = MAX_RTP_PAYLOAD_SIZE;
+		size_t payload_size = MAX_RTP_PAYLOAD_SIZE;
 
 		RtpPacket rtp_pkt;
 		rtp_pkt.type = frame.type;
@@ -71,7 +71,8 @@ bool VP8Source::HandleFrame(const MediaChannelId channel_id, AVFrame frame)
 		if (frame_size < MAX_RTP_PAYLOAD_SIZE) {
 			payload_size = frame_size;
 			rtp_pkt.size = RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE +
-				       RTP_VPX_HEAD_SIZE + frame_size;
+				       RTP_VPX_HEAD_SIZE +
+				       static_cast<uint16_t>(frame_size);
 			rtp_pkt.last = 1;
 		}
 

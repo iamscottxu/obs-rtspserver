@@ -59,7 +59,8 @@ bool H265Source::HandleFrame(const MediaChannelId channelId,
 	rtp_pkt.timestamp = frame.timestamp;
 
 	if (frame_size <= MAX_RTP_PAYLOAD_SIZE) {
-		rtp_pkt.size = frame_size + RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE;
+		rtp_pkt.size = static_cast<uint16_t>(frame_size) +
+			       RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE;
 		rtp_pkt.last = 1;
 
 		memcpy(rtp_pkt.data.get() + RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE,
@@ -107,7 +108,7 @@ bool H265Source::HandleFrame(const MediaChannelId channelId,
 
 		{
 			rtp_pkt.size = RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE + 3 +
-				       frame_size;
+				       static_cast<uint16_t>(frame_size);
 			rtp_pkt.last = 1;
 			uint8_t *rtp_pkt_data = rtp_pkt.data.get() +
 						RTP_TCP_HEAD_SIZE +

@@ -74,7 +74,7 @@ void CngMd5::GetMd5Hash(const unsigned char *data, const size_t dataSize,
 	}
 
 	if (!NT_SUCCESS(status = BCryptHashData(hHash, const_cast<PBYTE>(data),
-						dataSize, 0))) {
+						static_cast<ULONG>(dataSize), 0))) {
 		LOG_ERROR("**** Error 0x%x returned by BCryptHashData", status);
 		goto Cleanup;
 	}

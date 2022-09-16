@@ -58,7 +58,7 @@ BufferReader::~BufferReader() = default;
 
 int BufferReader::Read(const SOCKET sockfd)
 {
-	if (const uint32_t size = WritableBytes(); size < MAX_BYTES_PER_READ) {
+	if (const size_t size = WritableBytes(); size < MAX_BYTES_PER_READ) {
 		const auto bufferReaderSize = buffer_.size();
 		if (bufferReaderSize > MAX_BUFFER_SIZE) {
 			return 0;
@@ -76,9 +76,9 @@ int BufferReader::Read(const SOCKET sockfd)
 	return bytes_read;
 }
 
-uint32_t BufferReader::ReadAll(std::string &data)
+size_t BufferReader::ReadAll(std::string &data)
 {
-	const uint32_t size = ReadableBytes();
+	const size_t size = ReadableBytes();
 	if (size > 0) {
 		data.assign(Peek(), size);
 		writer_index_ = 0;
@@ -88,14 +88,14 @@ uint32_t BufferReader::ReadAll(std::string &data)
 	return size;
 }
 
-uint32_t BufferReader::ReadUntilCrlf(std::string &data)
+size_t BufferReader::ReadUntilCrlf(std::string &data)
 {
 	const char *crlf = FindLastCrlf();
 	if (crlf == nullptr) {
 		return 0;
 	}
 
-	const auto size = static_cast<uint32_t>(crlf - Peek() + 2);
+	const auto size = static_cast<size_t>(crlf - Peek() + 2);
 	data.assign(Peek(), size);
 	Retrieve(size);
 	return size;
