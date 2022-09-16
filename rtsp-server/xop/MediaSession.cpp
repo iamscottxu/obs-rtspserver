@@ -1,4 +1,4 @@
-// PHZ
+﻿// PHZ
 // 2018-9-30
 // Scott Xu
 // 2020-12-5 Add IPv6 Support.
