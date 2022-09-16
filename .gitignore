@@ -8,3 +8,5 @@ bundle/macOS/Plugin-Info.plist
 installer/LICENSE
 build*/
 release/
+.vs/
+.vscode/
