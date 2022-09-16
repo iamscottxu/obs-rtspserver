@@ -40,7 +40,7 @@ public:
 	size_t Size() const { return buffer_.size(); }
 
 private:
-	typedef struct {
+	typedef struct Packet {
 		std::shared_ptr<char> data;
 		size_t size{};
 		uint32_t writeIndex{};

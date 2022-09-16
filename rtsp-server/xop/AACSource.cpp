@@ -79,7 +79,7 @@ string AACSource::GetAttribute() // RFC 3640
 		sprintf(buf.data(), rtpmap_fmt, samplerate_, channels_);
 
 	const array audioSpecificConfig = {
-		static_cast<uint8_t>(profile + 1 << 3 |
+		static_cast<uint8_t>((profile + 1) << 3 |
 				     samplingFrequencyIndex >> 1),
 		static_cast<uint8_t>(samplingFrequencyIndex << 7 |
 				     channels_ << 3)};

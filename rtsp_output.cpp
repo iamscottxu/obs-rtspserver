@@ -145,8 +145,8 @@ static void *rtsp_output_create(obs_data_t *settings, obs_output_t *output)
 static void rtsp_push_frame(void *param);
 static void set_output_error(const rtsp_out_data *out_data, int code, ...)
 {
-	char *message;
-	char *lookup_string;
+	const char *message;
+	const char *lookup_string;
 	switch (code) {
 	case ERROR_BEGIN_DATA_CAPTURE:
 		message = "can't begin data capture";
