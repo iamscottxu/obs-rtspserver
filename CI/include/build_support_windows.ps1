@@ -92,19 +92,34 @@ function Ensure-Directory {
     Set-Location -Path $Directory
 }
 
+function TestFileHash {
+    param (
+        [string]$Path,
+        [string]$Hash
+    )
+    $FileHash = Get-FileHash -Path $Path -Algorithm SHA256
+    if (-not ($FileHash.Hash -ieq $Hash)) {
+        Write-Error "${Path} failed hash check."
+        return $false
+    }
+    return $true
+}
+
 $BuildDirectory = "$(if (Test-Path Env:BuildDirectory) { $env:BuildDirectory } else { $BuildDirectory })"
 $BuildConfiguration = "$(if (Test-Path Env:BuildConfiguration) { $env:BuildConfiguration } else { $BuildConfiguration })"
 $BuildArch = "$(if (Test-Path Env:BuildArch) { $env:BuildArch } else { $BuildArch })"
 $OBSBranch = "$(if (Test-Path Env:OBSBranch) { $env:OBSBranch } else { $OBSBranch })"
 #$WindowsDepsVersion = "$(if (Test-Path Env:WindowsDepsVersion ) { $env:WindowsDepsVersion } else { "2022-02-13" })"
-$WindowsDepsVersion = "$(if (Test-Path Env:WindowsDepsVersion ) { $env:DEPS_VERSION_WIN } else { "2022-02-13" })"
-#$WindowsQtVersion = "$(if (Test-Path Env:WindowsQtVersion ) { $env:WindowsQtVersion } else { "5.15.2" })"
-$WindowsQtVersion = "$(if (Test-Path Env:WindowsQtVersion ) { $env:QT_VERSION_WIN } else { "5.15.2" })"
-$CmakeSystemVersion = "$(if (Test-Path Env:CMAKE_SYSTEM_VERSION) { $Env:CMAKE_SYSTEM_VERSION } else { "10.0.20348.0" })"
+$WindowsDepsVersion = "$(if (Test-Path Env:WindowsDepsVersion ) { $env:DEPS_VERSION_WIN } else { "2022-08-02" })"
+$CmakeSystemVersion = "$(if (Test-Path Env:CmakeSystemVersion) { $Env:CMAKE_SYSTEM_VERSION } else { "10.0.22000.0" })"
 #$OBSVersion = "$(if ( Test-Path Env:OBSVersion ) { $env:ObsVersion } else { "27.2.3" })"
-$OBSVersion = "$(if ( Test-Path Env:OBSVersion ) { $env:OBS_VERSION } else { "27.2.3" })"
+$OBSVersion = "$(if ( Test-Path Env:OBSVersion ) { $env:OBS_VERSION } else { "28.0.1" })"
 #$NSISVersion = "$(if ( Test-Path Env:NSISVersion ) { $env:NSISVersion } else { "3.08" })"
 $NSISVersion = "$(if ( Test-Path Env:NSISVersion ) { $env:NSIS_VERSION_WIN } else { "3.08" })"
+$WindowsDepsX64Hash = "$(if (Test-Path Env:WindowsDepsX64Hash ) { $env:DEPS_X64_HASH_WIN } else { "-" })"
+$WindowsDepsX86Hash = "$(if (Test-Path Env:WindowsDepsX86Hash ) { $env:DEPS_X86_HASH_WIN } else { "-" })"
+$WindowsQtX64Hash = "$(if (Test-Path Env:WindowsQtX64Hash ) { $env:QT_X64_HASH_WIN } else { "-" })"
+$WindowsQtX86Hash = "$(if (Test-Path Env:WindowsQtX86Hash ) { $env:QT_X86_HASH_WIN } else { "-" })"
 
 if ($env:GITHUB_ACTIONS -eq "true")
 {

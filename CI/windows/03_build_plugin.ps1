@@ -30,8 +30,8 @@ function Build-OBS-Plugin {
     Ensure-Directory ${CheckoutDir}
 
     if ($BuildArch -eq "64-bit") {
-        $QtDirectory = "${CheckoutDir}/../obs-build-dependencies/Qt_${WindowsQtVersion}/msvc2019_64"
-        $DepsDirectory = "${CheckoutDir}/../obs-build-dependencies/windows-deps-${WindowsDepsVersion}/win64"
+        $QtDirectory = "${CheckoutDir}/../obs-build-dependencies/windows-deps-qt6-${WindowsDepsVersion}-x64"
+        $DepsDirectory = "${CheckoutDir}/../obs-build-dependencies/windows-deps-${WindowsDepsVersion}-x64"
         
         Set-Msvc-Environment-And-Run-Cmake -Arch "amd64" -WinsdkVersion "${CmakeSystemVersion}" -CmakeArgumentList @(
             "-S", ".", "-B", """${BuildDirectory}64""", "-G", "Ninja",
@@ -47,8 +47,8 @@ function Build-OBS-Plugin {
         Set-Msvc-Environment-And-Run-Cmake -Arch "amd64" -WinsdkVersion "${CmakeSystemVersion}" -CmakeArgumentList @(
             "--build", """${BuildDirectory}64""", "--config", "${BuildConfiguration}")
     } else {
-        $QtDirectory = "${CheckoutDir}/../obs-build-dependencies/Qt_${WindowsQtVersion}/msvc2019"
-        $DepsDirectory = "${CheckoutDir}/../obs-build-dependencies/windows-deps-${WindowsDepsVersion}/win32"
+        $QtDirectory = "${CheckoutDir}/../obs-build-dependencies/windows-deps-qt6-${WindowsDepsVersion}-x86"
+        $DepsDirectory = "${CheckoutDir}/../obs-build-dependencies/windows-deps-${WindowsDepsVersion}-x86"
 
         Set-Msvc-Environment-And-Run-Cmake -Arch "x86" -WinsdkVersion "${CmakeSystemVersion}" -CmakeArgumentList @(
             "-S", ".", "-B", """${BuildDirectory}32""", "-G", "Ninja",

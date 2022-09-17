@@ -83,7 +83,7 @@ mark_as_advanced(OBS_FRONTEND_API_INCLUDE_DIR OBS_FRONTEND_API_LIB)
 if(OBS-FRONTEND-API_FOUND)
 	set(OBS_FRONTEND_API_INCLUDE_DIRS ${OBS_FRONTEND_API_INCLUDE_DIR})
 	set(OBS_FRONTEND_API_LIBRARIES ${OBS_FRONTEND_API_LIB})
-	include(${OBS_FRONTEND_API_INCLUDE_DIR}/../../cmake/external/ObsPluginHelpers.cmake)
+	# include(${OBS_FRONTEND_API_INCLUDE_DIR}/../../cmake/external/ObsPluginHelpers.cmake)
 
 	# allows external plugins to easily use/share common dependencies that are often included with obs-frontend-api (such as FFmpeg)
 	if(NOT DEFINED INCLUDED_OBS_FRONTEND_API_CMAKE_MODULES)

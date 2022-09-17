@@ -42,10 +42,10 @@ install_linux_dependencies() {
         ninja-build \
         clang \
         clang-format \
-        qtbase5-dev \
-        libqt5svg5-dev \
-        libqt5x11extras5-dev \
-        qtbase5-private-dev \
+        qt6-base-dev \
+        qt6-base-private-dev \
+        libqt6svg6-dev \
+        qt6-wayland \
         libwayland-dev \
         libavcodec-dev \
         libavdevice-dev \
