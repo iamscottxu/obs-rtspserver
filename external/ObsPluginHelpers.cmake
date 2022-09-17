@@ -335,7 +335,7 @@ if(OS_MACOS)
   # Set path to entitlements property list for codesigning. Entitlements should match the host
   # binary, in this case OBS.app.
   set(OBS_CODESIGN_ENTITLEMENTS
-      ${CMAKE_SOURCE_DIR}/cmake/bundle/macos/entitlements.plist
+      ${CMAKE_SOURCE_DIR}/bundle/macos/entitlements.plist
       CACHE INTERNAL "Path to codesign entitlements plist")
   # Enable linker codesigning by default. Building OBS or plugins on host systems older than macOS
   # 10.15 is not supported
@@ -437,10 +437,12 @@ if(OS_MACOS)
                  BUNDLE_EXTENSION "plugin"
                  OUTPUT_NAME ${target}
                  MACOSX_BUNDLE_INFO_PLIST
-                 "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/bundle/macOS/Plugin-Info.plist.in"
+                 #"${CMAKE_CURRENT_FUNCTION_LIST_DIR}/bundle/macOS/Plugin-Info.plist.in"
+                 "${CMAKE_SOURCE_DIR}/bundle/macOS/Plugin-Info.plist.in"
                  XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "${MACOSX_PLUGIN_GUI_IDENTIFIER}"
                  XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS
-                 "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/bundle/macOS/entitlements.plist")
+                 #"${CMAKE_CURRENT_FUNCTION_LIST_DIR}/bundle/macOS/entitlements.plist")
+                 "${CMAKE_SOURCE_DIR}/bundle/macOS/entitlements.plist")
 
     # If not building with Xcode, manually code-sign the plugin
     if(NOT XCODE)
@@ -448,7 +450,7 @@ if(OS_MACOS)
           "/usr/bin/codesign --force \\
           --sign \\\"${OBS_BUNDLE_CODESIGN_IDENTITY}\\\" \\
           --options runtime \\
-          --entitlements \\\"${CMAKE_CURRENT_FUNCTION_LIST_DIR}/bundle/macOS/entitlements.plist\\\" \\
+          --entitlements \\\"${CMAKE_SOURCE_DIR}/bundle/macOS/entitlements.plist\\\" \\
           \\\"\${CMAKE_INSTALL_PREFIX}/${target}.plugin\\\"")
       install(CODE "execute_process(COMMAND /bin/sh -c \"${_COMMAND}\")" COMPONENT obs_plugins)
     endif()
