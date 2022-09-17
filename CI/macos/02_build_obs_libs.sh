@@ -28,7 +28,7 @@ build_obs_libs() {
         -DENABLE_PLUGINS=OFF \
         -DENABLE_UI=ON \
         -DENABLE_SCRIPTING=OFF \
-        -DENABLE_SPARKLE_UPDATER=OFF \
+        -DENABLE_SPARKLE_UPDATER=ON \
         -DBUILD_BROWSER=OFF \
         -DCMAKE_PREFIX_PATH="${DEPS_BUILD_DIR}/obs-deps" \
         ${QUIET:+-Wno-deprecated -Wno-dev --log-level=ERROR}
