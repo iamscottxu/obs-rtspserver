@@ -47,11 +47,11 @@ install_obs-deps() {
     status "Install OBS dependencies"
     trap "caught_error 'install_obs-deps'" ERR
 
-    if [ -z "${DISABLE_PIPEWIRE}" ]; then
-        sudo apt-get install -y $@ libpipewire-0.3-dev
-    else
-        sudo apt-get install -y $@
-    fi
+    #if [ -z "${DISABLE_PIPEWIRE}" ]; then
+    #    sudo apt-get install -y $@ libpipewire-0.3-dev
+    #else
+    sudo apt-get install -y $@
+    #fi
 }
 
 install_qt5-deps() {
