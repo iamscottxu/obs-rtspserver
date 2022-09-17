@@ -26,10 +26,10 @@ install_qt-deps() {
     status "Set up precompiled dependency Qt v${1}"
     ensure_dir "${DEPS_BUILD_DIR}"
     step "Download..."
-    check_and_fetch "https://github.com/obsproject/obs-deps/releases/download/${1}/macos-deps-qt-${1}-universal.tar.xz" "${2}"
+    check_and_fetch "https://github.com/obsproject/obs-deps/releases/download/${1}/macos-deps-qt6-${1}-universal.tar.xz" "${2}"
     mkdir -p obs-deps
     step "Unpack..."
-    /usr/bin/tar -xf "./macos-deps-qt-${1}-universal.tar.xz" -C ./obs-deps
+    /usr/bin/tar -xf "./macos-deps-qt6-${1}-universal.tar.xz" -C ./obs-deps
     /usr/bin/xattr -r -d com.apple.quarantine ./obs-deps
 }
 
