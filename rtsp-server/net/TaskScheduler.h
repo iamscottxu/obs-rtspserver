@@ -24,9 +24,9 @@ public:
 	void RemoveTimer(TimerId timerId);
 	bool AddTriggerEvent(TriggerEvent callback);
 
-	virtual void UpdateChannel(const ChannelPtr &channel) {}
-	virtual void RemoveChannel(const ChannelPtr &channel) {}
-	virtual bool HandleEvent(int timeout) { return false; }
+	virtual void UpdateChannel(const ChannelPtr &channel) = 0;
+	virtual void RemoveChannel(const ChannelPtr &channel) = 0;
+	virtual bool HandleEvent(int timeout) = 0;
 
 	int GetId() const { return id_; }
 
