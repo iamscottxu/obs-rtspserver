@@ -103,15 +103,13 @@ public:
 
 protected:
 	friend class RtspConnection;
-	virtual MediaSession::Ptr LookMediaSession(const std::string &suffix)
+	virtual MediaSession::Ptr LookMediaSession([[maybe_unused]] const std::string &suffix)
 	{
-		UNUSED(suffix);
 		return nullptr;
 	}
 
-	virtual MediaSession::Ptr LookMediaSession(MediaSessionId sessionId)
+	virtual MediaSession::Ptr LookMediaSession([[maybe_unused]] MediaSessionId sessionId)
 	{
-		UNUSED(sessionId);
 		return nullptr;
 	}
 
