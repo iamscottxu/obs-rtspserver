@@ -43,7 +43,7 @@ public:
 	//队列为空返回false
 	bool try_pop(T &value)
 	{
-		lock_guard lk(mut);
+		lock_guard<mutex> lk(mut);
 		if (data_queue.empty())
 		{
 			return false;
