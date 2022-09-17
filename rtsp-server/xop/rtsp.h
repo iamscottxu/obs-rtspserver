@@ -103,9 +103,17 @@ public:
 
 protected:
 	friend class RtspConnection;
-	virtual MediaSession::Ptr LookMediaSession(const std::string &suffix) = 0;
+	virtual MediaSession::Ptr LookMediaSession(const std::string &suffix)
+	{
+		UNUSED(suffix);
+		return nullptr;
+	}
 
-	virtual MediaSession::Ptr LookMediaSession(MediaSessionId sessionId) = 0;
+	virtual MediaSession::Ptr LookMediaSession(MediaSessionId sessionId)
+	{
+		UNUSED(sessionId);
+		return nullptr;
+	}
 
 	bool has_auth_info_ = false;
 	std::string realm_;
