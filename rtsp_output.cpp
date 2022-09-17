@@ -265,7 +265,7 @@ static bool rtsp_output_start(void *data)
 	send_prestart_signal(out_data);
 
 	auto enabled_channels_count = 0;
-	for (auto index = 0; index < out_data->enabled_channels.size();
+	for (size_t index = 0; index < out_data->enabled_channels.size();
 	     index++) {
 		if (obs_output_get_audio_encoder(out_data->output, index) ==
 		    nullptr) {
@@ -310,7 +310,7 @@ static bool rtsp_output_start(void *data)
 		return false;
 	}
 
-	for (auto index = 0; index < out_data->enabled_channels.size();
+	for (size_t index = 0; index < out_data->enabled_channels.size();
 	     index++) {
 		if (!out_data->enabled_channels[index])
 			continue;
