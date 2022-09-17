@@ -29,6 +29,9 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/external/ObsPluginHelpers.cmake")
 
 if(OS_MACOS)
     configure_file(
-		bundle/installer-macos.pkgproj.in
+		${CMAKE_SOURCE_DIR}/bundle/installer-macos.pkgproj.in
 		${CMAKE_SOURCE_DIR}/bundle/installer-macos.generated.pkgproj)
+
+    set(CMAKE_FIND_FRAMEWORK LAST)
+    set(CMAKE_FIND_APPBUNDLE LAST)
 endif()
