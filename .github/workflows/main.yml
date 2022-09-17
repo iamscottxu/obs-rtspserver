@@ -188,7 +188,7 @@ jobs:
     strategy:
       matrix:
         #ubuntu: ['ubuntu-20.04']
-        ubuntu: ['Ubuntu 22.04']
+        ubuntu: ['ubuntu-20.04']
     env:
       OBS_VERSION: "${{ needs.get_obs_info.outputs.latest_tag_name }}"
     defaults:
