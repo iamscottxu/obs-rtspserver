@@ -376,7 +376,7 @@ jobs:
           asset_name: ${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag_name }}-windows-installer.exe
           asset_content_type: application/x-msdownload
 
-      - name: 'Upload linux .tar.gz artifact to release'
+      - name: 'Upload linux qt5 .tar.gz artifact to release'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -384,10 +384,21 @@ jobs:
           #upload_url: ${{ github.event.release.upload_url }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.tar.gz
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.tar.gz
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.tar.gz
           asset_content_type: application/x-gzip
 
-      - name: 'Upload linux .deb artifact to release'
+      - name: 'Upload linux qt6 .tar.gz artifact to release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          #upload_url: ${{ github.event.release.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-22.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.tar.gz
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt6.tar.gz
+          asset_content_type: application/x-gzip
+
+      - name: 'Upload linux qt5 .deb artifact to release'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -395,10 +406,21 @@ jobs:
           #upload_url: ${{ github.event.release.upload_url }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.deb
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.deb
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.deb
           asset_content_type: application/vnd.debian.binary-package
 
-      - name: 'Upload linux .rpm artifact to release'
+      - name: 'Upload linux qt6 .deb artifact to release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          #upload_url: ${{ github.event.release.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-22.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.deb
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt6.deb
+          asset_content_type: application/vnd.debian.binary-package
+
+      - name: 'Upload linux qt5 .rpm artifact to release'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -406,7 +428,18 @@ jobs:
           #upload_url: ${{ github.event.release.upload_url }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.rpm
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.rpm
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.rpm
+          asset_content_type: application/vnd.debian.binary-package
+
+      - name: 'Upload linux qt6 .rpm artifact to release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          #upload_url: ${{ github.event.release.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.rpm
+          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt6.rpm
           asset_content_type: application/vnd.debian.binary-package
 
       - name: 'Upload macos universal .zip artifact to release'
