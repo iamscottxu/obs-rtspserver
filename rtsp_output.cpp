@@ -43,7 +43,7 @@ struct rtsp_out_data {
 
 	std::unique_ptr<xop::EventLoop> event_loop;
 	std::shared_ptr<xop::RtspServer> server;
-	xop::MediaSessionId session_id = NULL;
+	xop::MediaSessionId session_id = 0;
 	std::unique_ptr<threadsafe_queue<queue_frame>> frame_queue;
 	std::unique_ptr<std::thread> frame_push_thread;
 
@@ -407,7 +407,7 @@ static void rtsp_output_actual_stop(rtsp_out_data *out_data, const int code)
 
 	if (out_data->session_id) {
 		out_data->server->RemoveSession(out_data->session_id);
-		out_data->session_id = NULL;
+		out_data->session_id = 0;
 	}
 	out_data->server->Stop();
 	out_data->num_clients = 0;
