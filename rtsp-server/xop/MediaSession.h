@@ -133,7 +133,7 @@ public:
 
 	std::string GetAddr6()
 	{
-		std::lock_guard lock(mutex_);
+		std::lock_guard<std::mutex> lock(mutex_);
 		std::random_device rd;
 		char addr6_str[INET6_ADDRSTRLEN];
 		for (int n = 0; n <= 10; n++) {
@@ -167,7 +167,7 @@ public:
 
 	std::string GetAddr6(const in6_addr local_addr6, uint8_t plen)
 	{
-		std::lock_guard lock(mutex_);
+		std::lock_guard<std::mutex> lock(mutex_);
 		std::random_device rd;
 		char addr6_str[INET6_ADDRSTRLEN];
 		for (int n = 0; n <= 10; n++) {
@@ -204,7 +204,7 @@ public:
 
 	std::string GetAddr()
 	{
-		std::lock_guard lock(mutex_);
+		std::lock_guard<std::mutex> lock(mutex_);
 		std::random_device rd;
 
 		char addr_str[INET_ADDRSTRLEN];
@@ -223,7 +223,7 @@ public:
 
 	void Release(const std::string &addr)
 	{
-		std::lock_guard lock(mutex_);
+		std::lock_guard<std::mutex> lock(mutex_);
 		addrs_.erase(addr);
 	}
 
