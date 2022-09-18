@@ -35,6 +35,7 @@ build_obs_libs() {
         ${QUIET:+-Wno-deprecated -Wno-dev --log-level=ERROR}
 
     step "Building libobs and obs-frontend-api"
+    cmake --build plugin_${BUILD_DIR} -t libobs
     cmake --build plugin_${BUILD_DIR} -t obs-frontend-api
 }
 
