@@ -27,11 +27,16 @@ add_library(obs-frontend-api ALIAS OBS::obs-frontend-api)
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/external/ObsPluginHelpers.cmake")
 
-if(OS_MACOS)
+if(OS_WINDOWS)
+    if(MSVC)
+        target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE /W4)
+    endif()
+elseif(OS_MACOS)
     configure_file(
 		${CMAKE_SOURCE_DIR}/bundle/installer-macos.pkgproj.in
 		${CMAKE_SOURCE_DIR}/bundle/installer-macos.generated.pkgproj)
 
-    set(CMAKE_FIND_FRAMEWORK LAST)
-    set(CMAKE_FIND_APPBUNDLE LAST)
+    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wall)
+else()
+    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wall)
 endif()

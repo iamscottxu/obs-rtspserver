@@ -28,7 +28,6 @@ endif()
 
 set(OBS_RTSPSERVER_SOURCES
 	rtsp_main.cpp
-	rtspoutput.rc
 	rtsp_output.cpp
 	rtsp_properties.cpp
 	rtsp_output_helper.cpp
@@ -50,6 +49,11 @@ set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES AUTOMOC ON AUTOUIC ON AUT
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 	${OBS_RTSPSERVER_SOURCES}
 	${OBS_RTSPSERVER_HEADERS})
+
+if(WIN32)
+	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/rtspoutput.rc.in ${CMAKE_CURRENT_SOURCE_DIR}/rtspoutput.rc)
+	target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/rtspoutput.rc)
+endif()
 	
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 	${Qt6Core_INCLUDES}
@@ -66,10 +70,6 @@ target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
 	Qt::Widgets)
 
 add_definitions(-DVERSION_STRING="${OBS_PLUGUIN_VERSION}")
-		
-if(WIN32)
-	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/rtspoutput.rc.in ${CMAKE_CURRENT_SOURCE_DIR}/rtspoutput.rc)
-endif()
 
 if(APPLE)
 	set_target_properties(${CMAKE_PROJECT_NAME}
