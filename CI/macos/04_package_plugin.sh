@@ -28,7 +28,7 @@ package_obs_plugin() {
         rm -rf "${CHECKOUT_DIR}/release"
     fi
 
-    cmake --install ${BUILD_DIR}
+    cmake --install "${BUILD_DIR}" --prefix "${CHECKOUT_DIR}/release"
 
     if ! type packagesbuild &>/dev/null; then
         status "Setting up dependency Packages.app"
