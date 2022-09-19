@@ -12,10 +12,25 @@ set(MACOSX_PLUGIN_BUNDLE_VERSION "${OBS_PLUGUN_LONG_VERSION}")
 set(MACOSX_PLUGIN_SHORT_VERSION_STRING "${OBS_PLUGUN_VERSION}")
 
 find_package(libobs REQUIRED)
+#add_library(OBS::libobs STATIC IMPORTED GLOBAL)
+#set_target_properties(OBS::libobs PROPERTIES
+#    IMPORTED_LOCATION "${LIBOBS_LIB}"
+#    )
 add_library(OBS::libobs STATIC IMPORTED GLOBAL)
-set_target_properties(OBS::libobs PROPERTIES
-    IMPORTED_LOCATION "${LIBOBS_LIB}"
+if (LIBOBS_LIB MATCHES "/([^/]+)\\.framework$")
+    set(_libobs_fw "${LIBOBS_LIB}/${CMAKE_MATCH_1}")
+    if(EXISTS "${_libobs_fw}.tbd")
+        string(APPEND _libobs_fw ".tbd")
+    endif()
+    message("${_libobs_fw}")
+    set_target_properties(OBS::libobs PROPERTIES
+        IMPORTED_LOCATION "${_libobs_fw}"
     )
+else()
+    set_target_properties(OBS::libobs PROPERTIES
+        IMPORTED_LOCATION "${LIBOBS_LIB}"
+    )
+endif()
 add_library(libobs ALIAS OBS::libobs)
 
 find_package(obs-frontend-api REQUIRED)
