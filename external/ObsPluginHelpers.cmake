@@ -502,15 +502,22 @@ else()
     if(OS_LINUX)
       set(CPACK_PACKAGE_NAME "${CMAKE_PROJECT_NAME}")
       set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${LINUX_MAINTAINER_EMAIL}")
-      set(CPACK_PACKAGE_VERSION "${CMAKE_PROJECT_VERSION}")
-      set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-linux-x86_64")
+      set(CPACK_PACKAGE_VERSION "${OBS_PLUGUIN_VERSION}")
+      set(CPACK_PACKAGE_CONTACT "${LINUX_MAINTAINER} <${LINUX_MAINTAINER_EMAIL}>")
+      set(CPACK_PACKAGE_VENDOR "${LINUX_MAINTAINER}")
+      set(CPACK_GENERATOR "DEB" "TGZ" "RPM")
 
-      set(CPACK_GENERATOR "DEB")
       set(CPACK_DEBIAN_PACKAGE_DEPENDS
-          "obs-studio (>= 27.0.0), libqt5core5a (>= 5.9.0~beta), libqt5gui5 (>= 5.3.0), libqt5widgets5 (>= 5.7.0)"
-      )
+      "obs-studio (>= 27.0.0), libqt5core5a (>= 5.9.0~beta), libqt5gui5 (>= 5.3.0), libqt5widgets5 (>= 5.7.0)")
+      set(CPACK_DEBIAN_PACKAGE_SECTION "video")
 
-      set(CPACK_OUTPUT_FILE_PREFIX ${CMAKE_SOURCE_DIR}/release)
+      set(CPACK_RPM_PACKAGE_REQUIRES "obs-studio >= 27.0.0, libQt5Core5 >= 5.9.0, libQt5Gui5 >= 5.3.0, libQt5Widgets5 >= 5.7.0")
+      set(CPACK_RPM_PACKAGE_GROUP "Video")
+      set(CPACK_RPM_PACKAGE_LICENSE "GPL-2.0")
+
+      #set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-linux-x86_64")
+
+      #set(CPACK_OUTPUT_FILE_PREFIX ${CMAKE_SOURCE_DIR}/release)
 
       if(NOT LINUX_PORTABLE)
         set(CPACK_SET_DESTDIR ON)
