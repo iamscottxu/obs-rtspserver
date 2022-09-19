@@ -44,7 +44,7 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/external/ObsPluginHelpers.cmake")
 
 if(OS_WINDOWS)
     if(MSVC)
-        target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE /W4)
+        target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE /W3)
     endif()
 elseif(OS_MACOS)
     configure_file(
