@@ -348,7 +348,7 @@ static bool rtsp_output_start(void *data)
 		std::make_unique<threadsafe_queue<queue_frame>>();
 
 	session->AddNotifyConnectedCallback(
-		[out_data](const xop::MediaSessionId session_id,
+		[](const xop::MediaSessionId session_id,
 			   const std::string &peer_ip,
 			   const uint16_t peer_port) {
 			blog(LOG_INFO, "Rtsp client %d(%s:%d) is connected.",
@@ -356,7 +356,7 @@ static bool rtsp_output_start(void *data)
 		});
 
 	session->AddNotifyDisconnectedCallback(
-		[out_data](const xop::MediaSessionId session_id,
+		[](const xop::MediaSessionId session_id,
 			   const std::string &peer_ip,
 			   const uint16_t peer_port) {
 			blog(LOG_INFO, "Rtsp client %d(%s:%d) is disconnected.",
