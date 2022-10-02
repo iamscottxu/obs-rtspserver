@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 
 #include "NalUnit.h"
 
