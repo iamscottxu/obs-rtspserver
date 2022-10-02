@@ -11,28 +11,65 @@
 #include <cstdio>
 #include <cstring>
 #include <chrono>
+#include <utility>
+
 #if defined(WIN32) || defined(_WIN32)
 
 #else
 #include <sys/time.h>
 #endif
 
+#include "Base64Encode.h"
+#include "Nal.h"
+#include "H265NalUnit.h"
+
 using namespace xop;
 using namespace std;
 
-H265Source::H265Source(const uint32_t framerate) : framerate_(framerate)
+H265Source::H265Source(vector<uint8_t> vps, vector<uint8_t> sps,
+		       vector<uint8_t> pps, vector<uint8_t> sei,
+		       const uint32_t framerate)
+	: framerate_(framerate),
+	  vps_(move(vps)),
+	  sps_(move(sps)),
+	  pps_(move(pps)),
+	  sei_(move(sei))
 {
 	payload_ = 96;
 	media_type_ = MediaType::H265;
 	clock_rate_ = 90000;
 }
 
-H265Source *H265Source::CreateNew(const uint32_t framerate)
+H265Source *H265Source::CreateNew(vector<uint8_t> extraData,
+				  vector<uint8_t> sei, const uint32_t framerate)
 {
-	return new H265Source(framerate);
+	Nal<H265NalUnit> nal(extraData);
+	vector<uint8_t> vps, sps, pps;
+	const auto vps_nal_unit = nal.GetNalUnitByType(
+			   static_cast<uint8_t>(H265NalType::H265_NAL_VPS)),
+		   sps_nal_unit = nal.GetNalUnitByType(
+			   static_cast<uint8_t>(H265NalType::H265_NAL_SPS)),
+		   pps_nal_unit = nal.GetNalUnitByType(
+			   static_cast<uint8_t>(H265NalType::H265_NAL_PPS));
+	if (vps_nal_unit != nullptr)
+		vps = vps_nal_unit->GetData();
+	if (sps_nal_unit != nullptr)
+		sps = sps_nal_unit->GetData();
+	if (pps_nal_unit != nullptr)
+		pps = pps_nal_unit->GetData();
+
+	return new H265Source(vps, sps, pps, move(sei), framerate);
 }
 
 H265Source::~H265Source() = default;
+
+H265Source *H265Source::CreateNew(vector<uint8_t> vps, vector<uint8_t> sps,
+				  vector<uint8_t> pps, vector<uint8_t> sei,
+				  const uint32_t framerate)
+{
+	return new H265Source(move(vps), move(sps), move(pps), move(sei),
+			      framerate);
+}
 
 string H265Source::GetMediaDescription(const uint16_t port)
 {
@@ -44,7 +81,51 @@ string H265Source::GetMediaDescription(const uint16_t port)
 
 string H265Source::GetAttribute()
 {
-	return "a=rtpmap:96 H265/90000";
+	auto sdp = string("a=rtpmap:96 H265/90000\r\n");
+
+	if (!vps_.empty() && !sps_.empty() && !pps_.empty()) {
+		const auto fmtp =
+			"a=fmtp:96 profile-space=%u;tier-flag=%u;"
+			"profile-id=%u;level-id=%u;interop-constraints=%012llX;"
+			"sprop-vps=%s;sprop-pps=%s;sprop-sps=%s;%s";
+
+		string vps_base64, pps_base64, sps_base64, sei;
+		vps_base64 = Base64Encode(vps_.data(), vps_.size());
+		pps_base64 = Base64Encode(pps_.data(), pps_.size());
+		sps_base64 = Base64Encode(sps_.data(), sps_.size());
+		if (!sei_.empty()) {
+			sei = "sprop-sei=";
+			sei.append(Base64Encode(sei_.data(), sei_.size()));
+			sei.append(";");
+		} else
+			sei = "";
+
+		const uint8_t profile_space = sps_.at(3) >> 6;
+		const uint8_t tier_flag = (sps_.at(3) & 0x20) >> 5;
+		const uint8_t profile_id = sps_.at(3) & 0x1f;
+		const uint8_t level_id = sps_.at(17);
+		const uint64_t interop_constraints =
+			static_cast<uint64_t>(sps_.at(9)) << 40 |
+			static_cast<uint64_t>(sps_.at(10)) << 32 |
+			static_cast<uint64_t>(sps_.at(11)) << 24 |
+			static_cast<uint64_t>(sps_.at(12)) << 16 |
+			static_cast<uint64_t>(sps_.at(13)) << 8 |
+			static_cast<uint64_t>(sps_.at(14));
+
+		const size_t buf_size = 1 + strlen(fmtp) + vps_base64.length() +
+					pps_base64.length() +
+					sps_base64.length() + sei.length();
+		auto buf = vector<char>(buf_size);
+
+		sprintf(buf.data(), fmtp, profile_space, tier_flag, profile_id,
+			level_id, interop_constraints, vps_base64.c_str(),
+			pps_base64.c_str(), sps_base64.c_str(), sei.c_str());
+		buf[strlen(buf.data()) - 1] = '\0';
+
+		sdp.append(buf.data());
+	}
+
+	return sdp;
 }
 
 bool H265Source::HandleFrame(const MediaChannelId channelId,
