@@ -62,7 +62,7 @@ Nal<T, T0>::Nal(const uint8_t *data, size_t dataSize)
 	NalHelper::NalUnitWhile(
 		data, dataSize,
 		[&it, end](const uint8_t *unitData, size_t unitDataSize) {
-			*it = shared_ptr<T>(static_cast<T *>(
+			*it = std::shared_ptr<T>(static_cast<T *>(
 				T::GetNalUnit(unitData, unitDataSize)));
 			if (it++ == end)
 				return false;

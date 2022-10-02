@@ -86,7 +86,7 @@ string H265Source::GetAttribute()
 	if (!vps_.empty() && !sps_.empty() && !pps_.empty()) {
 		const auto fmtp =
 			"a=fmtp:96 profile-space=%u;tier-flag=%u;"
-			"profile-id=%u;level-id=%u;interop-constraints=%012llX;"
+			"profile-id=%u;level-id=%u;interop-constraints=%012lX;"
 			"sprop-vps=%s;sprop-pps=%s;sprop-sps=%s;%s";
 
 		string vps_base64, pps_base64, sps_base64, sei;
