@@ -300,19 +300,8 @@ uint32_t H264Source::GetTimestamp()
 	//#endif
 }
 
-std::string H264Source::Base64Encode(const void *input, const size_t size)
 FrameType H264Source::GetRtpFrameType(std::shared_ptr<NalUnit> nalUnit)
 {
-	std::vector<char> buffer(size / 3 * 4 + (size % 3 > 0 ? 4 : 0) + 1);
-	base64_encodestate b64encoder;
-	base64_init_encodestate(&b64encoder);
-
-	const auto length = base64_encode_block(
-		static_cast<const char *>(input), static_cast<int>(size),
-		buffer.data(), &b64encoder);
-	base64_encode_blockend(buffer.data() + length, &b64encoder);
-
-	return std::string(buffer.cbegin(), buffer.cend() - 1); //TODO
 	if (nalUnit->IsIdrFrame())
 		return FrameType::VIDEO_FRAME_IDR;
 	if (nalUnit->IsFrame())

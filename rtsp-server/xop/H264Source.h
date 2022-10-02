@@ -36,7 +36,6 @@ private:
 	H264Source(std::vector<uint8_t> sps, std::vector<uint8_t> pps,
 		   uint32_t framerate);
 
-	static std::string Base64Encode(const void *input, size_t size);
 	static FrameType GetRtpFrameType(std::shared_ptr<NalUnit> nalUnit);
 
 	uint32_t framerate_ = 25;
