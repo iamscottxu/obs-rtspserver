@@ -1,6 +1,7 @@
 #ifndef _XOP_NALUNIT_H
 #define _XOP_NALUNIT_H
 
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 

@@ -5,6 +5,7 @@
 #include <vector>
 #include <functional>
 #include <type_traits>
+#include <cstddef>
 #include <cstdint>
 
 #include "NalUnit.h"

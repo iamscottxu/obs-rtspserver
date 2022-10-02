@@ -1,6 +1,7 @@
 #ifndef XOP_H264_NALUNIT_H
 #define XOP_H264_NALUNIT_H
 
+#include <cstddef>
 #include "NalUnit.h"
 
 #define H264_NALU_HEADER_SIZE 1
