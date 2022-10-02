@@ -73,7 +73,8 @@ static std::string string_format(char const *format, ...)
 	return std::string(buf.data(), buf.data() + size - 1);
 }
 
-static std::string rtsp_properties_get_data_volume_display(uint64_t total_bytes) {
+static std::string rtsp_properties_get_data_volume_display(uint64_t total_bytes)
+{
 	const uint64_t kb = 1024;
 	const uint64_t mb = kb * 1024;
 	const uint64_t gb = mb * 1024;

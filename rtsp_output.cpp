@@ -3,6 +3,7 @@
 #include <array>
 #include <string>
 #include <obs-module.h>
+#include <obs-encoder.h>
 #include <util/threading.h>
 #include <xop/RtspServer.h>
 #include "threadsafe_queue.h"
@@ -17,12 +18,9 @@
 #define ERROR_START_MULTICAST 4
 #define ERROR_ENCODE OBS_OUTPUT_ENCODE_ERROR
 
+
 struct queue_frame {
-	queue_frame(size_t size = 0) :
-	av_frame(size),
-	channe_id(xop::MediaChannelId::channel_0)
-	{
-	}
+	queue_frame(size_t size = 0) : av_frame(size), channe_id(xop::MediaChannelId::channel_0) {}
 	struct xop::AVFrame av_frame;
 	xop::MediaChannelId channe_id;
 };
@@ -618,7 +616,7 @@ void rtsp_output_register()
 	output_info.id = "rtsp_output";
 	output_info.flags = OBS_OUTPUT_AV | OBS_OUTPUT_ENCODED |
 			    OBS_OUTPUT_MULTI_TRACK;
-	output_info.encoded_video_codecs = "h264";
+	output_info.encoded_video_codecs = "h264;hevc";
 	output_info.encoded_audio_codecs = "aac";
 	output_info.get_name = rtsp_output_getname;
 	output_info.create = rtsp_output_create;
