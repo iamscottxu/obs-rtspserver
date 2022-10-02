@@ -217,18 +217,27 @@ static bool rtsp_output_add_video_channel(void *data,
 		extra_data = vector<uint8_t>(p_extra_data,
 					     p_extra_data + extra_data_size);
 	}
+	switch (get_encoder_codec(video_encoder)) {
+	case encoder_codec::H264: {
 		session->AddSource(
 			xop::MediaChannelId::channel_0,
 			xop::H264Source::CreateNew(
 				extra_data,
 				static_cast<uint32_t>(video_frame_rate)));
 	}
-	session->AddSource(xop::MediaChannelId::channel_0,
-			   xop::H264Source::CreateNew(
-				   vector<uint8_t>(sps, sps + sps_size),
-				   vector<uint8_t>(pps, pps + pps_size),
-				   static_cast<uint32_t>(video_frame_rate)));
-
+		break;
+	case encoder_codec::HEVC: {
+		session->AddSource(
+			xop::MediaChannelId::channel_0,
+			xop::H265Source::CreateNew(
+				extra_data,
+				vector<uint8_t>(),
+				static_cast<uint32_t>(video_frame_rate)));
+	}
+		break;
+	default:
+		break;
+	}
 	return true;
 }
 
