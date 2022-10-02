@@ -6,16 +6,17 @@
 
 #include "MediaSource.h"
 #include "rtp.h"
-#include <vector>
+#include "NalUnit.h"
 
 namespace xop {
 
 class H264Source : public MediaSource {
 public:
-	static H264Source *CreateNew(uint32_t framerate = 25);
+	static H264Source *CreateNew(std::vector<uint8_t> extraData,
+				     uint32_t framerate = 25);
 
-	static H264Source *CreateNew(const std::vector<uint8_t> &sps,
-				     const std::vector<uint8_t> &pps,
+	static H264Source *CreateNew(std::vector<uint8_t> sps,
+				     std::vector<uint8_t> pps,
 				     uint32_t framerate = 25);
 	~H264Source() override;
 
@@ -32,10 +33,11 @@ public:
 	static uint32_t GetTimestamp();
 
 private:
-	H264Source(const std::vector<uint8_t> &sps,
-		   const std::vector<uint8_t> &pps, uint32_t framerate);
+	H264Source(std::vector<uint8_t> sps, std::vector<uint8_t> pps,
+		   uint32_t framerate);
 
 	static std::string Base64Encode(const void *input, size_t size);
+	static FrameType GetRtpFrameType(std::shared_ptr<NalUnit> nalUnit);
 
 	uint32_t framerate_ = 25;
 

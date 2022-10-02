@@ -109,7 +109,7 @@ bool AACSource::HandleFrame(const MediaChannelId channel_id,
 				  static_cast<char>((frame_size & 0x1f) << 3)};
 
 	RtpPacket rtp_pkt;
-	rtp_pkt.type = frame.type;
+	rtp_pkt.type = FrameType::AUDIO_FRAME;
 	rtp_pkt.timestamp = frame.timestamp;
 	rtp_pkt.size = static_cast<uint16_t>(frame_size) + RTP_TCP_HEAD_SIZE +
 		       RTP_HEADER_SIZE + AU_SIZE;

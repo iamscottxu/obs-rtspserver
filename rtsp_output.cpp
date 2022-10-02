@@ -5,7 +5,6 @@
 #include <obs-module.h>
 #include <util/threading.h>
 #include <xop/RtspServer.h>
-#include <xop/H264Parser.h>
 #include "threadsafe_queue.h"
 #include "rtsp_output.h"
 #include "helper.h"
@@ -208,17 +207,21 @@ static bool rtsp_output_add_video_channel(void *data,
 	}
 	const auto video = obs_encoder_video(video_encoder);
 	const auto video_frame_rate = video_output_get_frame_rate(video);
-	const uint8_t *sps = nullptr, *pps = nullptr;
-	size_t sps_size = 0, pps_size = 0;
+	vector<uint8_t> extra_data;
 	{
-		uint8_t *extra_data = nullptr;
+		uint8_t *p_extra_data = nullptr;
 		size_t extra_data_size = 0;
-		if (obs_encoder_get_extra_data(video_encoder, &extra_data,
-					       &extra_data_size) &&
-		    extra_data != nullptr)
-			rtsp_output_avc_get_sps_pps(extra_data, extra_data_size,
-						    &sps, &sps_size, &pps,
-						    &pps_size);
+		if (!obs_encoder_get_extra_data(video_encoder, &p_extra_data,
+						&extra_data_size))
+			extra_data_size = 0;
+		extra_data = vector<uint8_t>(p_extra_data,
+					     p_extra_data + extra_data_size);
+	}
+		session->AddSource(
+			xop::MediaChannelId::channel_0,
+			xop::H264Source::CreateNew(
+				extra_data,
+				static_cast<uint32_t>(video_frame_rate)));
 	}
 	session->AddSource(xop::MediaChannelId::channel_0,
 			   xop::H264Source::CreateNew(
@@ -423,8 +426,8 @@ static size_t get_video_header(obs_encoder_t *vencoder, uint8_t **header)
 	uint8_t *extra_data;
 	size_t extra_data_size;
 	obs_encoder_get_extra_data(vencoder, &extra_data, &extra_data_size);
-	*header = extra_data + 4;
-	return extra_data_size - 4;
+	*header = extra_data;
+	return extra_data_size;
 }
 
 static uint32_t get_timestamp(uint64_t timestamp_clock,
@@ -459,27 +462,14 @@ static void rtsp_push_frame(void *param)
 static void rtsp_output_video(void *param, struct encoder_packet *packet)
 {
 	const auto *out_data = static_cast<rtsp_out_data *>(param);
-	uint8_t *header = nullptr;
-	const size_t header_size =
-		packet->keyframe
-			? get_video_header(obs_output_get_video_encoder(
-						   out_data->output),
-					   &header)
-			: 0;
 
-	struct queue_frame queue_frame(packet->size + header_size);
+	struct queue_frame queue_frame(packet->size);
 	xop::AVFrame *frame = &queue_frame.av_frame;
 	queue_frame.channe_id = xop::MediaChannelId::channel_0;
 
 	frame->timestamp = get_timestamp(90000, packet);
 
-	memcpy(frame->buffer.get() + header_size, packet->data, packet->size);
-
-	if (packet->keyframe) {
-		frame->type = xop::FrameType::VIDEO_FRAME_I;
-		memcpy(frame->buffer.get(), header, header_size);
-	} else
-		frame->type = xop::FrameType::VIDEO_FRAME_P;
+	memcpy(frame->buffer.get(), packet->data, packet->size);
 
 	out_data->frame_queue->push(queue_frame);
 }
@@ -496,8 +486,6 @@ static void rtsp_output_audio(void *param, struct encoder_packet *packet)
 		out_data->audio_timestamp_clocks[packet->track_idx], packet);
 
 	memcpy(frame->buffer.get(), packet->data, packet->size);
-
-	frame->type = xop::FrameType::AUDIO_FRAME;
 
 	out_data->frame_queue->push(queue_frame);
 }
