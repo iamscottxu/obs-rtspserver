@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <obs-module.h>
 #include <obs-frontend-api.h>
-#include "rtsp_output_helper.h"
+#include "../rtsp_output_helper.h"
 
 namespace Ui {
 class RtspProperties;

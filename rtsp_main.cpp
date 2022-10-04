@@ -8,7 +8,7 @@
 #include "helper.h"
 #include "rtsp_output_helper.h"
 #include "rtsp_output.h"
-#include "rtsp_properties.h"
+#include "ui/rtsp_properties.hpp"
 
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE("obs-rtspserver", "en-US")
