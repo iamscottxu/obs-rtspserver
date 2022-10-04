@@ -124,25 +124,21 @@ bool H264Source::HandleFrame(const MediaChannelId channelId,
 		if (size_count > MAX_RTP_PAYLOAD_SIZE && end_index > nal_index)
 			size_count -= nal[end_index--]->GetSize() + 2;
 		if (end_index > nal_index) {
-			//Aggregation Packets
+			//Single-Time Aggregation Packet (STAP-A)
 			/*  0                   1                   2                   3
              *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
              * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
              * |                          RTP Header                           |
              * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |PayloadHdr (28)|         NALU 1 Size           |   NALU 1 HDR  |
+             * |STAP-A NAL HDR |         NALU 1 Size           |   NALU 1 HDR  |
              * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |                                                               |
              * |                         NALU 1 Data                           |
-             * |                   . . .                                       |
-             * |                                                               |
+             * :                                                               :
+             * |               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+             * |               |         NALU 2 Size           |   NALU 2 HDR  |               
              * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |         NALU 2 Size           |   NALU 2 HDR  |               |
-             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+               |
-             * |                                                               |
-             * |                        NALU 2 Data                            |
-             * |                   . . .                                       |
-             * |                                                               |
+             * |                         NALU 2 Data                           |
+             * :                                                               :
              * |                                                               |
              * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
              */
@@ -150,11 +146,15 @@ bool H264Source::HandleFrame(const MediaChannelId channelId,
 					  static_cast<uint16_t>(size_count);
 			rtp_packet.last = 1;
 			size_t skip = H264_NALU_HEADER_SIZE;
+			uint8_t maximum_ref_idc = 0;
 			auto all_frame_type = FrameType::NONE;
 			for (; nal_index <= end_index; nal_index++) {
 				const auto nal_unit = nal[nal_index];
+				const auto ref_idc = nal_unit->GetRefIdc();
 				const auto frame_type =
 					GetRtpFrameType(nal_unit);
+				if (maximum_ref_idc < ref_idc)
+					maximum_ref_idc = ref_idc;
 				if (frame_type == FrameType::VIDEO_FRAME_IDR)
 					all_frame_type =
 						FrameType::VIDEO_FRAME_IDR;
@@ -170,8 +170,9 @@ bool H264Source::HandleFrame(const MediaChannelId channelId,
 					MAX_RTP_PAYLOAD_SIZE -
 						H264_NALU_HEADER_SIZE - 2);
 			}
-			//PayloadHeader
-			rtp_packet_data[0] = 0x58; //28;
+			//STAP-A NAL HDR
+			rtp_packet_data[0] = static_cast<uint8_t>(
+				(maximum_ref_idc & 0x03) << 5 | 24);
 			rtp_packet.type = all_frame_type;
 			if (!send_frame_callback_(channelId, rtp_packet))
 				return false;
@@ -180,11 +181,10 @@ bool H264Source::HandleFrame(const MediaChannelId channelId,
 			/*  0                   1                   2                   3
              *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
              * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |  PayloadHdr   |                                               |
+             * |F|NRI|  type   |                                               |
              * +-+-+-+-+-+-+-+-+                                               |
              * |                                                               |
-             * |                                                               |
-             * |                  NAL unit payload data                        |
+             * |               Bytes 2..n of a Single NAL unit                 |
              * |                                                               |
              * |                                                               |
              * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -202,16 +202,14 @@ bool H264Source::HandleFrame(const MediaChannelId channelId,
 							  rtp_packet))
 					return false;
 			} else {
-				//Fragmentation Units
+				//Fragmentation Units (FU-A)
 				/*  0                   1                   2                   3
                  *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
                  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                 * |PayloadHdr (28)|   FU header   |                               |
+                 * | FU indicator  |   FU header   |                               |
                  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               |
                  * |                                                               |
-                 * |                                                               |
                  * |                         FU payload                            |
-                 * |                                                               |
                  * |                                                               |
                  * |                                                               |
                  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

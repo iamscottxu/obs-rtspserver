@@ -46,6 +46,7 @@ enum class H264NalType: uint8_t {
 class H264NalUnit : public NalUnit {
 public:
 	uint8_t GetType() override;
+	uint8_t GetRefIdc();
 	H264NalType GetH264Type();
 	size_t GetHeader(uint8_t **data) override;
 	size_t CopyHeader(uint8_t *start, size_t size) override;

@@ -16,6 +16,15 @@ uint8_t H264NalUnit::GetType()
 	return 0;
 }
 
+uint8_t H264NalUnit::GetRefIdc()
+{
+	uint8_t *data;
+	if (GetHeader(&data) == H264_NALU_HEADER_SIZE) {
+		return (data[0] & 0x60) >> 5;
+	}
+	return 0;
+}
+
 H264NalType H264NalUnit::GetH264Type()
 {
 	return static_cast<H264NalType>(GetType());
