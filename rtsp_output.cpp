@@ -431,15 +431,6 @@ static void rtsp_output_actual_stop(rtsp_out_data *out_data, const int code)
 	blog(LOG_INFO, "rstp server stopped");
 }
 
-static size_t get_video_header(obs_encoder_t *vencoder, uint8_t **header)
-{
-	uint8_t *extra_data;
-	size_t extra_data_size;
-	obs_encoder_get_extra_data(vencoder, &extra_data, &extra_data_size);
-	*header = extra_data;
-	return extra_data_size;
-}
-
 static uint32_t get_timestamp(uint64_t timestamp_clock,
 			      struct encoder_packet *packet)
 {
