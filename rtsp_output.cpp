@@ -6,6 +6,8 @@
 #include <util/threading.h>
 #include <xop/RtspServer.h>
 #include <xop/H264Parser.h>
+#include <xop/H264Source.h>
+#include <xop/AACSource.h>
 #include "threadsafe_queue.h"
 #include "rtsp_output.h"
 #include "helper.h"
@@ -321,6 +323,27 @@ static bool rtsp_output_start(void *data)
 		}
 	}
 
+	out_data->frame_queue =
+		std::make_unique<threadsafe_queue<queue_frame>>();
+
+	session->AddNotifyConnectedCallback(
+		[](const xop::MediaSessionId session_id,
+			   const std::string &peer_ip,
+			   const uint16_t peer_port) {
+			blog(LOG_INFO, "Rtsp client %d(%s:%d) is connected.",
+			     session_id, peer_ip.c_str(), peer_port);
+		});
+
+	session->AddNotifyDisconnectedCallback(
+		[](const xop::MediaSessionId session_id,
+			   const std::string &peer_ip,
+			   const uint16_t peer_port) {
+			blog(LOG_INFO, "Rtsp client %d(%s:%d) is disconnected.",
+			     session_id, peer_ip.c_str(), peer_port);
+		});
+
+	out_data->session_id = out_data->server->AddSession(session);
+
 	if (auto multicast = obs_data_get_bool(settings, "multicast")) {
 		if (multicast = session->StartMulticast(); multicast) {
 			blog(LOG_INFO,
@@ -343,27 +366,6 @@ static bool rtsp_output_start(void *data)
 			return false;
 		}
 	}
-
-	out_data->frame_queue =
-		std::make_unique<threadsafe_queue<queue_frame>>();
-
-	session->AddNotifyConnectedCallback(
-		[](const xop::MediaSessionId session_id,
-			   const std::string &peer_ip,
-			   const uint16_t peer_port) {
-			blog(LOG_INFO, "Rtsp client %d(%s:%d) is connected.",
-			     session_id, peer_ip.c_str(), peer_port);
-		});
-
-	session->AddNotifyDisconnectedCallback(
-		[](const xop::MediaSessionId session_id,
-			   const std::string &peer_ip,
-			   const uint16_t peer_port) {
-			blog(LOG_INFO, "Rtsp client %d(%s:%d) is disconnected.",
-			     session_id, peer_ip.c_str(), peer_port);
-		});
-
-	out_data->session_id = out_data->server->AddSession(session);
 
 	out_data->frame_push_thread =
 		std::make_unique<std::thread>(rtsp_push_frame, out_data);
