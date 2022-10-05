@@ -30,7 +30,7 @@ private:
 	MediaSession::Ptr LookMediaSession(MediaSessionId session_id) override;
 
 	EventLoop *event_loop_ = nullptr;
-	TaskScheduler *task_scheduler_ = nullptr;
+	std::shared_ptr<TaskScheduler> task_scheduler_ = nullptr;
 	std::mutex mutex_;
 	std::shared_ptr<RtspConnection> rtsp_conn_;
 	std::shared_ptr<MediaSession> media_session_;

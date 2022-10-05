@@ -3,6 +3,7 @@
 // Scott Xu
 // 2020-12-5 Add IPv6 Support.
 
+#include <utility>
 #include "RtspConnection.h"
 #include "RtspServer.h"
 #include "MediaSession.h"
@@ -16,23 +17,21 @@
 using namespace xop;
 using namespace std;
 
-RtspConnection::RtspConnection(const std::shared_ptr<Rtsp> &rtsp,
-			       TaskScheduler *task_scheduler,
-			       const SOCKET sockfd)
-	: TcpConnection(task_scheduler, sockfd),
+RtspConnection::RtspConnection(const SOCKET sockfd,
+                               std::shared_ptr<TaskScheduler> task_scheduler,
+                               const std::shared_ptr<Rtsp> &rtsp)
+	: TcpConnection(sockfd, std::move(task_scheduler)),
 	  alive_count_(1),
-	  rtsp_(rtsp),
-	  task_scheduler_(task_scheduler)
+	  rtsp_(rtsp)
 	  //, rtp_channel_(new Channel(sockfd))
 	  ,
 	  rtsp_request_(new RtspRequest),
 	  rtsp_response_(new RtspResponse)
 {
-	this->SetReadCallback(
-		[this](std::shared_ptr<TcpConnection> conn,
-		       BufferReader &buffer) { return this->OnRead(buffer); });
+	this->SetReadCallback([this](Weak /*conn*/,
+	                             BufferReader &buffer) { return this->OnRead(buffer); });
 
-	this->SetCloseCallback([this](std::shared_ptr<TcpConnection> conn) {
+	this->SetCloseCallback([this](const Weak & /*conn*/) {
 		this->OnClose();
 	});
 
@@ -81,7 +80,8 @@ void RtspConnection::OnClose()
 		if (const auto rtsp = rtsp_.lock()) {
 			if (const MediaSession::Ptr media_session =
 				    rtsp->LookMediaSession(session_id_)) {
-				media_session->RemoveClient(this->GetSocket());
+				media_session->RemoveClient(this->GetSocket(),
+							    GetIp(), GetPort());
 			}
 		}
 	}
@@ -89,7 +89,7 @@ void RtspConnection::OnClose()
 	for (auto iter = rtcp_channels_.begin();
 	     iter != rtcp_channels_.end();) {
 		if (auto channel = iter->second; !channel->IsNoneEvent()) {
-			task_scheduler_->RemoveChannel(channel);
+			GetTaskScheduler()->RemoveChannel(channel);
 			rtcp_channels_.erase(iter++);
 		} else
 			++iter;
@@ -241,18 +241,22 @@ void RtspConnection::HandleCmdDescribe()
 	}
 
 	if (!rtp_conn_ && media_session) {
-		rtp_conn_.reset(new RtpConnection(
-			std::dynamic_pointer_cast<RtspConnection>(
-				shared_from_this()),
-			media_session->GetMaxChannelCount()));
+		if (media_session->IsMulticast())
+			rtp_conn_ = media_session->GetMulticastRtpConnection(
+				IsIpv6());
+		else
+			rtp_conn_ = make_shared<RtpConnection>(
+				std::dynamic_pointer_cast<RtspConnection>(
+					shared_from_this()),
+				media_session->GetMaxChannelCount());
 	}
 
 	if (!rtsp || !media_session) {
 		size = rtsp_request_->BuildNotFoundRes(res.get(), 4096);
 	} else {
 		session_id_ = media_session->GetMediaSessionId();
-		media_session->AddClient(this->GetSocket(), rtp_conn_);
-
+		media_session->AddClient(this->GetSocket(), rtp_conn_, GetIp(),
+					 GetPort());
 		for (uint16_t chn = 0;
 		     chn < media_session->GetMaxChannelCount(); chn++) {
 			if (MediaSource *source = media_session->GetMediaSource(
@@ -304,18 +308,20 @@ void RtspConnection::HandleCmdSetup()
 	}
 
 	if (media_session->IsMulticast()) {
-		const std::string multicast_ip =
-			media_session->GetMulticastIp(IsIpv6());
 		if (rtsp_request_->GetTransportMode() ==
 		    TransportMode::RTP_OVER_MULTICAST) {
+			const std::string multicast_ip =
+				media_session->GetMulticastIp(IsIpv6());
 			const uint16_t port =
 				media_session->GetMulticastPort(channel_id);
 			const uint16_t session_id =
 				rtp_conn_->GetRtpSessionId();
-			if (!rtp_conn_->SetupRtpOverMulticast(
-				    channel_id, multicast_ip, port, IsIpv6())) {
+			/*if (!rtp_conn_->SetupRtpOverMulticast(
+				    channel_id, multicast_ip, port)) {
 				goto server_error;
-			}
+			}*/
+			if (!rtp_conn_->IsSetup(channel_id))
+				goto server_error;
 
 			size = rtsp_request_->BuildSetupMulticastRes(
 				res.get(), 4096, multicast_ip.c_str(), port,
@@ -358,7 +364,7 @@ void RtspConnection::HandleCmdSetup()
 					this->HandleRtcp(rtcp_fd);
 				});
 				channel->EnableReading();
-				task_scheduler_->UpdateChannel(channel);
+				GetTaskScheduler()->UpdateChannel(channel);
 				rtcp_channels_[static_cast<uint8_t>(channel_id)] =
 					channel;
 			} else {
@@ -425,7 +431,7 @@ void RtspConnection::HandleCmdTeardown()
 
 	const uint16_t session_id = rtp_conn_->GetRtpSessionId();
 	const std::shared_ptr<char> res(new char[2048],
-	                                std::default_delete<char[]>());
+					std::default_delete<char[]>());
 	const int size =
 		rtsp_request_->BuildTeardownRes(res.get(), 2048, session_id);
 	SendRtspMessage(res, size);
@@ -486,10 +492,14 @@ void RtspConnection::SendOptions(const ConnectionMode mode)
 	const auto media_session = rtsp->LookMediaSession(1);
 
 	if (rtp_conn_ == nullptr) {
-		rtp_conn_.reset(new RtpConnection(
-			std::dynamic_pointer_cast<RtspConnection>(
-				shared_from_this()),
-			media_session->GetMaxChannelCount()));
+
+		if (media_session->IsMulticast())
+			rtp_conn_ = media_session->GetMulticastRtpConnection(IsIpv6());
+		else
+			rtp_conn_ = make_shared<RtpConnection>(
+				std::dynamic_pointer_cast<RtspConnection>(
+					shared_from_this()),
+				media_session->GetMaxChannelCount());
 	}
 
 	conn_mode_ = mode;
@@ -516,7 +526,8 @@ void RtspConnection::SendAnnounce()
 		return;
 	}
 	session_id_ = media_session->GetMediaSessionId();
-	media_session->AddClient(this->GetSocket(), rtp_conn_);
+	media_session->AddClient(this->GetSocket(), rtp_conn_, GetIp(),
+				 GetPort());
 
 	for (uint16_t chn = 0; chn < media_session->GetMaxChannelCount();
 	     chn++) {

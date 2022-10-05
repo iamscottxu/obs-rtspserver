@@ -17,9 +17,6 @@
 
 namespace xop {
 
-class RtspServer;
-class MediaSession;
-
 class RtspConnection : public TcpConnection {
 public:
 	using CloseCallback = std::function<void(SOCKET sockfd)>;
@@ -33,16 +30,12 @@ public:
 	enum class ConnectionState { START_CONNECT, START_PLAY, START_PUSH };
 
 	RtspConnection() = delete;
-	RtspConnection(const std::shared_ptr<Rtsp> &rtsp_server,
-		       TaskScheduler *task_scheduler, SOCKET sockfd);
+	RtspConnection(SOCKET sockfd,
+		       std::shared_ptr<TaskScheduler> task_scheduler,
+		       const std::shared_ptr<Rtsp> &rtsp);
 	~RtspConnection() override;
 
 	MediaSessionId GetMediaSessionId() const { return session_id_; }
-
-	TaskScheduler *GetTaskScheduler() const override
-	{
-		return task_scheduler_;
-	}
 
 	void KeepAlive() { ++alive_count_; }
 
@@ -63,7 +56,7 @@ public:
 
 	void ResetAliveCount() { alive_count_ = 0; }
 
-	int GetId() const { return task_scheduler_->GetId(); }
+	int GetId() const { return GetTaskScheduler()->GetId(); }
 
 	bool IsPlay() const
 	{
@@ -106,7 +99,6 @@ private:
 
 	std::atomic_int alive_count_;
 	std::weak_ptr<Rtsp> rtsp_;
-	TaskScheduler *task_scheduler_ = nullptr;
 
 	ConnectionMode conn_mode_ = ConnectionMode::RTSP_SERVER;
 	ConnectionState conn_state_ = ConnectionState::START_CONNECT;

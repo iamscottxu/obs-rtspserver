@@ -38,12 +38,13 @@ bool TcpServer::Start(const std::string &ip, const uint16_t port)
 
 	auto acceptor = std::make_unique<Acceptor>(event_loop_);
 	acceptor->SetNewConnectionCallback([this](SOCKET sockfd) {
-		if (const TcpConnection::Ptr conn = this->OnConnect(sockfd)) {
+		if (const auto conn = this->OnConnect(sockfd)) {
 			this->AddConnection(sockfd, conn);
-			conn->SetDisconnectCallback([this](const TcpConnection::Ptr
-								   &conn) {
-				const auto scheduler = conn->GetTaskScheduler();
-				if (SOCKET sockfd = conn->GetSocket();
+			conn->SetDisconnectCallback([this](const TcpConnection::
+								   Weak &conn) {
+				const auto scheduler =
+					conn.lock()->GetTaskScheduler();
+				if (SOCKET sockfd = conn.lock()->GetSocket();
 				    !scheduler->AddTriggerEvent([this, sockfd] {
 					    this->RemoveConnection(sockfd);
 				    })) {
@@ -105,8 +106,8 @@ void TcpServer::Stop()
 
 TcpConnection::Ptr TcpServer::OnConnect(const SOCKET sockfd)
 {
-	return std::make_shared<TcpConnection>(
-		event_loop_->GetTaskScheduler().get(), sockfd);
+	return std::make_shared<TcpConnection>(sockfd,
+					       event_loop_->GetTaskScheduler());
 }
 
 void TcpServer::AddConnection(const SOCKET sockfd, TcpConnection::Ptr tcpConn)

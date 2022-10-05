@@ -6,15 +6,26 @@
 #include "RtpConnection.h"
 #include "RtspConnection.h"
 #include "net/SocketUtil.h"
+#include "net/TaskScheduler.h"
 
 using namespace std;
 using namespace xop;
 
-RtpConnection::RtpConnection(
-	const std::weak_ptr<RtspConnection> &rtsp_connection,
+RtpConnection::RtpConnection(std::weak_ptr<RtspConnection> rtsp_connection,
 	const uint8_t max_channel_count)
+	: RtpConnection(max_channel_count,
+			rtsp_connection.lock()->GetTaskScheduler(),
+			rtsp_connection.lock()->IsIpv6())
+{
+	rtsp_connection_ = rtsp_connection;
+}
+
+RtpConnection::RtpConnection(const uint8_t max_channel_count,
+			     std::weak_ptr<TaskScheduler> task_scheduler,
+			     bool ipv6)
 	: max_channel_count_(max_channel_count),
-	  rtsp_connection_(rtsp_connection),
+	  task_scheduler_(task_scheduler),
+	  transport_mode_(TransportMode::NONE),
 	  local_rtp_port_(max_channel_count),
 	  local_rtcp_port_(max_channel_count),
 	  rtpfd_(max_channel_count, 0),
@@ -22,7 +33,7 @@ RtpConnection::RtpConnection(
 	  peer_rtp_addr_(max_channel_count),
 	  peer_rtcp_sddr_(max_channel_count),
 	  media_channel_info_(max_channel_count),
-	  ipv6_(rtsp_connection.lock()->IsIpv6())
+	  ipv6_(ipv6)
 {
 	std::random_device rd;
 
@@ -35,10 +46,6 @@ RtpConnection::RtpConnection(
 		media_channel_info_[chn].rtp_header.ts = htonl(rd());
 		media_channel_info_[chn].rtp_header.ssrc = htonl(rd());
 	}
-
-	const auto conn = rtsp_connection_.lock();
-	rtsp_ip_ = conn->GetIp();
-	rtsp_port_ = conn->GetPort();
 }
 
 RtpConnection::~RtpConnection()
@@ -56,12 +63,7 @@ RtpConnection::~RtpConnection()
 
 int RtpConnection::GetId() const
 {
-	const auto conn = rtsp_connection_.lock();
-	if (!conn) {
-		return -1;
-	}
-	const RtspConnection *rtspConn = conn.get();
-	return rtspConn->GetId();
+	return task_scheduler_.lock()->GetId();
 }
 
 bool RtpConnection::SetupRtpOverTcp(MediaChannelId channel_id,
@@ -193,8 +195,7 @@ bool RtpConnection::SetupRtpOverUdp(MediaChannelId channel_id,
 
 bool RtpConnection::SetupRtpOverMulticast(MediaChannelId channel_id,
 					  const std::string &ip,
-					  const uint16_t port,
-					  const bool ipv6)
+					  const uint16_t port)
 {
 	std::random_device rd;
 	for (int n = 0; n <= 10; n++) {
@@ -221,7 +222,7 @@ bool RtpConnection::SetupRtpOverMulticast(MediaChannelId channel_id,
 
 	media_channel_info_[static_cast<uint8_t>(channel_id)].rtp_port = port;
 
-	if (ipv6) {
+	if (ipv6_) {
 		const auto peer_rtp_addr =
 			&peer_rtp_addr_[static_cast<uint8_t>(channel_id)];
 		peer_rtp_addr->sin6_family = AF_INET6;
@@ -262,7 +263,8 @@ void RtpConnection::Record()
 
 void RtpConnection::Teardown()
 {
-	if (!is_closed_) {
+	if (!is_closed_ &&
+	    transport_mode_ != TransportMode::RTP_OVER_MULTICAST) {
 		is_closed_ = true;
 		for (uint8_t chn = 0; chn < max_channel_count_; chn++) {
 			media_channel_info_[chn].is_play = false;
@@ -354,14 +356,8 @@ int RtpConnection::SendRtpPacket(MediaChannelId channel_id,
 		return -1;
 	}
 
-	const auto conn = rtsp_connection_.lock();
-	if (!conn) {
-		return -1;
-	}
-	const auto rtsp_conn = conn.get();
-	const bool ret = rtsp_conn->task_scheduler_->AddTriggerEvent([this,
-								      channel_id,
-								      pkt] {
+	const bool ret = task_scheduler_.lock()->AddTriggerEvent([this, channel_id,
+							   pkt] {
 		this->SetFrameType(pkt.type);
 		this->SetRtpHeader(channel_id, pkt);
 		if ((media_channel_info_[static_cast<uint8_t>(channel_id)]
@@ -371,7 +367,10 @@ int RtpConnection::SendRtpPacket(MediaChannelId channel_id,
 		    has_key_frame_) {
 			if (transport_mode_ == TransportMode::RTP_OVER_TCP) {
 				SendRtpOverTcp(channel_id, pkt);
-			} else {
+			} else if (transport_mode_ ==
+					   TransportMode::RTP_OVER_UDP ||
+				   transport_mode_ ==
+					   TransportMode::RTP_OVER_MULTICAST) {
 				SendRtpOverUdp(channel_id, pkt);
 			}
 

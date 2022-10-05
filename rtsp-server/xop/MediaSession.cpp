@@ -5,6 +5,7 @@
 
 #include "MediaSession.h"
 #include "RtpConnection.h"
+#include "RtspConnection.h"
 #include <cstring>
 #include <ctime>
 #include <map>
@@ -61,14 +62,32 @@ bool MediaSession::AddSource(MediaChannelId channel_id, MediaSource *source)
 {
 	if (static_cast<uint8_t>(channel_id) >= max_channel_count_)
 		return false;
+
 	source->SetSendFrameCallback([this](const MediaChannelId channel_id,
 					    const RtpPacket &pkt) {
 		std::lock_guard lock(map_mutex_);
 
 		std::forward_list<std::shared_ptr<RtpConnection>> clients;
-		std::map<int, RtpPacket> packets;
+		//std::map<int, RtpPacket> packets;
 
-		for (auto iter = clients_.begin(); iter != clients_.end();) {
+		RtpPacket tmp_pkt;
+		memcpy(tmp_pkt.data.get(), pkt.data.get(), pkt.size);
+		tmp_pkt.size = pkt.size;
+		tmp_pkt.last = pkt.last;
+		tmp_pkt.timestamp = pkt.timestamp;
+		tmp_pkt.type = pkt.type;
+
+		for (auto iter = clients_.begin(); iter != clients_.end();
+		     ++iter) {
+			if (auto conn = iter->second.lock(); conn == nullptr) {
+				clients_.erase(iter);
+			} else {
+				if (conn->IsMulticast()) continue;
+				conn->SendRtpPacket(channel_id, tmp_pkt);
+			}
+		}
+
+		/*for (auto iter = clients_.begin(); iter != clients_.end();) {
 			if (auto conn = iter->second.lock(); conn == nullptr) {
 				clients_.erase(iter++);
 			} else {
@@ -98,11 +117,19 @@ bool MediaSession::AddSource(MediaChannelId channel_id, MediaSource *source)
 				    iter2 != packets.end()) {
 					count++;
 					if (const int ret = iter->SendRtpPacket(
-						channel_id, iter2->second); is_multicast_ && ret == 0) {
+						    channel_id, iter2->second);
+					    is_multicast_ && ret == 0) {
 						break;
 					}
 				}
 			}
+		}*/
+
+		if (is_multicast_) {
+			multicast_v6_client_->SendRtpPacket(
+				channel_id, tmp_pkt);
+			multicast_client_->SendRtpPacket(
+				channel_id, tmp_pkt);
 		}
 		return true;
 	});
@@ -119,19 +146,36 @@ bool MediaSession::RemoveSource(MediaChannelId channel_id)
 
 bool MediaSession::StartMulticast()
 {
-	if (is_multicast_) {
+	if (task_scheduler_.lock() == nullptr)
+		return false;
+
+	if (is_multicast_)
 		return true;
-	}
 
 	multicast_ip6_ = MulticastAddr::instance().GetAddr6();
 	multicast_ip_ = MulticastAddr::instance().GetAddr();
-	if (multicast_ip6_.empty() || multicast_ip_.empty()) {
+	if (multicast_ip6_.empty() || multicast_ip_.empty())
 		return false;
-	}
 
 	std::random_device rd;
 	for (uint32_t chn = 0; chn < max_channel_count_; chn++)
 		multicast_port_[chn] = htons(rd() & 0xfffe);
+
+	multicast_v6_client_ =
+		make_shared<RtpConnection>(GetMaxChannelCount(), task_scheduler_, true);
+	multicast_client_ = make_shared<RtpConnection>(GetMaxChannelCount(),
+						       task_scheduler_, false);
+
+	for (uint32_t chn = 0; chn < max_channel_count_; chn++) {
+		if (!multicast_v6_client_->SetupRtpOverMulticast(
+			    static_cast<MediaChannelId>(chn), multicast_ip6_,
+			    multicast_port_[chn]))
+			return false;
+		if (!multicast_client_->SetupRtpOverMulticast(
+			    static_cast<MediaChannelId>(chn), multicast_ip_,
+			    multicast_port_[chn]))
+			return false;
+	}
 
 	is_multicast_ = true;
 	return true;
@@ -179,7 +223,9 @@ std::string MediaSession::GetSdpMessage(const std::string ip,
 				snprintf(buf + strlen(buf),
 					 sizeof(buf) - strlen(buf),
 					 "c=IN IP%d %s/%d\r\n", ipv6 ? 6 : 4,
-					 ipv6 ? multicast_ip6_.c_str() : multicast_ip_.c_str(), ipv6 ? 255 : 8);
+					 ipv6 ? multicast_ip6_.c_str()
+					      : multicast_ip_.c_str(),
+					 ipv6 ? 255 : 8);
 			} else {
 				snprintf(buf + strlen(buf),
 					 sizeof(buf) - strlen(buf), "%s\r\n",
@@ -224,7 +270,8 @@ bool MediaSession::HandleFrame(MediaChannelId channelId, AVFrame frame)
 }
 
 bool MediaSession::AddClient(const SOCKET rtspfd,
-			     const std::shared_ptr<RtpConnection> &rtp_conn)
+			     std::shared_ptr<RtpConnection> rtp_conn, string ip,
+			     uint16_t port)
 {
 	std::lock_guard lock(map_mutex_);
 
@@ -232,9 +279,8 @@ bool MediaSession::AddClient(const SOCKET rtspfd,
 		std::weak_ptr rtp_conn_weak_ptr = rtp_conn;
 		clients_.emplace(rtspfd, rtp_conn_weak_ptr);
 		for (auto &callback : notify_connected_callbacks_)
-			callback(
-				session_id_, rtp_conn->GetIp(),
-				rtp_conn->GetPort()); /* 回调通知当前客户端数量 */
+			callback(session_id_, ip,
+				 port); /* 回调通知当前客户端数量 */
 
 		has_new_client_ = true;
 		return true;
@@ -243,16 +289,16 @@ bool MediaSession::AddClient(const SOCKET rtspfd,
 	return false;
 }
 
-void MediaSession::RemoveClient(const SOCKET rtspfd)
+void MediaSession::RemoveClient(const SOCKET rtspfd, std::string ip,
+				uint16_t port)
 {
 	std::lock_guard lock(map_mutex_);
 
 	if (const auto iter = clients_.find(rtspfd); iter != clients_.end()) {
 		if (const auto conn = iter->second.lock()) {
 			for (auto &callback : notify_disconnected_callbacks_)
-				callback(
-					session_id_, conn->GetIp(),
-					conn->GetPort()); /* 回调通知当前客户端数量 */
+				callback(session_id_, ip,
+					 port); /* 回调通知当前客户端数量 */
 		}
 		clients_.erase(iter);
 	}
