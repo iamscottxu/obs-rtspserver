@@ -18,11 +18,17 @@
 namespace xop {
 
 class RtspConnection;
+class TaskScheduler;
 
 class RtpConnection {
 public:
-	RtpConnection(const std::weak_ptr<RtspConnection> &rtsp_connection,
+	RtpConnection(std::weak_ptr<RtspConnection> rtsp_connection,
 		      uint8_t max_channel_count);
+
+	RtpConnection(uint8_t max_channel_count,
+		      std::weak_ptr<TaskScheduler> task_scheduler,
+		      bool ipv6 = false);
+
 	virtual ~RtpConnection();
 
 	void SetClockRate(MediaChannelId channel_id, const uint32_t clock_rate)
@@ -42,8 +48,7 @@ public:
 	bool SetupRtpOverUdp(MediaChannelId channel_id, uint16_t rtp_port,
 			     uint16_t rtcp_port);
 	bool SetupRtpOverMulticast(MediaChannelId channel_id,
-				   const std::string &ip, uint16_t port,
-				   bool ipv6);
+				   const std::string &ip, uint16_t port);
 
 	uint16_t GetRtpSessionId() const
 	{
@@ -64,10 +69,6 @@ public:
 	{
 		return rtcpfd_[static_cast<uint8_t>(channel_id)];
 	}
-
-	std::string GetIp() { return rtsp_ip_; }
-
-	uint16_t GetPort() { return rtsp_port_; }
 
 	bool IsMulticast() const { return is_multicast_; }
 
@@ -104,8 +105,7 @@ private:
 	uint8_t max_channel_count_ = 0;
 
 	std::weak_ptr<RtspConnection> rtsp_connection_;
-	std::string rtsp_ip_;
-	uint16_t rtsp_port_;
+	std::weak_ptr<TaskScheduler> task_scheduler_;
 
 	TransportMode transport_mode_;
 	bool is_multicast_ = false;
@@ -119,7 +119,7 @@ private:
 	std::vector<SOCKET> rtpfd_;
 	std::vector<SOCKET> rtcpfd_;
 
-	sockaddr_in6 peer_addr_;
+	sockaddr_in6 peer_addr_{};
 	std::vector<sockaddr_in6> peer_rtp_addr_;
 	std::vector<sockaddr_in6> peer_rtcp_sddr_;
 	std::vector<MediaChannelInfo> media_channel_info_;

@@ -16,11 +16,6 @@
 #include <map>
 #include <unordered_set>
 #include "media.h"
-#include "H264Source.h"
-#include "H265Source.h"
-#include "VP8Source.h"
-#include "G711ASource.h"
-#include "AACSource.h"
 #include "MediaSource.h"
 #include "net/Socket.h"
 #include "net/RingBuffer.h"
@@ -28,6 +23,8 @@
 namespace xop {
 
 class RtpConnection;
+class TaskScheduler;
+class EventLoop;
 
 class MediaSession {
 public:
@@ -66,9 +63,9 @@ public:
 
 	bool HandleFrame(MediaChannelId channel_id, AVFrame frame);
 
-	bool AddClient(SOCKET rtspfd,
-		       const std::shared_ptr<RtpConnection> &rtp_conn);
-	void RemoveClient(SOCKET rtspfd);
+	bool AddClient(SOCKET rtspfd, std::shared_ptr<RtpConnection> rtp_conn,
+	               std::string ip, uint16_t port);
+	void RemoveClient(SOCKET rtspfd, std::string ip, uint16_t port);
 
 	MediaSessionId GetMediaSessionId() const { return session_id_; }
 
@@ -95,6 +92,12 @@ public:
 		return multicast_port_[static_cast<uint8_t>(channel_id)];
 	}
 
+	std::shared_ptr<RtpConnection> GetMulticastRtpConnection(const bool ipv6) const
+	{
+		return ipv6 ? multicast_v6_client_
+			    : multicast_client_;
+	}
+
 private:
 	friend class MediaSource;
 	friend class RtspServer;
@@ -114,6 +117,9 @@ private:
 	std::mutex map_mutex_;
 	std::map<SOCKET, std::weak_ptr<RtpConnection>> clients_;
 
+	std::shared_ptr<RtpConnection> multicast_client_;
+	std::shared_ptr<RtpConnection> multicast_v6_client_;
+
 	bool is_multicast_ = false;
 	std::vector<uint16_t> multicast_port_;
 	std::string multicast_ip_;
@@ -121,6 +127,8 @@ private:
 	std::atomic_bool has_new_client_;
 
 	static std::atomic_uint last_session_id_;
+
+	std::weak_ptr<TaskScheduler> task_scheduler_;
 };
 
 class MulticastAddr {

@@ -5,11 +5,12 @@
 
 using namespace xop;
 
-TcpConnection::TcpConnection(TaskScheduler *task_scheduler, const SOCKET sockfd)
-	: task_scheduler_(task_scheduler),
-	  read_buffer_(new BufferReader),
+TcpConnection::TcpConnection(
+	const SOCKET sockfd, std::shared_ptr<TaskScheduler> task_scheduler)
+	: read_buffer_(new BufferReader),
 	  write_buffer_(new BufferWriter(500)),
 	  is_closed_(false),
+	  task_scheduler_(std::move(task_scheduler)),
 	  channel_(new Channel(sockfd)),
 	  ipv6_(SocketUtil::IsIpv6Socket(sockfd))
 {
@@ -58,8 +59,7 @@ void TcpConnection::Send(const char *data, const size_t size)
 void TcpConnection::Disconnect()
 {
 	std::lock_guard lock(mutex_);
-	auto conn = shared_from_this();
-	task_scheduler_->AddTriggerEvent([conn]() { conn->Close(); });
+	task_scheduler_->AddTriggerEvent([this] { this->Close(); });
 }
 
 void TcpConnection::HandleRead()
@@ -80,7 +80,7 @@ void TcpConnection::HandleRead()
 
 	if (read_cb_) {
 		if (const bool ret =
-			    read_cb_(shared_from_this(), *read_buffer_);
+			    read_cb_(weak_from_this(), *read_buffer_);
 		    !ret) {
 			std::lock_guard lock(mutex_);
 			this->Close();
@@ -131,11 +131,11 @@ void TcpConnection::Close()
 		task_scheduler_->RemoveChannel(channel_);
 
 		if (close_cb_) {
-			close_cb_(shared_from_this());
+			close_cb_(weak_from_this());
 		}
 
 		if (disconnect_cb_) {
-			disconnect_cb_(shared_from_this());
+			disconnect_cb_(weak_from_this());
 		}
 	}
 }

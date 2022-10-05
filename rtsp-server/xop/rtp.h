@@ -18,6 +18,7 @@
 namespace xop {
 
 enum class TransportMode {
+	NONE = 0,
 	RTP_OVER_TCP = 1,
 	RTP_OVER_UDP = 2,
 	RTP_OVER_MULTICAST = 3,
