@@ -461,29 +461,41 @@ static void rtsp_push_frame(void *param)
 static void rtsp_output_video(void *param, struct encoder_packet *packet)
 {
 	const auto *out_data = static_cast<rtsp_out_data *>(param);
-	uint8_t *header = nullptr;
-	const size_t header_size =
-		packet->keyframe
-			? get_video_header(obs_output_get_video_encoder(
-						   out_data->output),
-					   &header)
-			: 0;
 
-	struct queue_frame queue_frame(packet->size + header_size);
-	xop::AVFrame *frame = &queue_frame.av_frame;
-	queue_frame.channe_id = xop::MediaChannelId::channel_0;
+	const uint8_t *end = packet->data + packet->size;
+	const uint32_t timestamp = get_timestamp(90000, packet);
 
-	frame->timestamp = get_timestamp(90000, packet);
+	const uint8_t* nal_start = obs_avc_find_startcode(packet->data, end);
+	while (true) {
+		while (nal_start < end && !*(nal_start++))
+			;
 
-	memcpy(frame->buffer.get() + header_size, packet->data, packet->size);
+		if (nal_start == end)
+			break;
 
-	if (packet->keyframe) {
-		frame->type = xop::FrameType::VIDEO_FRAME_I;
-		memcpy(frame->buffer.get(), header, header_size);
-	} else
-		frame->type = xop::FrameType::VIDEO_FRAME_P;
+		const uint8_t* nal_end = obs_avc_find_startcode(nal_start, end);
 
-	out_data->frame_queue->push(queue_frame);
+		const size_t size = nal_end - nal_start;
+
+		struct queue_frame queue_frame(size);
+		xop::AVFrame *frame = &queue_frame.av_frame;
+		queue_frame.channe_id = xop::MediaChannelId::channel_0;
+		frame->timestamp = timestamp;
+
+		const int type = nal_start[0] & 0x1F;
+		if (type == OBS_NAL_SLICE_IDR)
+			frame->type = xop::FrameType::VIDEO_FRAME_I;
+		else if (type < OBS_NAL_SLICE_IDR)
+			frame->type = xop::FrameType::VIDEO_FRAME_P;
+		else
+			frame->type = xop::FrameType::NONE;
+
+		memcpy(frame->buffer.get(), nal_start, size);
+
+		out_data->frame_queue->push(queue_frame);
+
+		nal_start = nal_end;
+	}
 }
 
 static void rtsp_output_audio(void *param, struct encoder_packet *packet)
