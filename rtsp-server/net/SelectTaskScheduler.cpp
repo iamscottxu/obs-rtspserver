@@ -88,9 +88,9 @@ bool SelectTaskScheduler::HandleEvent(int timeout)
 		}
 
 		std::lock_guard lock(mutex_);
-		for (const auto &iter : channels_) {
-			int events = iter.second->GetEvents();
-			const SOCKET fd = iter.second->GetSocket();
+		for (const auto & [fst, snd] : channels_) {
+			const uint32_t events = snd->GetEvents();
+			const SOCKET fd = snd->GetSocket();
 
 			if (is_fd_read_reset_ && (events & EVENT_IN)) {
 				FD_SET(fd, &fd_read);
@@ -159,12 +159,12 @@ bool SelectTaskScheduler::HandleEvent(int timeout)
 		return false;
 	}
 
-	std::forward_list<std::pair<ChannelPtr, int>> event_list;
+	std::forward_list<std::pair<ChannelPtr, uint32_t>> event_list;
 	if (ret > 0) {
 		std::lock_guard lock(mutex_);
-		for (const auto &iter : channels_) {
-			int events = 0;
-			const SOCKET socket = iter.second->GetSocket();
+		for (const auto & [fst, snd] : channels_) {
+			uint32_t events = 0;
+			const SOCKET socket = snd->GetSocket();
 
 			if (FD_ISSET(socket, &fd_read)) {
 				events |= EVENT_IN;
@@ -175,17 +175,17 @@ bool SelectTaskScheduler::HandleEvent(int timeout)
 			}
 
 			if (FD_ISSET(socket, &fd_exp)) {
-				events |= (EVENT_HUP); // close
+				events |= EVENT_HUP; // close
 			}
 
 			if (events != 0) {
-				event_list.emplace_front(iter.second, events);
+				event_list.emplace_front(snd, events);
 			}
 		}
 	}
 
-	for (const auto &iter : event_list) {
-		iter.first->HandleEvent(iter.second);
+	for (const auto & [fst, snd] : event_list) {
+		fst->HandleEvent(snd);
 	}
 
 	return true;
