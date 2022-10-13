@@ -13,7 +13,7 @@ using namespace xop;
 EpollTaskScheduler::EpollTaskScheduler(const int id) : TaskScheduler(id)
 {
 #if defined(__linux) || defined(__linux__)
-	epollfd_ = epoll_create1(1024);
+	epollfd_ = epoll_create1(0);
 #endif
 	this->EpollTaskScheduler::UpdateChannel(wakeup_channel_);
 }
