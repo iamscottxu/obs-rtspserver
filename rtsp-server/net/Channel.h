@@ -10,7 +10,7 @@
 
 namespace xop {
 
-enum EventType {
+enum EventType: uint32_t {
 	EVENT_NONE = 0,
 	EVENT_IN = 1,
 	EVENT_PRI = 2,
@@ -40,7 +40,7 @@ public:
 
 	SOCKET GetSocket() const { return sockfd_; }
 
-	int GetEvents() const { return events_; }
+	uint32_t GetEvents() const { return events_; }
 	void SetEvents(const int events) { events_ = events; }
 
 	void EnableReading() { events_ |= EVENT_IN; }
@@ -55,7 +55,7 @@ public:
 	bool IsWriting() const { return (events_ & EVENT_OUT) != 0; }
 	bool IsReading() const { return (events_ & EVENT_IN) != 0; }
 
-	void HandleEvent(int events) const
+	void HandleEvent(const uint32_t events) const
 	{
 		if (events & (EVENT_PRI | EVENT_IN)) {
 			read_callback_();
@@ -70,7 +70,7 @@ public:
 			return;
 		}
 
-		if (events & (EVENT_ERR)) {
+		if (events & EVENT_ERR) {
 			error_callback_();
 		}
 	}
@@ -82,7 +82,7 @@ private:
 	EventCallback error_callback_ = [] {};
 
 	SOCKET sockfd_ = 0;
-	int events_ = 0;
+	uint32_t events_ = 0;
 };
 
 typedef std::shared_ptr<Channel> ChannelPtr;
