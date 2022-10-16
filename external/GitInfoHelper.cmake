@@ -17,10 +17,10 @@ function(get_git_version git_tag_name git_tag_version_name git_tag_short_version
 		set(_git_tag_tweak_version "0")
 	endif()
 
-	if(NOT "${git_tag_short_version}" MATCHES "")
-		set(git_tag_long_version "${git_tag_short_version}.${_git_tag_tweak_version}")
+	if("${git_tag_short_version}" STREQUAL "")
+		set(git_tag_long_version "0.0.1.${_git_tag_tweak_version}")
 	else()
-		set(git_tag_long_version "0.0.0")
+		set(git_tag_long_version "${git_tag_short_version}.${_git_tag_tweak_version}")
 	endif()
 
 	set(${git_tag_name} "${git_tag}" PARENT_SCOPE)
