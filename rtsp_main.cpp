@@ -32,7 +32,7 @@ const char *obs_module_description(void)
 
 bool obs_module_load(void)
 {
-	xop::Logger::instance().setWriteCallback(server_log_write_callback);
+	xop::Logger::Instance().SetWriteCallback(server_log_write_callback);
 	rtsp_output_register();
 
 	RtspOutputHelper *rtspOutputHelper;

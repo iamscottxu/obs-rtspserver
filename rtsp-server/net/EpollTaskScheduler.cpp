@@ -5,24 +5,36 @@
 
 #if defined(__linux) || defined(__linux__)
 #include <sys/epoll.h>
-#include <errno.h>
+#include <cerrno>
 #endif
+#include "Logger.h"
 
 using namespace xop;
 
-EpollTaskScheduler::EpollTaskScheduler(int id) : TaskScheduler(id)
+EpollTaskScheduler::EpollTaskScheduler(const int id) : TaskScheduler(id)
 {
 #if defined(__linux) || defined(__linux__)
 	epollfd_ = epoll_create1(0);
+	if (epollfd_ < 0) {
+		LOG_ERROR("epoll_create1 errno: %d", errno);
+	}
 #endif
-	this->UpdateChannel(wakeup_channel_);
+	this->EpollTaskScheduler::UpdateChannel(wakeup_channel_);
 }
 
-EpollTaskScheduler::~EpollTaskScheduler() {}
-
-void EpollTaskScheduler::UpdateChannel(ChannelPtr channel)
+EpollTaskScheduler::~EpollTaskScheduler()
 {
-	std::lock_guard<std::mutex> lock(mutex_);
+#if defined(__linux) || defined(__linux__)
+	if (epollfd_ >= 0) {
+		close(epollfd_);
+		epollfd_ = -1;
+	}
+#endif
+}
+
+void EpollTaskScheduler::UpdateChannel(const ChannelPtr &channel)
+{
+	std::lock_guard lock(mutex_);
 #if defined(__linux) || defined(__linux__)
 	int fd = channel->GetSocket();
 	if (channels_.find(fd) != channels_.end()) {
@@ -41,7 +53,7 @@ void EpollTaskScheduler::UpdateChannel(ChannelPtr channel)
 #endif
 }
 
-void EpollTaskScheduler::Update(int operation, ChannelPtr &channel)
+void EpollTaskScheduler::Update(int operation, const ChannelPtr &channel)
 {
 #if defined(__linux) || defined(__linux__)
 	struct epoll_event event = {0};
@@ -53,13 +65,14 @@ void EpollTaskScheduler::Update(int operation, ChannelPtr &channel)
 
 	if (::epoll_ctl(epollfd_, operation, channel->GetSocket(), &event) <
 	    0) {
+		LOG_ERROR("epoll_ctl errno: %d", errno);
 	}
 #endif
 }
 
-void EpollTaskScheduler::RemoveChannel(ChannelPtr &channel)
+void EpollTaskScheduler::RemoveChannel(const ChannelPtr &channel)
 {
-	std::lock_guard<std::mutex> lock(mutex_);
+	std::lock_guard lock(mutex_);
 #if defined(__linux) || defined(__linux__)
 	int fd = channel->GetSocket();
 
@@ -79,13 +92,14 @@ bool EpollTaskScheduler::HandleEvent(int timeout)
 	num_events = epoll_wait(epollfd_, events, 512, timeout);
 	if (num_events < 0) {
 		if (errno != EINTR) {
+			LOG_ERROR("epoll_wait errno: %d", errno);
 			return false;
 		}
 	}
 
 	for (int n = 0; n < num_events; n++) {
 		if (events[n].data.ptr) {
-			((Channel *)events[n].data.ptr)
+			static_cast<Channel *>(events[n].data.ptr)
 				->HandleEvent(events[n].events);
 		}
 	}

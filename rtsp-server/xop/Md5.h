@@ -13,15 +13,14 @@ public:
 
 	virtual void GetMd5Hash(const unsigned char *data, size_t dataSize,
 				unsigned char *outHash);
-	void GetMd5Hash(std::string str, unsigned char *outHash);
+	void GetMd5Hash(const std::string &str, unsigned char *outHash);
 	std::string GetMd5HashString(const unsigned char *data,
 				     size_t dataSize);
-	std::string GetMd5HashString(std::string str);
+	std::string GetMd5HashString(const std::string &str);
 
 private:
-	const char hexValue_[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
-				   '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-
+	const char hex_value_[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
+				     '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 };
 }
 

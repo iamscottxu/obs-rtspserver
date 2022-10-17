@@ -13,7 +13,9 @@ using namespace std;
 template<typename T> class threadsafe_queue
 {
 public:
-	threadsafe_queue() { m_bTermination = false; }
+	threadsafe_queue()
+		: m_bTermination(false) {
+	}
 	~threadsafe_queue() {}
 
 	//（1）没有调用termination时，每调用一次出队一个元素，直到队列为空本方法阻塞线程。

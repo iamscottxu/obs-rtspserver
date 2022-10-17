@@ -9,89 +9,88 @@
 #include <cstdio>
 #include <string>
 #include "MediaSession.h"
-#include "net/Acceptor.h"
-#include "net/EventLoop.h"
-#include "net/Socket.h"
-#include "net/Timer.h"
 #include "net/Logger.h"
 
-namespace xop
-{
+namespace xop {
 
-struct RtspUrlInfo
-{
+struct RtspUrlInfo {
 	std::string url;
 	std::string ip;
 	uint16_t port;
 	std::string suffix;
 };
 
-class Rtsp : public std::enable_shared_from_this<Rtsp>
-{
+class Rtsp : public std::enable_shared_from_this<Rtsp> {
 public:
-	Rtsp() : has_auth_info_(false) {}
-	virtual ~Rtsp() {}
+	Rtsp() = default;
+	virtual ~Rtsp() = default;
 
-	virtual void SetAuthConfig(std::string realm, std::string username, std::string password)
+	virtual void SetAuthConfig(const std::string realm,
+				   const std::string username,
+				   const std::string password)
 	{
 		realm_ = realm;
 		username_ = username;
 		password_ = password;
 		has_auth_info_ = true;
 
-		if (realm_=="" || username=="") {
+		if (realm_.empty() || username.empty()) {
 			has_auth_info_ = false;
 		}
 	}
 
 	virtual void SetVersion(std::string version) // SDP Session Name
-	{ version_ = std::move(version); }
-
-	virtual std::string GetVersion()
-	{ return version_; }
-
-	virtual std::string GetRtspUrl()
-	{ return rtsp_url_info_.url; }
-
-	bool parseRtspUrl(std::string url)
 	{
-		char ip[100] = { 0 };
-		char suffix[100] = { 0 };
+		version_ = std::move(version);
+	}
+
+	virtual std::string GetVersion() { return version_; }
+
+	virtual std::string GetRtspUrl() { return rtsp_url_info_.url; }
+
+	bool ParseRtspUrl(const std::string &url)
+	{
+		char ip[100] = {0};
+		char suffix[100] = {0};
 		uint16_t port = 0;
 #if defined(WIN32) || defined(_WIN32)
-		if (sscanf_s(url.c_str() + 7, "[%[^]]]:%hu/%s", ip, 100, &port, suffix, 100) == 3) //IPv6
+		if (sscanf_s(url.c_str() + 7, "[%[^]]]:%hu/%s", ip, 100, &port,
+			     suffix, 100) == 3) //IPv6
 #else
-                if (sscanf(url.c_str() + 7, "[%[^]]]:%hu/%s", ip, &port, suffix) == 3)
+		if (sscanf(url.c_str() + 7, "[%[^]]]:%hu/%s", ip, &port,
+			   suffix) == 3)
 #endif
 		{
 			rtsp_url_info_.port = port;
 		}
 #if defined(WIN32) || defined(_WIN32)
-		else if (sscanf_s(url.c_str() + 7, "[%[^]]]/%s", ip, 100, suffix, 100) == 2)
+		else if (sscanf_s(url.c_str() + 7, "[%[^]]]/%s", ip, 100,
+				  suffix, 100) == 2)
 #else
-                else if (sscanf(url.c_str() + 7, "[%[^]]]/%s", ip, suffix) == 2)
+		else if (sscanf(url.c_str() + 7, "[%[^]]]/%s", ip, suffix) == 2)
 #endif
 		{
 			rtsp_url_info_.port = 554;
 		}
 #if defined(WIN32) || defined(_WIN32)
-		else if(sscanf_s(url.c_str() + 7, "%[^:]:%hu/%s", ip, 100, &port, suffix, 100) == 3) //IPv4, domain
+		else if (sscanf_s(url.c_str() + 7, "%[^:]:%hu/%s", ip, 100,
+				  &port, suffix, 100) == 3) //IPv4, domain
 #else
-                else if(sscanf(url.c_str() + 7, "%[^:]:%hu/%s", ip, &port, suffix) == 3)
+		else if (sscanf(url.c_str() + 7, "%[^:]:%hu/%s", ip, &port,
+				suffix) == 3)
 #endif
 		{
 			rtsp_url_info_.port = port;
 		}
 #if defined(WIN32) || defined(_WIN32)
-		else if (sscanf_s(url.c_str() + 7, "%[^/]/%s", ip, 100, suffix, 100) == 2)
+		else if (sscanf_s(url.c_str() + 7, "%[^/]/%s", ip, 100, suffix,
+				  100) == 2)
 #else
-                else if (sscanf(url.c_str() + 7, "%[^/]/%s", ip, suffix) == 2)
+		else if (sscanf(url.c_str() + 7, "%[^/]/%s", ip, suffix) == 2)
 #endif
 		{
 			rtsp_url_info_.port = 554;
-		}
-		else
-		{
+		} else {
 			LOG_ERROR("%s was illegal.\n", url.c_str());
 			return false;
 		}
@@ -104,22 +103,24 @@ public:
 
 protected:
 	friend class RtspConnection;
-	virtual MediaSessionPtr LookMediaSession(const std::string& suffix)
-	{ return nullptr; }
+	virtual MediaSession::Ptr LookMediaSession([[maybe_unused]] const std::string &suffix)
+	{
+		return nullptr;
+	}
 
-	virtual MediaSessionPtr LookMediaSession(MediaSessionId sessionId)
-	{ return nullptr; }
+	virtual MediaSession::Ptr LookMediaSession([[maybe_unused]] MediaSessionId sessionId)
+	{
+		return nullptr;
+	}
 
 	bool has_auth_info_ = false;
 	std::string realm_;
 	std::string username_;
 	std::string password_;
 	std::string version_;
-	struct RtspUrlInfo rtsp_url_info_;
+	RtspUrlInfo rtsp_url_info_;
 };
 
 }
 
 #endif
-
-

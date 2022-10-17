@@ -7,53 +7,51 @@
 #include <cstdint>
 #include <memory>
 #include <queue>
-#include <string>
 #include "Socket.h"
 
-namespace xop
-{
+namespace xop {
 
-void WriteUint32BE(char* p, uint32_t value);
-void WriteUint32LE(char* p, uint32_t value);
-void WriteUint24BE(char* p, uint32_t value);
-void WriteUint24LE(char* p, uint32_t value);
-void WriteUint16BE(char* p, uint16_t value);
-void WriteUint16LE(char* p, uint16_t value);
-	
-class BufferWriter
-{
+void WriteUint32BE(char *p, uint32_t value);
+void WriteUint32LE(char *p, uint32_t value);
+void WriteUint24BE(char *p, uint32_t value);
+void WriteUint24LE(char *p, uint32_t value);
+void WriteUint16BE(char *p, uint16_t value);
+void WriteUint16LE(char *p, uint16_t value);
+
+class BufferWriter {
 public:
-	BufferWriter(int capacity = kMaxQueueLength);
-	~BufferWriter() {}
+	explicit BufferWriter(int capacity = kMaxQueueLength);
+	virtual ~BufferWriter() = default;
 
-	bool Append(std::shared_ptr<char> data, size_t size, uint32_t index=0);
-	bool Append(const char* data, size_t size, uint32_t index=0);
-	int Send(SOCKET sockfd, int timeout=0);
+	bool Append(const std::shared_ptr<char> &data, size_t size,
+		    uint32_t index = 0);
+	bool Append(const char *data, size_t size, uint32_t index = 0);
+	int Send(SOCKET sockfd, int timeout = 0);
 
-	bool IsEmpty() const 
-	{ return buffer_->empty(); }
+	bool IsEmpty() const { return buffer_.empty(); }
 
-	bool IsFull() const 
-	{ return ((int)buffer_->size() >= max_queue_length_ ? true : false); }
-
-	uint32_t Size() const 
-	{ return (uint32_t)buffer_->size(); }
-	
-private:
-	typedef struct 
+	bool IsFull() const
 	{
+		return static_cast<int>(buffer_.size()) >= max_queue_length_
+			       ? true
+			       : false;
+	}
+
+	size_t Size() const { return buffer_.size(); }
+
+private:
+	typedef struct Packet {
 		std::shared_ptr<char> data;
-		size_t size;
-		uint32_t writeIndex;
+		size_t size{};
+		uint32_t writeIndex{};
 	} Packet;
 
-	std::shared_ptr<std::queue<Packet>> buffer_;  		
+	std::queue<Packet> buffer_;
 	int max_queue_length_ = 0;
-	 
-	static const int kMaxQueueLength = 10000;
+
+	static constexpr int kMaxQueueLength = 10000;
 };
 
 }
 
 #endif
-

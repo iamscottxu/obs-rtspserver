@@ -1,18 +1,18 @@
 // PHZ
-// 2018-5-16
+// 2021-8-26
 
-#ifndef XOP_H265_SOURCE_H
-#define XOP_H265_SOURCE_H
+#ifndef XOP_VP8_SOURCE_H
+#define XOP_VP8_SOURCE_H
 
 #include "MediaSource.h"
 #include "rtp.h"
 
 namespace xop {
 
-class H265Source : public MediaSource {
+class VP8Source : public MediaSource {
 public:
-	static H265Source *CreateNew(uint32_t framerate = 25);
-	~H265Source() override;
+	static VP8Source *CreateNew(uint32_t framerate = 25);
+	~VP8Source() override;
 
 	void Setframerate(const uint32_t framerate) { framerate_ = framerate; }
 
@@ -27,11 +27,10 @@ public:
 	static uint32_t GetTimestamp();
 
 private:
-	explicit H265Source(uint32_t framerate);
+	explicit VP8Source(uint32_t framerate);
 
 	uint32_t framerate_ = 25;
 };
 
 }
-
 #endif

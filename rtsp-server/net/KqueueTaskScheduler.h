@@ -8,24 +8,22 @@
 #include <mutex>
 #include <unordered_map>
 
-namespace xop
-{	
-class KqueueTaskScheduler : public TaskScheduler
-{
+namespace xop {
+class KqueueTaskScheduler : public TaskScheduler {
 public:
-        KqueueTaskScheduler(int id = 0);
-	virtual ~KqueueTaskScheduler();
+	explicit KqueueTaskScheduler(int id = 0);
+	~KqueueTaskScheduler() override;
 
-	void UpdateChannel(ChannelPtr channel);
-	void RemoveChannel(ChannelPtr& channel);
+	void UpdateChannel(const ChannelPtr &channel) override;
+	void RemoveChannel(const ChannelPtr &channel) override;
 
 	// timeout: ms
-	bool HandleEvent(int timeout);
+	bool HandleEvent(int timeout) override;
 
 private:
-	void Update(int operation, ChannelPtr& channel);
+	void Update(int operation, const ChannelPtr &channel);
 
-        int kqueuefd_ = -1;
+	int kqueuefd_ = -1;
 	std::mutex mutex_;
 	std::unordered_map<int, ChannelPtr> channels_;
 };

@@ -14,94 +14,117 @@
 #include "rtp.h"
 #include "media.h"
 #include "net/Socket.h"
-#include "net/TcpConnection.h"
 
-namespace xop
-{
+namespace xop {
 
 class RtspConnection;
+class TaskScheduler;
 
-class RtpConnection
-{
+class RtpConnection {
 public:
-    RtpConnection(std::weak_ptr<TcpConnection> rtsp_connection, uint32_t max_channel_count);
-    virtual ~RtpConnection();
+	RtpConnection(std::weak_ptr<RtspConnection> rtsp_connection,
+		      uint8_t max_channel_count);
 
-    void SetClockRate(MediaChannelId channel_id, uint32_t clock_rate)
-    { media_channel_info_[static_cast<uint8_t>(channel_id)].clock_rate = clock_rate; }
+	RtpConnection(uint8_t max_channel_count,
+		      std::weak_ptr<TaskScheduler> task_scheduler,
+		      bool ipv6 = false);
 
-    void SetPayloadType(MediaChannelId channel_id, uint32_t payload)
-    { media_channel_info_[static_cast<uint8_t>(channel_id)].rtp_header.payload = payload; }
+	virtual ~RtpConnection();
 
-    bool SetupRtpOverTcp(MediaChannelId channel_id, uint8_t rtp_channel, uint8_t rtcp_channel);
-    bool SetupRtpOverUdp(MediaChannelId channel_id, uint16_t rtp_port, uint16_t rtcp_port);
-    bool SetupRtpOverMulticast(MediaChannelId channel_id, std::string ip, uint16_t port);
+	void SetClockRate(MediaChannelId channel_id, const uint32_t clock_rate)
+	{
+		media_channel_info_[static_cast<uint8_t>(channel_id)]
+			.clock_rate = clock_rate;
+	}
 
-    uint16_t GetRtpSessionId() const
-    { return (uint16_t)((size_t)(this)); }
+	void SetPayloadType(MediaChannelId channel_id, const uint32_t payload)
+	{
+		media_channel_info_[static_cast<uint8_t>(channel_id)]
+			.rtp_header.payload = payload;
+	}
 
-    uint16_t GetRtpPort(MediaChannelId channel_id) const
-    { return local_rtp_port_[static_cast<uint8_t>(channel_id)]; }
+	bool SetupRtpOverTcp(MediaChannelId channel_id, uint8_t rtp_channel,
+			     uint8_t rtcp_channel);
+	bool SetupRtpOverUdp(MediaChannelId channel_id, uint16_t rtp_port,
+			     uint16_t rtcp_port);
+	bool SetupRtpOverMulticast(MediaChannelId channel_id,
+				   const std::string &ip, uint16_t port);
 
-    uint16_t GetRtcpPort(MediaChannelId channel_id) const
-    { return local_rtcp_port_[static_cast<uint8_t>(channel_id)]; }
+	uint16_t GetRtpSessionId() const
+	{
+		return static_cast<uint16_t>(reinterpret_cast<size_t>(this));
+	}
 
-    SOCKET GetRtcpfd(MediaChannelId channel_id)
-    { return rtcpfd_[static_cast<uint8_t>(channel_id)]; }
+	uint16_t GetRtpPort(MediaChannelId channel_id) const
+	{
+		return local_rtp_port_[static_cast<uint8_t>(channel_id)];
+	}
 
-    bool IsMulticast() const
-    { return is_multicast_; }
+	uint16_t GetRtcpPort(MediaChannelId channel_id) const
+	{
+		return local_rtcp_port_[static_cast<uint8_t>(channel_id)];
+	}
 
-    bool IsSetup(MediaChannelId channel_id) const
-    { return media_channel_info_[static_cast<uint8_t>(channel_id)].is_setup; }
+	SOCKET GetRtcpfd(MediaChannelId channel_id) const
+	{
+		return rtcpfd_[static_cast<uint8_t>(channel_id)];
+	}
 
-    std::string GetMulticastIp(MediaChannelId channel_id) const;
+	bool IsMulticast() const { return is_multicast_; }
 
-    void Play();
-    void Record();
-    void Teardown();
+	bool IsSetup(MediaChannelId channel_id) const
+	{
+		return media_channel_info_[static_cast<uint8_t>(channel_id)]
+			.is_setup;
+	}
 
-    std::string GetRtpInfo(const std::string& rtsp_url);
-    int SendRtpPacket(MediaChannelId channel_id, RtpPacket pkt);
+	std::string GetMulticastIp(MediaChannelId channel_id);
 
-    bool IsClosed() const
-    { return is_closed_; }
+	void Play();
+	void Record();
+	void Teardown();
 
-    int GetId() const;
+	std::string GetRtpInfo(const std::string &rtsp_url) const;
+	int SendRtpPacket(MediaChannelId channel_id, const RtpPacket &pkt);
 
-    bool HasKeyFrame() const
-    { return has_key_frame_; }
+	bool IsClosed() const { return is_closed_; }
+
+	int GetId() const;
+
+	bool HasKeyFrame() const { return has_key_frame_; }
 
 private:
-    friend class RtspConnection;
-    friend class MediaSession;
-    void SetFrameType(FrameType frameType = FrameType::NONE);
-    void SetRtpHeader(MediaChannelId channel_id, RtpPacket pkt);
-    int  SendRtpOverTcp(MediaChannelId channel_id, RtpPacket pkt);
-    int  SendRtpOverUdp(MediaChannelId channel_id, RtpPacket pkt);
+	friend class RtspConnection;
+	friend class MediaSession;
+	void SetFrameType(FrameType frameType = FrameType::NONE);
+	void SetRtpHeader(MediaChannelId channel_id, const RtpPacket &pkt);
+	int SendRtpOverTcp(MediaChannelId channel_id,
+			   const RtpPacket &pkt) const;
+	int SendRtpOverUdp(MediaChannelId channel_id, const RtpPacket &pkt);
 
-   uint8_t max_channel_count_ = 0;
+	uint8_t max_channel_count_ = 0;
 
-	std::weak_ptr<TcpConnection> rtsp_connection_;
+	std::weak_ptr<RtspConnection> rtsp_connection_;
+	std::weak_ptr<TaskScheduler> task_scheduler_;
 
-    TransportMode transport_mode_;
-    bool is_multicast_ = false;
+	TransportMode transport_mode_;
+	bool is_multicast_ = false;
 
 	bool is_closed_ = false;
 	bool has_key_frame_ = false;
 
-    FrameType frame_type_ = FrameType::NONE;
-    std::vector<uint16_t> local_rtp_port_;
-    std::vector<uint16_t> local_rtcp_port_;
-        std::vector<SOCKET> rtpfd_;
-        std::vector<SOCKET> rtcpfd_;
+	FrameType frame_type_ = FrameType::NONE;
+	std::vector<uint16_t> local_rtp_port_;
+	std::vector<uint16_t> local_rtcp_port_;
+	std::vector<SOCKET> rtpfd_;
+	std::vector<SOCKET> rtcpfd_;
 
-    struct sockaddr_in6 peer_addr_;
-    std::vector<struct sockaddr_in6> peer_rtp_addr_;
-    std::vector<struct sockaddr_in6> peer_rtcp_sddr_;
-    std::vector<MediaChannelInfo> media_channel_info_;
+	sockaddr_in6 peer_addr_{};
+	std::vector<sockaddr_in6> peer_rtp_addr_;
+	std::vector<sockaddr_in6> peer_rtcp_sddr_;
+	std::vector<MediaChannelInfo> media_channel_info_;
 
-    bool ipv6_;
+	bool ipv6_;
 };
 
 }

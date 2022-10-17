@@ -10,22 +10,20 @@
 #include <string>
 #include <mutex>
 #include <unordered_map>
-#include "Socket.h"
+#include "EventLoop.h"
 #include "TcpConnection.h"
 
-namespace xop
-{
+namespace xop {
 
 class Acceptor;
 class EventLoop;
 
-class TcpServer
-{
-public:	
-	TcpServer(EventLoop* event_loop);
-	virtual ~TcpServer();  
+class TcpServer {
+public:
+	explicit TcpServer(EventLoop *event_loop);
+	virtual ~TcpServer();
 
-	virtual bool Start(std::string ip, uint16_t port);
+	virtual bool Start(const std::string &ip, uint16_t port);
 	virtual void Stop();
 
 	/*std::string GetIPAddress() const
@@ -39,10 +37,10 @@ protected:
 	virtual void AddConnection(SOCKET sockfd, TcpConnection::Ptr tcpConn);
 	virtual void RemoveConnection(SOCKET sockfd);
 
-	EventLoop* event_loop_;
+	EventLoop *event_loop_;
 	//uint16_t port_;
 	//std::string ip_;
-	std::vector<std::unique_ptr<Acceptor>> acceptors_; 
+	std::vector<std::unique_ptr<Acceptor>> acceptors_;
 	//bool is_started_;
 	std::mutex mutex_;
 	std::unordered_map<SOCKET, std::shared_ptr<TcpConnection>> connections_;
@@ -50,4 +48,4 @@ protected:
 
 }
 
-#endif 
+#endif

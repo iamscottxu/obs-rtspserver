@@ -14,11 +14,11 @@ on:
 
 env:
   PRODUCT_NAME: 'obs-rtspserver'
-  DEPS_VERSION_MAC: '2022-02-13'
-  DEPS_HASH_MAC: '77471b1d345a768e8efec3f6ad9dc79f3c7cd34840b66f721b80025d29713f5d'
+  DEPS_VERSION_MAC: '2022-05-23'
+  DEPS_HASH_MAC: '042d6ac1667727ec453d9221232168dbcf2b6ae4ffe63f7a9c2b088bd7d1980e'
   #QT_VERSION_MAC: '2022-02-13'
-  QT_HASH_MAC: '13fbcc45fd9d08b30e702d481fe4d58b23f93aa06848cede4ebe0956c79a5e8a'
-  DEPS_VERSION_WIN: '2022-02-13'
+  QT_HASH_MAC: 'b62b8d4069278356ad70ae49ed8eb5cb1722b108cd1975e329779be6f998a098'
+  DEPS_VERSION_WIN: '2022-05-23'
   QT_VERSION_WIN: '5.15.2'
   NSIS_VERSION_WIN: '3.08'
 jobs:
@@ -36,14 +36,15 @@ jobs:
       latest_created_at: ${{ steps.latest_release.outputs.created_at }}
       latest_published_at: ${{ steps.latest_release.outputs.published_at }}
     steps:
-      - name: Get latest release info
+      - name: Get v27.2.4 release info
         id: latest_release
         uses: kaliber5/action-get-release@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           owner: 'obsproject'
           repo: 'obs-studio'
-          latest: true
+          tag_name: '27.2.4'
+          #latest: true
           
   get_plugin_info:
     name: '01 - Get plugin git info'

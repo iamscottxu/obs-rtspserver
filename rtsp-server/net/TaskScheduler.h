@@ -9,48 +9,44 @@
 #include "Timer.h"
 #include "RingBuffer.h"
 
-namespace xop
-{
+namespace xop {
 
-typedef std::function<void(void)> TriggerEvent;
+typedef std::function<void()> TriggerEvent;
 
-class TaskScheduler 
-{
+class TaskScheduler {
 public:
-	TaskScheduler(int id=1);
+	explicit TaskScheduler(int id = 1);
 	virtual ~TaskScheduler();
 
 	void Start();
 	void Stop();
-	TimerId AddTimer(TimerEvent timerEvent, uint32_t msec);
+	TimerId AddTimer(const TimerEvent &timerEvent, uint32_t msec);
 	void RemoveTimer(TimerId timerId);
 	bool AddTriggerEvent(TriggerEvent callback);
 
-	virtual void UpdateChannel(ChannelPtr channel) { };
-	virtual void RemoveChannel(ChannelPtr& channel) { };
-	virtual bool HandleEvent(int timeout) { return false; };
+	virtual void UpdateChannel(const ChannelPtr &channel) = 0;
+	virtual void RemoveChannel(const ChannelPtr &channel) = 0;
+	virtual bool HandleEvent(int timeout) = 0;
 
-	int GetId() const 
-	{ return id_; }
+	int GetId() const { return id_; }
 
 protected:
-	void Wake();
-	void HandleTriggerEvent();
+	void Wake() const;
+	void HandleTriggerEvent() const;
 
 	int id_ = 0;
 	std::atomic_bool is_shutdown_;
 	std::unique_ptr<Pipe> wakeup_pipe_;
 	std::shared_ptr<Channel> wakeup_channel_;
-	std::unique_ptr<xop::RingBuffer<TriggerEvent>> trigger_events_;
+	std::unique_ptr<RingBuffer<TriggerEvent>> trigger_events_;
 
 	std::mutex mutex_;
 	TimerQueue timer_queue_;
 
-	static const char kTriggetEvent = 1;
-	static const char kTimerEvent = 2;
-	static const int  kMaxTriggetEvents = 50000;
+	static constexpr char kTriggetEvent = 1;
+	static constexpr char kTimerEvent = 2;
+	static constexpr int kMaxTriggetEvents = 50000;
 };
 
 }
-#endif  
-
+#endif

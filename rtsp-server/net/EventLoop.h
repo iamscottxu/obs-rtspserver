@@ -5,43 +5,36 @@
 #define XOP_EVENT_LOOP_H
 
 #include <memory>
-#include <atomic>
-#include <unordered_map>
-#include <functional>
-#include <queue>
 #include <thread>
 #include <mutex>
 
 #include "TaskScheduler.h"
-#include "Pipe.h"
 #include "Timer.h"
-#include "RingBuffer.h"
 
-#define TASK_SCHEDULER_PRIORITY_LOW       0
-#define TASK_SCHEDULER_PRIORITY_NORMAL    1
-#define TASK_SCHEDULER_PRIORITYO_HIGH     2 
-#define TASK_SCHEDULER_PRIORITY_HIGHEST   3
-#define TASK_SCHEDULER_PRIORITY_REALTIME  4
+#define TASK_SCHEDULER_PRIORITY_LOW 0
+#define TASK_SCHEDULER_PRIORITY_NORMAL 1
+#define TASK_SCHEDULER_PRIORITYO_HIGH 2
+#define TASK_SCHEDULER_PRIORITY_HIGHEST 3
+#define TASK_SCHEDULER_PRIORITY_REALTIME 4
 
-namespace xop
-{
+namespace xop {
 
-class EventLoop 
-{
+class EventLoop {
 public:
-	EventLoop(const EventLoop&) = delete;
-	EventLoop &operator = (const EventLoop&) = delete; 
-	EventLoop(uint32_t num_threads =1);  //std::thread::hardware_concurrency()
+	EventLoop(const EventLoop &) = delete;
+	EventLoop &operator=(const EventLoop &) = delete;
+	explicit EventLoop(
+		uint32_t num_threads = 1); //std::thread::hardware_concurrency()
 	virtual ~EventLoop();
 
 	std::shared_ptr<TaskScheduler> GetTaskScheduler();
 
-	bool AddTriggerEvent(TriggerEvent callback);
+	bool AddTriggerEvent(const TriggerEvent &callback);
 	TimerId AddTimer(TimerEvent timerEvent, uint32_t msec);
-	void RemoveTimer(TimerId timerId);	
-	void UpdateChannel(ChannelPtr channel);
-	void RemoveChannel(ChannelPtr& channel);
-	
+	void RemoveTimer(TimerId timerId);
+	void UpdateChannel(const ChannelPtr &channel);
+	void RemoveChannel(ChannelPtr &channel);
+
 	void Loop();
 	void Quit();
 
@@ -56,4 +49,3 @@ private:
 }
 
 #endif
-

@@ -4,37 +4,33 @@
 #ifndef RTSP_DIGEST_AUTHENTICATION_H
 #define RTSP_DIGEST_AUTHENTICATION_H
 
-#include <cstdint>
 #include <string>
 #include "Md5.h"
 
-namespace xop
-{
+namespace xop {
 
-class DigestAuthentication
-{
+class DigestAuthentication {
 public:
-	DigestAuthentication(std::string realm, std::string username, std::string password);
+	DigestAuthentication(std::string realm, std::string
+	                     username,
+	                     std::string password);
 	virtual ~DigestAuthentication();
 
-	std::string GetRealm() const
-	{ return m_realm; }
+	std::string GetRealm() const { return realm_; }
 
-	std::string GetUsername() const
-	{ return m_username; }
+	std::string GetUsername() const { return username_; }
 
-	std::string GetPassword() const
-	{ return m_password; }
+	std::string GetPassword() const { return password_; }
 
-	std::string GetNonce();
-	std::string GetResponse(std::string nonce, std::string cmd, std::string url);
+	std::string GetNonce() const;
+	std::string GetResponse(const std::string &nonce, const std::string &cmd,
+	                        const std::string &url) const;
 
 private:
-
-	std::string m_realm;
-	std::string m_username;
-	std::string m_password;
-	Md5* md5;
+	std::string realm_;
+	std::string username_;
+	std::string password_;
+	Md5 *md5_;
 };
 
 }

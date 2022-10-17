@@ -12,6 +12,11 @@ Pipe::Pipe()
 	memset(pipe_fd_, 0, 2);
 }
 
+Pipe::~Pipe()
+{
+	Close();
+}
+
 bool Pipe::Create()
 {
 #if defined(__linux) || defined(__linux__)
@@ -19,7 +24,8 @@ bool Pipe::Create()
 		return false;
 	}
 #else
-	TcpSocket rp(socket(AF_INET, SOCK_STREAM, 0)), wp(socket(AF_INET, SOCK_STREAM, 0));
+	const TcpSocket rp(socket(AF_INET, SOCK_STREAM, 0));
+	const TcpSocket wp(socket(AF_INET, SOCK_STREAM, 0));
 	std::random_device rd;
 
 	pipe_fd_[0] = rp.GetSocket();
@@ -27,8 +33,8 @@ bool Pipe::Create()
 	uint16_t port = 0;
 	int again = 5;
 
-	while(again--) {
-		port = rd(); // random
+	while (again--) {
+		port = static_cast<uint16_t>(rd());
 		if (rp.Bind("127.0.0.1", port)) {
 			break;
 		}
@@ -46,7 +52,8 @@ bool Pipe::Create()
 		return false;
 	}
 
-	if ((pipe_fd_[0] = rp.Accept()) < 0) {
+	pipe_fd_[0] = rp.Accept(); //TODO
+	if (pipe_fd_[0] < 0) {
 		return false;
 	}
 
@@ -56,34 +63,31 @@ bool Pipe::Create()
 	return true;
 }
 
-int Pipe::Write(void *buf, int len)
+int Pipe::Write(void *buf, const int len) const
 {
 #if defined(WIN32) || defined(_WIN32)
-    return ::send(pipe_fd_[1], (char *)buf, len, 0);
+	return ::send(pipe_fd_[1], static_cast<char *>(buf), len, 0);
 #else
-    return ::write(pipe_fd_[1], buf, len);
-#endif 
+	return ::write(pipe_fd_[1], buf, len);
+#endif
 }
 
-int Pipe::Read(void *buf, int len)
+int Pipe::Read(void *buf, const int len) const
 {
 #if defined(WIN32) || defined(_WIN32)
-    return recv(pipe_fd_[0], (char *)buf, len, 0);
+	return recv(pipe_fd_[0], static_cast<char *>(buf), len, 0);
 #else
-    return ::read(pipe_fd_[0], buf, len);
-#endif 
+	return ::read(pipe_fd_[0], buf, len);
+#endif
 }
 
-void Pipe::Close()
+void Pipe::Close() const
 {
-#if defined(WIN32) || defined(_WIN32) 
+#if defined(WIN32) || defined(_WIN32)
 	closesocket(pipe_fd_[0]);
 	closesocket(pipe_fd_[1]);
 #else
 	::close(pipe_fd_[0]);
 	::close(pipe_fd_[1]);
 #endif
-
 }
-
-

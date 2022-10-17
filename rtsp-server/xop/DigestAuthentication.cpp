@@ -15,46 +15,50 @@
 
 using namespace xop;
 
-DigestAuthentication::DigestAuthentication(std::string realm, std::string username, std::string password)
-	: m_realm(realm)
-	, m_username(username)
-	, m_password(password)
+DigestAuthentication::DigestAuthentication(std::string realm,
+					   std::string username,
+					   std::string password)
+	: realm_(std::move(realm)),
+	  username_(std::move(username)),
+	  password_(std::move(password))
 {
 #if defined(WIN32) || defined(_WIN32)
-	md5 = new CngMd5();
+	md5_ = new CngMd5();
 #elif defined(__linux) || defined(__linux__)
-	md5 = new BaseMd5();
+	md5_ = new BaseMd5();
 #elif defined(__APPLE__) || defined(__MACH__)
-	md5 = new MacMd5();
+	md5_ = new MacMd5();
 #else
-	md5 = new BaseMd5();
+	md5_ = new BaseMd5();
 #endif
 }
 
 DigestAuthentication::~DigestAuthentication()
 {
-	delete md5;
+	delete md5_;
 }
 
-std::string DigestAuthentication::GetNonce()
+std::string DigestAuthentication::GetNonce() const
 {
 	std::random_device rd;
 
-	auto timePoint =
+	const auto timePoint =
 		std::chrono::time_point_cast<std::chrono::milliseconds>(
 			std::chrono::steady_clock::now());
-	uint32_t timestamp = (uint32_t)timePoint.time_since_epoch().count();
+	const uint32_t timestamp =
+		static_cast<uint32_t>(timePoint.time_since_epoch().count());
 
-	return md5->GetMd5HashString(std::to_string(timestamp + rd()));
+	return md5_->GetMd5HashString(std::to_string(timestamp + rd()));
 }
 
-std::string DigestAuthentication::GetResponse(std::string nonce, std::string cmd, std::string url)
+std::string DigestAuthentication::GetResponse(const std::string &nonce,
+					      const std::string &cmd,
+					      const std::string &url) const
 {
 	//md5(md5(<username>:<realm> : <password>) :<nonce> : md5(<cmd>:<url>))
-	auto hex1 = md5->GetMd5HashString(m_username + ":" + m_realm + ":" +
-					  m_password);
-	auto hex2 = md5->GetMd5HashString(cmd + ":" + url);
-	auto response = md5->GetMd5HashString(hex1 + ":" + nonce + ":" + hex2);
+	const auto hex1 = md5_->GetMd5HashString(username_ + ":" + realm_ +
+						 ":" + password_);
+	const auto hex2 = md5_->GetMd5HashString(cmd + ":" + url);
+	auto response = md5_->GetMd5HashString(hex1 + ":" + nonce + ":" + hex2);
 	return response;
 }
-

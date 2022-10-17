@@ -6,23 +6,22 @@
 
 #include "TcpSocket.h"
 
-namespace xop
-{
-	
-class Pipe
-{
+namespace xop {
+
+class Pipe {
 public:
 	Pipe();
+	virtual ~Pipe();
 	bool Create();
-	int Write(void *buf, int len);
-	int Read(void *buf, int len);
-	void Close();
+	int Write(void *buf, int len) const;
+	int Read(void *buf, int len) const;
+	void Close() const;
 
 	SOCKET Read() const { return pipe_fd_[0]; }
 	SOCKET Write() const { return pipe_fd_[1]; }
-	
+
 private:
-	SOCKET pipe_fd_[2];
+	SOCKET pipe_fd_[2]{};
 };
 
 }

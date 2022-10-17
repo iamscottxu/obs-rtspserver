@@ -17,23 +17,21 @@
 #include <unistd.h>
 #endif
 
-namespace xop
-{	
+namespace xop {
 
-class SelectTaskScheduler : public TaskScheduler
-{
+class SelectTaskScheduler : public TaskScheduler {
 public:
-	SelectTaskScheduler(int id = 0);
-	virtual ~SelectTaskScheduler();
+	explicit SelectTaskScheduler(int id = 0);
+	~SelectTaskScheduler() override;
 
-	void UpdateChannel(ChannelPtr channel);
-	void RemoveChannel(ChannelPtr& channel);
-	bool HandleEvent(int timeout);
-	
+	void UpdateChannel(const ChannelPtr &channel) override;
+	void RemoveChannel(const ChannelPtr &channel) override;
+	bool HandleEvent(int timeout) override;
+
 private:
-	fd_set fd_read_backup_;
-	fd_set fd_write_backup_;
-	fd_set fd_exp_backup_;
+	fd_set fd_read_backup_{};
+	fd_set fd_write_backup_{};
+	fd_set fd_exp_backup_{};
 	SOCKET maxfd_ = 0;
 
 	bool is_fd_read_reset_ = false;

@@ -5,11 +5,13 @@
 
 #include "EventLoop.h"
 
-#if defined(WIN32) || defined(_WIN32) 
-#include<windows.h>
+#if defined(WIN32) || defined(_WIN32)
+#include <windows.h>
+
+#include <utility>
 #include "SelectTaskScheduler.h"
 #pragma comment(lib, "Ws2_32.lib")
-#pragma comment(lib,"Iphlpapi.lib")
+#pragma comment(lib, "Iphlpapi.lib")
 #elif defined(__linux) || defined(__linux__)
 #include "EpollTaskScheduler.h"
 #elif defined(__APPLE__) || defined(__MACH__)
@@ -20,14 +22,9 @@
 
 using namespace xop;
 
-EventLoop::EventLoop(uint32_t num_threads)
-	: index_(1)
+EventLoop::EventLoop(const uint32_t num_threads)
+	: num_threads_(num_threads > 0 ? num_threads : 1)
 {
-	num_threads_ = 1;
-	if (num_threads > 0) {
-		num_threads_ = num_threads;
-	}
-
 	this->Loop();
 }
 
@@ -38,68 +35,73 @@ EventLoop::~EventLoop()
 
 std::shared_ptr<TaskScheduler> EventLoop::GetTaskScheduler()
 {
-	std::lock_guard<std::mutex> locker(mutex_);
+	std::lock_guard locker(mutex_);
 	if (task_schedulers_.size() == 1) {
 		return task_schedulers_.at(0);
 	}
-	else {
-		auto task_scheduler = task_schedulers_.at(index_);
-		index_++;
-		if (index_ >= task_schedulers_.size()) {
-			index_ = 1;
-		}		
-		return task_scheduler;
+	auto task_scheduler = task_schedulers_.at(index_);
+	index_++;
+	if (index_ >= task_schedulers_.size()) {
+		index_ = 1;
 	}
+	return task_scheduler;
 
 	//return nullptr;
 }
 
 void EventLoop::Loop()
 {
-	std::lock_guard<std::mutex> locker(mutex_);
+	std::lock_guard locker(mutex_);
 
 	if (!task_schedulers_.empty()) {
-		return ;
+		return;
 	}
 
-	for (uint32_t n = 0; n < num_threads_; n++) 
-	{
+	for (uint32_t n = 0; n < num_threads_; n++) {
 #if defined(WIN32) || defined(_WIN32)
-		std::shared_ptr<TaskScheduler> task_scheduler_ptr(new SelectTaskScheduler(n));
+		std::shared_ptr<TaskScheduler> task_scheduler_ptr(
+			new SelectTaskScheduler(n));
 #elif defined(__linux) || defined(__linux__)
-                std::shared_ptr<TaskScheduler> task_scheduler_ptr(new EpollTaskScheduler(n));
+		std::shared_ptr<TaskScheduler> task_scheduler_ptr(
+			new EpollTaskScheduler(n));
 #elif defined(__APPLE__) || defined(__MACH__)
-                std::shared_ptr<TaskScheduler> task_scheduler_ptr(new KqueueTaskScheduler(n));
+		std::shared_ptr<TaskScheduler> task_scheduler_ptr(
+			new KqueueTaskScheduler(n));
 #else
-                std::shared_ptr<TaskScheduler> task_scheduler_ptr(new SelectTaskScheduler(n));
+		std::shared_ptr<TaskScheduler> task_scheduler_ptr(
+			new SelectTaskScheduler(n));
 #endif
 		task_schedulers_.push_back(task_scheduler_ptr);
-		std::shared_ptr<std::thread> thread(new std::thread(&TaskScheduler::Start, task_scheduler_ptr.get()));
-		thread->native_handle();
+		std::shared_ptr<std::thread> thread(new std::thread(
+			&TaskScheduler::Start, task_scheduler_ptr.get()));
+		const auto native_handle_type = thread->native_handle(); //TODO
 		threads_.push_back(thread);
 	}
 
-	int priority = TASK_SCHEDULER_PRIORITY_REALTIME;
+	const int priority = TASK_SCHEDULER_PRIORITY_REALTIME;
 
-	for (auto iter : threads_) 
-	{
+	for (const auto &iter : threads_) {
 #if defined(WIN32) || defined(_WIN32)
-		switch (priority) 
-		{
+		switch (priority) {
 		case TASK_SCHEDULER_PRIORITY_LOW:
-			SetThreadPriority(iter->native_handle(), THREAD_PRIORITY_BELOW_NORMAL);
+			SetThreadPriority(iter->native_handle(),
+					  THREAD_PRIORITY_BELOW_NORMAL);
 			break;
 		case TASK_SCHEDULER_PRIORITY_NORMAL:
-			SetThreadPriority(iter->native_handle(), THREAD_PRIORITY_NORMAL);
+			SetThreadPriority(iter->native_handle(),
+					  THREAD_PRIORITY_NORMAL);
 			break;
 		case TASK_SCHEDULER_PRIORITYO_HIGH:
-			SetThreadPriority(iter->native_handle(), THREAD_PRIORITY_ABOVE_NORMAL);
+			SetThreadPriority(iter->native_handle(),
+					  THREAD_PRIORITY_ABOVE_NORMAL);
 			break;
 		case TASK_SCHEDULER_PRIORITY_HIGHEST:
-			SetThreadPriority(iter->native_handle(), THREAD_PRIORITY_HIGHEST);
+			SetThreadPriority(iter->native_handle(),
+					  THREAD_PRIORITY_HIGHEST);
 			break;
 		case TASK_SCHEDULER_PRIORITY_REALTIME:
-			SetThreadPriority(iter->native_handle(), THREAD_PRIORITY_TIME_CRITICAL);
+			SetThreadPriority(iter->native_handle(),
+					  THREAD_PRIORITY_TIME_CRITICAL);
 			break;
 		}
 #else
@@ -110,57 +112,58 @@ void EventLoop::Loop()
 
 void EventLoop::Quit()
 {
-	std::lock_guard<std::mutex> locker(mutex_);
+	std::lock_guard locker(mutex_);
 
-	for (auto iter : task_schedulers_) {
+	for (const auto &iter : task_schedulers_) {
 		iter->Stop();
 	}
 
-	for (auto iter : threads_) {
+	for (const auto iter : threads_) {
 		iter->join();
 	}
 
 	task_schedulers_.clear();
 	threads_.clear();
 }
-	
-void EventLoop::UpdateChannel(ChannelPtr channel)
+
+void EventLoop::UpdateChannel(const ChannelPtr &channel)
 {
-	std::lock_guard<std::mutex> locker(mutex_);
-	if (task_schedulers_.size() > 0) {
+	std::lock_guard locker(mutex_);
+	if (!task_schedulers_.empty()) {
 		task_schedulers_[0]->UpdateChannel(channel);
-	}	
+	}
 }
 
-void EventLoop::RemoveChannel(ChannelPtr& channel)
+void EventLoop::RemoveChannel(ChannelPtr &channel)
 {
-	std::lock_guard<std::mutex> locker(mutex_);
-	if (task_schedulers_.size() > 0) {
+	std::lock_guard locker(mutex_);
+	if (!task_schedulers_.empty()) {
 		task_schedulers_[0]->RemoveChannel(channel);
-	}	
+	}
 }
 
-TimerId EventLoop::AddTimer(TimerEvent timerEvent, uint32_t msec)
+TimerId EventLoop::AddTimer(TimerEvent timerEvent, const uint32_t msec)
 {
-	std::lock_guard<std::mutex> locker(mutex_);
-	if (task_schedulers_.size() > 0) {
-		return task_schedulers_[0]->AddTimer(timerEvent, msec);
+	std::lock_guard locker(mutex_);
+	if (!task_schedulers_.empty()) {
+		return task_schedulers_[0]->AddTimer(std::move(timerEvent),
+						     msec);
 	}
 	return 0;
 }
 
-void EventLoop::RemoveTimer(TimerId timerId)
+void EventLoop::RemoveTimer(const TimerId timerId)
 {
-	std::lock_guard<std::mutex> locker(mutex_);
-	if (task_schedulers_.size() > 0) {
+	std::lock_guard locker(mutex_);
+	if (!task_schedulers_.empty()) {
 		task_schedulers_[0]->RemoveTimer(timerId);
-	}	
+	}
 }
 
-bool EventLoop::AddTriggerEvent(TriggerEvent callback)
-{   
-	std::lock_guard<std::mutex> locker(mutex_);
-	if (task_schedulers_.size() > 0) {
+bool EventLoop::AddTriggerEvent(const TriggerEvent &callback)
+{
+	std::lock_guard locker(mutex_);
+	if (!task_schedulers_.empty()) {
 		return task_schedulers_[0]->AddTriggerEvent(callback);
 	}
 	return false;

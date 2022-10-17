@@ -1,38 +1,36 @@
-﻿#ifndef XOP_RTSP_PUSHER_H
+#ifndef XOP_RTSP_PUSHER_H
 #define XOP_RTSP_PUSHER_H
 
 #include <mutex>
-#include <map>
 #include "rtsp.h"
+#include "net/EventLoop.h"
 
-namespace xop
-{
+namespace xop {
 
 class RtspConnection;
 
-class RtspPusher : public Rtsp
-{
+class RtspPusher : public Rtsp {
 public:
-	static std::shared_ptr<RtspPusher> Create(xop::EventLoop* loop);
-	~RtspPusher();
+	static std::shared_ptr<RtspPusher> Create(EventLoop *loop);
+	~RtspPusher() override;
 
-	void AddSession(MediaSession* session);
+	void AddSession(MediaSession *session);
 	void RemoveSession(MediaSessionId session_id);
 
-	int  OpenUrl(std::string url, int msec = 3000);
+	int OpenUrl(const std::string &url, int msec = 3000);
 	void Close();
 	bool IsConnected();
 
-	bool PushFrame(MediaChannelId channelId, AVFrame frame);
+	bool PushFrame(MediaChannelId channelId, const AVFrame &frame);
 
 private:
 	friend class RtspConnection;
 
-	RtspPusher(xop::EventLoop *event_loop);
-	MediaSessionPtr LookMediaSession(MediaSessionId session_id);
+	explicit RtspPusher(EventLoop *event_loop);
+	MediaSession::Ptr LookMediaSession(MediaSessionId session_id) override;
 
-	xop::EventLoop* event_loop_ = nullptr;
-	xop::TaskScheduler* task_scheduler_ = nullptr;
+	EventLoop *event_loop_ = nullptr;
+	std::shared_ptr<TaskScheduler> task_scheduler_ = nullptr;
 	std::mutex mutex_;
 	std::shared_ptr<RtspConnection> rtsp_conn_;
 	std::shared_ptr<MediaSession> media_session_;

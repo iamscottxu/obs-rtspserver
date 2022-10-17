@@ -5,45 +5,44 @@
 #include <util/config-file.h>
 #include <util/dstr.h>
 #include "rtsp_output_helper.h"
-#include "rtsp_output.h"
 #include "helper.h"
 
 using namespace std;
-RtspOutputHelper::RtspOutputHelper(string outputName)
+RtspOutputHelper::RtspOutputHelper(const string outputName)
 	: RtspOutputHelper(obs_get_output_by_name(outputName.c_str()))
 {
 }
 
 RtspOutputHelper::RtspOutputHelper(obs_output_t *obsOutput)
+	: obsOutput(obsOutput)
 {
-	this->obsOutput = obsOutput;
 }
 
 RtspOutputHelper::~RtspOutputHelper()
 {
 	obs_output_release(obsOutput);
 	obs_encoder_release(videoEncoder);
-	for (auto audioEncoder : audioEncoders)
+	for (const auto audioEncoder : audioEncoders)
 		obs_encoder_release(audioEncoder);
 }
 
 RtspOutputHelper *RtspOutputHelper::CreateRtspOutput(obs_data_t *settings,
 						     obs_data_t *hotkey)
 {
-	auto rtspOutput = new RtspOutputHelper(
+	const auto rtspOutput = new RtspOutputHelper(
 		obs_output_create("rtsp_output", obs_module_text("RtspOutput"),
 				  settings, hotkey));
 	rtspOutput->SignalConnect(
-		"pre_start", RtspOutputHelper::OnPreStartSignal, rtspOutput);
+		"pre_start", OnPreStartSignal, rtspOutput);
 	return rtspOutput;
 }
 
-void RtspOutputHelper::UpdateSettings(obs_data_t *settings)
+void RtspOutputHelper::UpdateSettings(obs_data_t *settings) const
 {
 	obs_output_update(obsOutput, settings);
 }
 
-obs_data_t *RtspOutputHelper::GetSettings()
+obs_data_t *RtspOutputHelper::GetSettings() const
 {
 	return obs_output_get_settings(obsOutput);
 }
@@ -55,58 +54,58 @@ void RtspOutputHelper::UpdateEncoder()
 	CreateAudioEncoder();
 }
 
-bool RtspOutputHelper::Start()
+bool RtspOutputHelper::Start() const
 {
 	return obs_output_start(obsOutput);
 }
 
-void RtspOutputHelper::Stop()
+void RtspOutputHelper::Stop() const
 {
 	obs_output_stop(obsOutput);
 }
 
-string RtspOutputHelper::GetLastError()
+string RtspOutputHelper::GetLastError() const
 {
-	return string(obs_output_get_last_error(obsOutput));
+	return obs_output_get_last_error(obsOutput);
 }
 
-obs_data_t *RtspOutputHelper::HotkeysSave()
+obs_data_t *RtspOutputHelper::HotkeysSave() const
 {
 	return obs_hotkeys_save_output(obsOutput);
 }
 
 void RtspOutputHelper::SignalConnect(const char *signal,
-				     signal_callback_t callback, void *data)
+				     signal_callback_t callback, void *data) const
 {
 	const auto handler = obs_output_get_signal_handler(obsOutput);
 	signal_handler_connect(handler, signal, callback, data);
 }
 
 void RtspOutputHelper::SignalDisconnect(const char *signal,
-					signal_callback_t callback, void *data)
+					signal_callback_t callback, void *data) const
 {
 	const auto handler = obs_output_get_signal_handler(obsOutput);
 	signal_handler_disconnect(handler, signal, callback, data);
 }
 
-string RtspOutputHelper::GetOutputName()
+string RtspOutputHelper::GetOutputName() const
 {
 	return string(obs_output_get_name(obsOutput));
 }
 
-uint64_t RtspOutputHelper::GetTotalBytes()
+uint64_t RtspOutputHelper::GetTotalBytes() const
 {
 	return obs_output_get_total_bytes(obsOutput);
 }
 
-bool RtspOutputHelper::IsActive()
+bool RtspOutputHelper::IsActive() const
 {
 	return obs_output_active(obsOutput);
 }
 
 void RtspOutputHelper::CreateVideoEncoder()
 {
-	obs_encoder_t *encoder = nullptr;
+	obs_encoder_t *encoder;
 	if (outputSettings.adv_out)
 		encoder = obs_get_encoder_by_name("streaming_h264");
 	else
@@ -135,7 +134,7 @@ void RtspOutputHelper::CreateAudioEncoder()
 	} else
 		encoder = obs_get_encoder_by_name("simple_aac");
 
-	for (auto audioEncoder : audioEncoders)
+	for (const auto audioEncoder : audioEncoders)
 		obs_encoder_release(audioEncoder);
 	audioEncoders.clear();
 
@@ -192,6 +191,6 @@ void RtspOutputHelper::GetBaseConfig()
 void RtspOutputHelper::OnPreStartSignal(void *data, calldata_t *cd)
 {
 	UNUSED_PARAMETER(cd);
-	auto helper = static_cast<RtspOutputHelper *>(data);
+	const auto helper = static_cast<RtspOutputHelper *>(data);
 	helper->UpdateEncoder();
 }
