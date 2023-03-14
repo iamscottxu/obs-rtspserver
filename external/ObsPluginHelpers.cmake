@@ -357,6 +357,9 @@ if(OS_MACOS)
   set(CMAKE_INSTALL_RPATH "@executable_path/../Frameworks/")
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH OFF)
 
+  set(OBS_PLUGIN_DESTINATION "bin")
+	set(OBS_DATA_DESTINATION "data")
+
   # Helper function for plugin targets (macOS version)
   function(setup_plugin_target target)
     # Sanity check for required bundle information
@@ -364,50 +367,62 @@ if(OS_MACOS)
     # * Bundle identifier
     # * Bundle version
     # * Short version string
-    if(NOT DEFINED MACOSX_PLUGIN_GUI_IDENTIFIER)
-      message(
-        FATAL_ERROR
-          "No 'MACOSX_PLUGIN_GUI_IDENTIFIER' set, but is required to build plugin bundles on macOS - example: 'com.yourname.pluginname'"
-      )
-    endif()
+    #if(NOT DEFINED MACOSX_PLUGIN_GUI_IDENTIFIER)
+    #  message(
+    #    FATAL_ERROR
+    #      "No 'MACOSX_PLUGIN_GUI_IDENTIFIER' set, but is required to build plugin bundles on macOS - example: 'com.yourname.pluginname'"
+    #  )
+    #endif()
 
-    if(NOT DEFINED MACOSX_PLUGIN_BUNDLE_VERSION)
-      message(
-        FATAL_ERROR
-          "No 'MACOSX_PLUGIN_BUNDLE_VERSION' set, but is required to build plugin bundles on macOS - example: '25'"
-      )
-    endif()
+    #if(NOT DEFINED MACOSX_PLUGIN_BUNDLE_VERSION)
+    #  message(
+    #    FATAL_ERROR
+    #      "No 'MACOSX_PLUGIN_BUNDLE_VERSION' set, but is required to build plugin bundles on macOS - example: '25'"
+    #  )
+    #endif()
 
-    if(NOT DEFINED MACOSX_PLUGIN_SHORT_VERSION_STRING)
-      message(
-        FATAL_ERROR
-          "No 'MACOSX_PLUGIN_SHORT_VERSION_STRING' set, but is required to build plugin bundles on macOS - example: '1.0.2'"
-      )
-    endif()
+    #if(NOT DEFINED MACOSX_PLUGIN_SHORT_VERSION_STRING)
+    #  message(
+    #    FATAL_ERROR
+    #      "No 'MACOSX_PLUGIN_SHORT_VERSION_STRING' set, but is required to build plugin bundles on macOS - example: '1.0.2'"
+    #  )
+    #endif()
 
     # Set variables for automatic property list generation
-    set(MACOSX_PLUGIN_BUNDLE_NAME
-        "${target}"
-        PARENT_SCOPE)
-    set(MACOSX_PLUGIN_BUNDLE_VERSION
-        "${MACOSX_PLUGIN_BUNDLE_VERSION}"
-        PARENT_SCOPE)
-    set(MACOSX_PLUGIN_SHORT_VERSION_STRING
-        "${MACOSX_PLUGIN_SHORT_VERSION_STRING}"
-        PARENT_SCOPE)
-    set(MACOSX_PLUGIN_EXECUTABLE_NAME
-        "${target}"
-        PARENT_SCOPE)
-    set(MACOSX_PLUGIN_BUNDLE_TYPE
-        "BNDL"
-        PARENT_SCOPE)
+    #set(MACOSX_PLUGIN_BUNDLE_NAME
+    #    "${target}"
+    #    PARENT_SCOPE)
+    #set(MACOSX_PLUGIN_BUNDLE_VERSION
+    #    "${MACOSX_PLUGIN_BUNDLE_VERSION}"
+    #    PARENT_SCOPE)
+    #set(MACOSX_PLUGIN_SHORT_VERSION_STRING
+    #    "${MACOSX_PLUGIN_SHORT_VERSION_STRING}"
+    #    PARENT_SCOPE)
+    #set(MACOSX_PLUGIN_EXECUTABLE_NAME
+    #    "${target}"
+    #    PARENT_SCOPE)
+    #set(MACOSX_PLUGIN_BUNDLE_TYPE
+    #    "BNDL"
+    #    PARENT_SCOPE)
 
     # Set installation target to install prefix root (default for bundles)
+    #install(
+    #  TARGETS ${target}
+    #  LIBRARY DESTINATION "."
+    #          COMPONENT obs_plugins
+    #          NAMELINK_COMPONENT ${target}_Development)
+
+    # Set prefix to empty string to avoid automatic naming of generated library, i.e.
+    # "lib<YOUR_PLUGIN_NAME>"
+    set_target_properties(${target} PROPERTIES PREFIX "")
+    
     install(
-      TARGETS ${target}
-      LIBRARY DESTINATION "."
-              COMPONENT obs_plugins
-              NAMELINK_COMPONENT ${target}_Development)
+       TARGETS ${target}
+			  RUNTIME DESTINATION "${target}/${OBS_PLUGIN_DESTINATION}"
+				COMPONENT ${target}_Runtime
+			  LIBRARY DESTINATION "${target}/${OBS_PLUGIN_DESTINATION}"
+				COMPONENT ${target}_Runtime
+				NAMELINK_COMPONENT ${target}_Development)
 
     if(TARGET Qt::Core)
       # Framework version has changed between Qt5 (uses wrong numerical version) and Qt6 (uses
@@ -430,28 +445,28 @@ if(OS_MACOS)
     endif()
 
     # Set macOS bundle properties
-    set_target_properties(
-      ${target}
-      PROPERTIES PREFIX ""
-                 BUNDLE ON
-                 BUNDLE_EXTENSION "plugin"
-                 OUTPUT_NAME ${target}
-                 MACOSX_BUNDLE_INFO_PLIST
-                 #"${CMAKE_CURRENT_FUNCTION_LIST_DIR}/bundle/macOS/Plugin-Info.plist.in"
-                 "${CMAKE_SOURCE_DIR}/bundle/macOS/Plugin-Info.plist.in"
-                 XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "${MACOSX_PLUGIN_GUI_IDENTIFIER}"
-                 XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS
-                 #"${CMAKE_CURRENT_FUNCTION_LIST_DIR}/bundle/macOS/entitlements.plist")
-                 "${CMAKE_SOURCE_DIR}/bundle/macOS/entitlements.plist")
+    #set_target_properties(
+    #  ${target}
+    #  PROPERTIES PREFIX ""
+    #             BUNDLE ON
+    #             BUNDLE_EXTENSION "plugin"
+    #             OUTPUT_NAME ${target}
+    #             MACOSX_BUNDLE_INFO_PLIST
+    #             #"${CMAKE_CURRENT_FUNCTION_LIST_DIR}/bundle/macOS/Plugin-Info.plist.in"
+    #             "${CMAKE_SOURCE_DIR}/bundle/macOS/Plugin-Info.plist.in"
+    #             XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "${MACOSX_PLUGIN_GUI_IDENTIFIER}"
+    #             XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS
+    #             #"${CMAKE_CURRENT_FUNCTION_LIST_DIR}/bundle/macOS/entitlements.plist")
+    #             "${CMAKE_SOURCE_DIR}/bundle/macOS/entitlements.plist")
 
     # If not building with Xcode, manually code-sign the plugin
     if(NOT XCODE)
-      set(_COMMAND
-          "/usr/bin/codesign --force \\
-          --sign \\\"${OBS_BUNDLE_CODESIGN_IDENTITY}\\\" \\
-          --options runtime \\
-          --entitlements \\\"${CMAKE_SOURCE_DIR}/bundle/macOS/entitlements.plist\\\" \\
-          \\\"\${CMAKE_INSTALL_PREFIX}/${target}.plugin\\\"")
+    #  set(_COMMAND
+    #      "/usr/bin/codesign --force \\
+    #      --sign \\\"${OBS_BUNDLE_CODESIGN_IDENTITY}\\\" \\
+    #      --options runtime \\
+    #      --entitlements \\\"${CMAKE_SOURCE_DIR}/bundle/macOS/entitlements.plist\\\" \\
+    #      \\\"\${CMAKE_INSTALL_PREFIX}/${target}.plugin\\\"")
       install(CODE "execute_process(COMMAND /bin/sh -c \"${_COMMAND}\")" COMPONENT obs_plugins)
     endif()
 
@@ -461,16 +476,19 @@ if(OS_MACOS)
   # Helper function to add resources from "data" directory as bundle resources
   function(install_bundle_resources target)
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/data)
-      file(GLOB_RECURSE _DATA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/data/*")
-      foreach(_DATA_FILE IN LISTS _DATA_FILES)
-        file(RELATIVE_PATH _RELATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/data/ ${_DATA_FILE})
-        get_filename_component(_RELATIVE_PATH ${_RELATIVE_PATH} PATH)
-        target_sources(${target} PRIVATE ${_DATA_FILE})
-        set_source_files_properties(${_DATA_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION
-                                                             Resources/${_RELATIVE_PATH})
-        string(REPLACE "\\" "\\\\" _GROUP_NAME ${_RELATIVE_PATH})
-        source_group("Resources\\${_GROUP_NAME}" FILES ${_DATA_FILE})
-      endforeach()
+    #  file(GLOB_RECURSE _DATA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/data/*")
+    #  foreach(_DATA_FILE IN LISTS _DATA_FILES)
+    #    file(RELATIVE_PATH _RELATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/data/ ${_DATA_FILE})
+    #    get_filename_component(_RELATIVE_PATH ${_RELATIVE_PATH} PATH)
+    #    target_sources(${target} PRIVATE ${_DATA_FILE})
+    #    set_source_files_properties(${_DATA_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION
+    #                                                         Resources/${_RELATIVE_PATH})
+    #    string(REPLACE "\\" "\\\\" _GROUP_NAME ${_RELATIVE_PATH})
+    #    source_group("Resources\\${_GROUP_NAME}" FILES ${_DATA_FILE})
+    #  endforeach()
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data/"
+				DESTINATION "${target}/${OBS_DATA_DESTINATION}"
+				USE_SOURCE_PERMISSIONS)
     endif()
   endfunction()
 else()
@@ -487,10 +505,10 @@ else()
     # Paths to binaries and plugins differ between portable and non-portable builds on Linux
     option(LINUX_PORTABLE "Build portable version (Linux)" ON)
     if(NOT LINUX_PORTABLE)
-      set(OBS_LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR})
-      set(OBS_PLUGIN_DESTINATION ${OBS_LIBRARY_DESTINATION}/obs-plugins)
-      set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
-      set(OBS_DATA_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/obs)
+      set(OBS_LIBRARY_DESTINATION "${CMAKE_INSTALL_LIBDIR}/${CMAKE_LIBRARY_ARCHITECTURE}")
+			set(OBS_PLUGIN_DESTINATION "${OBS_LIBRARY_DESTINATION}/obs-plugins")
+			set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+			set(OBS_DATA_DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/obs")
     else()
       set(OBS_LIBRARY_DESTINATION bin/${_ARCH_SUFFIX}bit)
       set(OBS_PLUGIN_DESTINATION obs-plugins/${_ARCH_SUFFIX}bit)
@@ -508,10 +526,10 @@ else()
       set(CPACK_GENERATOR "DEB" "TGZ" "RPM")
 
       set(CPACK_DEBIAN_PACKAGE_DEPENDS
-      "obs-studio (>= 27.0.0), libqt5core5a (>= 5.9.0~beta), libqt5gui5 (>= 5.3.0), libqt5widgets5 (>= 5.7.0)")
+      "obs-studio (>= 28.0.0), libqt5core5a (>= 5.9.0~beta), libqt5gui5 (>= 5.3.0), libqt5widgets5 (>= 5.7.0)")
       set(CPACK_DEBIAN_PACKAGE_SECTION "video")
 
-      set(CPACK_RPM_PACKAGE_REQUIRES "obs-studio >= 27.0.0, libQt5Core5 >= 5.9.0, libQt5Gui5 >= 5.3.0, libQt5Widgets5 >= 5.7.0")
+      set(CPACK_RPM_PACKAGE_REQUIRES "obs-studio >= 28.0.0, libQt5Core5 >= 5.9.0, libQt5Gui5 >= 5.3.0, libQt5Widgets5 >= 5.7.0")
       set(CPACK_RPM_PACKAGE_GROUP "Video")
       set(CPACK_RPM_PACKAGE_LICENSE "GPL-2.0")
 

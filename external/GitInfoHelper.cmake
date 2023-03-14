@@ -6,14 +6,26 @@ function(get_git_version git_tag_name git_tag_version_name git_tag_short_version
 		TIMEOUT 10
 		OUTPUT_VARIABLE git_tag
 		OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+	execute_process(COMMAND git rev-list HEAD --count
+		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+		TIMEOUT 10
+		OUTPUT_VARIABLE git_rev_list_count
+		OUTPUT_STRIP_TRAILING_WHITESPACE)
     
 	string(REGEX MATCH "[0-9]+.[0-9]+.[0-9]+(-[a-z0-9]+)*$" git_tag_version "${git_tag}")
 	string(REGEX MATCH "^[0-9]+.[0-9]+.[0-9]+"  git_tag_short_version "${git_tag_version}")
 
-	if("${git_tag_version}" MATCHES "-[0-9]+-g")
-		string(REGEX MATCH "-[0-9]+-g"  _git_tag_tweak_version_temp "${git_tag_version}")
-		string(REGEX MATCH "[0-9]+"  _git_tag_tweak_version "${_git_tag_tweak_version_temp}")
-	else()
+	#if("${git_tag_version}" MATCHES "-[0-9]+-g")
+	#	string(REGEX MATCH "-[0-9]+-g"  _git_tag_tweak_version_temp "${git_tag_version}")
+	#	string(REGEX MATCH "[0-9]+"  _git_tag_tweak_version "${_git_tag_tweak_version_temp}")
+	#else()
+	#	set(_git_tag_tweak_version "0")
+	#endif()
+
+	if("${git_rev_list_count}" MATCHES "^[0-9]+$")
+		set(_git_tag_tweak_version "${git_rev_list_count}")
+    else()
 		set(_git_tag_tweak_version "0")
 	endif()
 
