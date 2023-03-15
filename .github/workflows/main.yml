@@ -56,11 +56,8 @@ jobs:
       git_tag_name: ${{ steps.tag_name.outputs.tag }}
     steps:
       - name: 'Get plugin git tag'
-        uses: little-core-labs/get-git-tag@v3.0.1
+        uses: devops-actions/action-get-tag@v1.0.1
         id: tag_name
-        #with:
-          #tagRegex: "foobar-(.*)"  # Optional. Returns specified group text as tag name. Full tag string is returned if regex is not defined.
-          #tagRegexGroup: 1 # Optional. Default is 1.
           
   clang_check:
     name: '02 - Code format check'
@@ -68,7 +65,7 @@ jobs:
     needs: [get_plugin_info]
     steps:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v2.3.3
+        uses: actions/checkout@v3
         with:
           path: 'plugin'
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
@@ -96,17 +93,17 @@ jobs:
       OBS_VERSION: "${{ needs.get_obs_info.outputs.latest_tag_name }}"
     steps:
       - name: 'Add msbuild to PATH'
-        uses: microsoft/setup-msbuild@v1.0.2
+        uses: microsoft/setup-msbuild@v1
 
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v2.3.3
+        uses: actions/checkout@v3
         with:
           path: 'plugin'
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
           
       - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.latest_tag_name }}'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: obsproject/obs-studio
           path: 'obs-studio'
@@ -131,7 +128,7 @@ jobs:
         run: CI/windows/04_package_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Upload build Artifact'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-${{ matrix.arch }}'
           path: '${{ github.workspace }}/plugin/*-windows-*.zip'
@@ -146,20 +143,20 @@ jobs:
       OBS_VERSION: "${{ needs.get_obs_info.outputs.latest_tag_name }}"
     steps:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v2.3.3
+        uses: actions/checkout@v3
         with:
           path: 'plugin'
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
           
       - name: 'Download 64-bit artifact'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-64'
           path: 'plugin'
 
       - name: 'Download 32-bit artifact'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-32'
           path: 'plugin'
@@ -176,7 +173,7 @@ jobs:
           CI/windows/04_package_plugin.ps1 -BuildArch 64-bit -BuildInstaller -CombinedArchs
         
       - name: 'Upload build Artifact'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-release'
           path: '${{ github.workspace }}/plugin/${{ env.PRODUCT_NAME }}-*-windows-all*.*'
@@ -195,14 +192,14 @@ jobs:
         shell: bash
     steps:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v2.3.3
+        uses: actions/checkout@v3
         with:
           path: 'plugin'
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
           
       - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.latest_tag_name }}'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: obsproject/obs-studio
           path: 'obs-studio'
@@ -227,7 +224,7 @@ jobs:
         run: source CI/linux/04_package_plugin.sh
 
       - name: 'Upload build Artifact'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: '${{ env.PRODUCT_NAME }}-linux-${{ matrix.ubuntu }}'
           path: '${{ github.workspace }}/plugin/build/${{ env.PRODUCT_NAME }}-*-linux.*'
@@ -248,14 +245,14 @@ jobs:
         shell: bash
     steps:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v2.3.3
+        uses: actions/checkout@v3
         with:
           path: 'plugin'
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
           
       - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.latest_tag_name }}'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: obsproject/obs-studio
           path: 'obs-studio'
@@ -292,7 +289,7 @@ jobs:
         run: source CI/macos/04_package_plugin.sh --architecture "${{ matrix.arch }}"
 
       - name: 'Upload build Artifact'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: '${{ env.PRODUCT_NAME }}-macos-${{ matrix.arch }}'
           path: '${{ github.workspace }}/plugin/build/*-macos-${{ matrix.arch }}.*'
@@ -306,7 +303,7 @@ jobs:
 
     steps:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v2.3.3
+        uses: actions/checkout@v3
         with:
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           fetch-depth: 0
@@ -320,7 +317,7 @@ jobs:
       
       - name: 'Create changelog text'
         id: create_changelog_text
-        uses: dlavrenuek/conventional-changelog-action@v1.1.0
+        uses: dlavrenuek/conventional-changelog-action@v1.2.2
         with:
           from: "${{ steps.get_last_release.outputs.tag_name }}"
           to: "${{ needs.get_plugin_info.outputs.git_tag_name }}"
@@ -334,7 +331,7 @@ jobs:
 
     steps:
       - name: 'Check whether the version is prerelease'
-        uses: MeilCli/regex-match@v1.0.1
+        uses: MeilCli/regex-match@v1
         id: prerelease_test
         with:
           search_string: ${{ needs.get_plugin_info.outputs.git_tag_name }}
@@ -352,158 +349,130 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Download release artifacts'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
 
       - name: 'Upload Windows .zip artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
-          #upload_url: ${{ github.event.release.upload_url }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-windows-release/${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag_name }}-windows-all.zip
           asset_name: ${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag_name }}-windows.zip
           asset_content_type: application/zip
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload Windows .exe artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
-          #upload_url: ${{ github.event.release.upload_url }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-windows-release/${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag_name }}-windows-all-installer.exe
           asset_name: ${{ env.PRODUCT_NAME }}-${{ needs.get_plugin_info.outputs.git_tag_name }}-windows-installer.exe
           asset_content_type: application/x-msdownload
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload linux qt5 .tar.gz artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
-          #upload_url: ${{ github.event.release.upload_url }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.tar.gz
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.tar.gz
           asset_content_type: application/x-gzip
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload linux qt6 .tar.gz artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
-          #upload_url: ${{ github.event.release.upload_url }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-22.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.tar.gz
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt6.tar.gz
           asset_content_type: application/x-gzip
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload linux qt5 .deb artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
-          #upload_url: ${{ github.event.release.upload_url }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.deb
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.deb
           asset_content_type: application/vnd.debian.binary-package
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload linux qt6 .deb artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
-          #upload_url: ${{ github.event.release.upload_url }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-22.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.deb
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt6.deb
           asset_content_type: application/vnd.debian.binary-package
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload linux qt5 .rpm artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
-          #upload_url: ${{ github.event.release.upload_url }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.rpm
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.rpm
           asset_content_type: application/vnd.debian.binary-package
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload linux qt6 .rpm artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
-          #upload_url: ${{ github.event.release.upload_url }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.rpm
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt6.rpm
           asset_content_type: application/vnd.debian.binary-package
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload macos universal .zip artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
-          #upload_url: ${{ github.event.release.upload_url }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-universal/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-universal.zip
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-universal.zip
           asset_content_type: application/zip
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload macos universal .pkg artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
-          #upload_url: ${{ github.event.release.upload_url }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-universal/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-universal.pkg
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-universal.pkg
           asset_content_type: application/vnd.apple.installer+xml
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: 'Upload macos x86_64 .zip artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
-          #upload_url: ${{ github.event.release.upload_url }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-x86_64/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-x86_64.zip
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-x86_64.zip
           asset_content_type: application/zip
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload macos x86_64 .pkg artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
-          #upload_url: ${{ github.event.release.upload_url }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-x86_64/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-x86_64.pkg
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-x86_64.pkg
           asset_content_type: application/vnd.apple.installer+xml
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload macos arm64 .zip artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
-          #upload_url: ${{ github.event.release.upload_url }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-arm64/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-arm64.zip
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-arm64.zip
           asset_content_type: application/zip
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload macos arm64 .pkg artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
-          #upload_url: ${{ github.event.release.upload_url }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-macos-arm64/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-arm64.pkg
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-macos-arm64.pkg
           asset_content_type: application/vnd.apple.installer+xml
+          github_token: ${{ secrets.GITHUB_TOKEN }}
