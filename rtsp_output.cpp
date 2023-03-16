@@ -32,6 +32,7 @@ struct rtsp_out_data {
 	obs_output_t *output = nullptr;
 
 	volatile bool active;
+	volatile bool starting;
 	volatile bool stopping;
 	uint64_t stop_ts;
 
@@ -40,6 +41,7 @@ struct rtsp_out_data {
 	std::array<bool, OBS_OUTPUT_MULTI_TRACK> enabled_channels;
 	std::array<xop::MediaChannelId, OBS_OUTPUT_MULTI_TRACK> channel_ids;
 	uint64_t total_bytes_sent = 0;
+	uint32_t enabled_channels_count = 0;
 
 	std::unique_ptr<xop::EventLoop> event_loop;
 	std::shared_ptr<xop::RtspServer> server;
@@ -56,14 +58,19 @@ static const char *rtsp_output_getname(void *unused)
 	return obs_module_text("RtspOutput");
 }
 
-static inline bool stopping(rtsp_out_data *out_data)
-{
-	return os_atomic_load_bool(&out_data->stopping);
-}
-
 static inline bool active(rtsp_out_data *out_data)
 {
 	return os_atomic_load_bool(&out_data->active);
+}
+
+static inline bool starting(rtsp_out_data *out_data)
+{
+	return os_atomic_load_bool(&out_data->starting);
+}
+
+static inline bool stopping(rtsp_out_data *out_data)
+{
+	return os_atomic_load_bool(&out_data->stopping);
 }
 
 static void add_prestart_signal(rtsp_out_data *out_data)
@@ -88,7 +95,7 @@ static bool rtsp_output_start_hotkey(void *data, const obs_hotkey_pair_id id,
 
 	if (!pressed)
 		return false;
-	if (!stopping(out_data) && active(out_data))
+	if (stopping(out_data) || starting(out_data) || active(out_data))
 		return false;
 
 	return obs_output_start(out_data->output);
@@ -104,7 +111,7 @@ static bool rtsp_output_stop_hotkey(void *data, const obs_hotkey_pair_id id,
 
 	if (!pressed)
 		return false;
-	if (stopping(out_data) && active(out_data))
+	if (stopping(out_data) || starting(out_data) || !active(out_data))
 		return false;
 
 	obs_output_stop(out_data->output);
@@ -202,10 +209,8 @@ static bool rtsp_output_add_video_channel(void *data,
 	auto *out_data = static_cast<rtsp_out_data *>(data);
 	const auto video_encoder =
 		obs_output_get_video_encoder(out_data->output);
-	if (video_encoder == nullptr) {
-		set_output_error(out_data, ERROR_INIT_ENCODERS);
+	if (video_encoder == nullptr)
 		return false;
-	}
 	const auto video = obs_encoder_video(video_encoder);
 	const auto video_frame_rate = video_output_get_frame_rate(video);
 	vector<uint8_t> extra_data;
@@ -250,9 +255,8 @@ static bool rtsp_output_add_audio_channel(void *data,
 	auto *out_data = static_cast<rtsp_out_data *>(data);
 	const auto audio_encoder =
 		obs_output_get_audio_encoder(out_data->output, idx);
-	if (audio_encoder == nullptr) {
+	if (audio_encoder == nullptr) 
 		return false;
-	}
 	const auto audio = obs_encoder_audio(audio_encoder);
 	const auto audio_channels = audio_output_get_channels(audio);
 	const auto audio_sample_rate =
@@ -275,9 +279,17 @@ static bool rtsp_output_start(void *data)
 {
 	auto out_data = static_cast<rtsp_out_data *>(data);
 
+	if (starting(out_data) || stopping(out_data))
+		return false;
+
 	send_prestart_signal(out_data);
 
-	auto enabled_channels_count = 0;
+	const auto settings = obs_output_get_settings(out_data->output);
+	rtsp_output_update(data, settings);
+	const auto port =
+		static_cast<uint16_t>(obs_data_get_int(settings, "port"));
+
+	uint32_t enabled_channels_count = 0;
 	for (size_t index = 0; index < out_data->enabled_channels.size();
 	     index++) {
 		if (obs_output_get_audio_encoder(out_data->output, index) ==
@@ -289,8 +301,9 @@ static bool rtsp_output_start(void *data)
 		out_data->channel_ids[index] = static_cast<xop::MediaChannelId>(
 			++enabled_channels_count);
 	}
+	out_data->enabled_channels_count = enabled_channels_count;
 
-	const auto av_flags = enabled_channels_count > 0 ? 0 : OBS_OUTPUT_VIDEO;
+	const uint32_t av_flags = enabled_channels_count > 0 ? 0 : OBS_OUTPUT_VIDEO;
 	if (!obs_output_can_begin_data_capture(out_data->output, av_flags)) {
 		set_output_error(out_data, ERROR_BEGIN_DATA_CAPTURE);
 		return false;
@@ -301,12 +314,6 @@ static bool rtsp_output_start(void *data)
 		return false;
 	}
 
-	const auto settings = obs_output_get_settings(out_data->output);
-	rtsp_output_update(data, settings);
-	const auto port =
-		static_cast<uint16_t>(obs_data_get_int(settings, "port"));
-	const auto url_suffix = obs_data_get_string(settings, "url_suffix");
-
 	if (!out_data->server->Start("0.0.0.0", port) ||
 	    !out_data->server->Start("::0", port)) {
 		set_output_error(out_data, ERROR_START_RTSP_SERVER, port);
@@ -314,13 +321,29 @@ static bool rtsp_output_start(void *data)
 		return false;
 	}
 
-	os_atomic_set_bool(&out_data->stopping, false);
+	obs_output_begin_data_capture(out_data->output, av_flags);
+
+	os_atomic_set_bool(&out_data->starting, true);
+
+	return true;
+}
+
+static void rtsp_output_actual_stop(rtsp_out_data *out_data, const int code);
+static void rtsp_output_rtsp_start(void *data)
+{
+	const auto out_data = static_cast<rtsp_out_data *>(data);
+
+	const auto settings = obs_output_get_settings(out_data->output);
+	const auto port =
+		static_cast<uint16_t>(obs_data_get_int(settings, "port"));
+	const auto url_suffix = obs_data_get_string(settings, "url_suffix");
 
 	xop::MediaSession *session = xop::MediaSession::CreateNew(
-		url_suffix, enabled_channels_count + 1);
+		url_suffix, out_data->enabled_channels_count + 1);
 
 	if (!rtsp_output_add_video_channel(data, session)) {
-		return false;
+		rtsp_output_actual_stop(out_data, ERROR_INIT_ENCODERS);
+		return;
 	}
 
 	for (size_t index = 0; index < out_data->enabled_channels.size();
@@ -330,7 +353,8 @@ static bool rtsp_output_start(void *data)
 		if (!rtsp_output_add_audio_channel(
 			    data, session, index,
 			    out_data->channel_ids[index])) {
-			return false;
+			rtsp_output_actual_stop(out_data, ERROR_INIT_ENCODERS);
+			return;
 		}
 	}
 
@@ -339,16 +363,14 @@ static bool rtsp_output_start(void *data)
 
 	session->AddNotifyConnectedCallback(
 		[](const xop::MediaSessionId session_id,
-			   const std::string &peer_ip,
-			   const uint16_t peer_port) {
+		   const std::string &peer_ip, const uint16_t peer_port) {
 			blog(LOG_INFO, "Rtsp client %d(%s:%d) is connected.",
 			     session_id, peer_ip.c_str(), peer_port);
 		});
 
 	session->AddNotifyDisconnectedCallback(
 		[](const xop::MediaSessionId session_id,
-			   const std::string &peer_ip,
-			   const uint16_t peer_port) {
+		   const std::string &peer_ip, const uint16_t peer_port) {
 			blog(LOG_INFO, "Rtsp client %d(%s:%d) is disconnected.",
 			     session_id, peer_ip.c_str(), peer_port);
 		});
@@ -364,7 +386,8 @@ static bool rtsp_output_start(void *data)
 			     session->GetMulticastIp(true).c_str());
 			blog(LOG_INFO, "\tipv4 address:        \t%s",
 			     session->GetMulticastIp(false).c_str());
-			for (auto i = 0; i < enabled_channels_count + 1; i++) {
+			for (uint32_t i = 0;
+			     i < out_data->enabled_channels_count + 1; i++) {
 				blog(LOG_INFO, "\tchannel %d port: \t%d", i,
 				     session->GetMulticastPort(
 					     static_cast<xop::MediaChannelId>(
@@ -373,27 +396,29 @@ static bool rtsp_output_start(void *data)
 			blog(LOG_INFO,
 			     "------------------------------------------------");
 		} else {
-			set_output_error(out_data, ERROR_START_MULTICAST);
-			return false;
+			rtsp_output_actual_stop(out_data, ERROR_START_MULTICAST);
+			return;
 		}
 	}
+
+	out_data->total_bytes_sent = 0;
 
 	out_data->frame_push_thread =
 		std::make_unique<std::thread>(rtsp_push_frame, out_data);
 
-	out_data->total_bytes_sent = 0;
-
 	os_atomic_set_bool(&out_data->active, true);
-	obs_output_begin_data_capture(out_data->output, av_flags);
+	os_atomic_set_bool(&out_data->starting, false);
 
 	blog(LOG_INFO, "starting rstp server on port '%d'", port);
-
-	return true;
 }
 
 static void rtsp_output_stop(void *data, uint64_t ts)
 {
 	auto *out_data = static_cast<rtsp_out_data *>(data);
+
+	if (starting(out_data) || stopping(out_data))
+		return;
+
 	out_data->stop_ts = ts / 1000ULL;
 	//obs_output_pause(out_data->output, false);
 	os_atomic_set_bool(&out_data->stopping, true);
@@ -403,9 +428,13 @@ static void rtsp_output_actual_stop(rtsp_out_data *out_data, const int code)
 {
 	os_atomic_set_bool(&out_data->active, false);
 
-	if (code) {
+	if (code < 0) {
 		set_output_error(out_data, code);
 		obs_output_signal_stop(out_data->output, code);
+	} else if (code > 0) {
+		obs_output_end_data_capture(out_data->output);
+		set_output_error(out_data, code);
+		obs_output_signal_stop(out_data->output, OBS_OUTPUT_ERROR);
 	} else {
 		obs_output_end_data_capture(out_data->output);
 	}
@@ -427,6 +456,9 @@ static void rtsp_output_actual_stop(rtsp_out_data *out_data, const int code)
 
 	if (out_data->frame_queue)
 		out_data->frame_queue.reset();
+
+	os_atomic_set_bool(&out_data->starting, false);
+	os_atomic_set_bool(&out_data->stopping, false);
 
 	blog(LOG_INFO, "rstp server stopped");
 }
@@ -495,8 +527,13 @@ static void rtsp_output_data(void *data, struct encoder_packet *packet)
 {
 	auto *out_data = static_cast<rtsp_out_data *>(data);
 
-	if (!active(out_data))
+	if (!active(out_data) && !starting(out_data))
 		return;
+
+	if (starting(out_data)) {
+		rtsp_output_rtsp_start(out_data);
+		return;
+	}
 
 	if (!packet) {
 		rtsp_output_actual_stop(out_data, OBS_OUTPUT_ENCODE_ERROR);
