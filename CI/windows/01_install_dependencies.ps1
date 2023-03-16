@@ -25,20 +25,26 @@ Function Install-obs-deps {
         [String]$Version
     )
 
-    Write-Status "Setup for pre-built Windows OBS dependencies v${Version}"
+    $Arch = "x86"
+
+    if ($BuildArch -eq "64-bit") {
+        $Arch = "x64"
+    }
+
+    Write-Status "Setup for pre-built Windows OBS dependencies v${Version} ${Arch}"
     Ensure-Directory $DepsBuildDir
 
-    if (!(Test-Path $DepsBuildDir/windows-deps-${Version})) {
-        Write-Status "Setting up pre-built Windows OBS dependencies v${Version}"
+    if (!(Test-Path $DepsBuildDir/windows-deps-${Version}-${Arch})) {
+        Write-Status "Setting up pre-built Windows OBS dependencies v${Version} ${Arch}"
 
         Write-Step "Download..."
         $ProgressPreference = $(if ($Quiet.isPresent) { "SilentlyContinue" } else { "Continue" })
-        Invoke-WebRequest -Uri "https://github.com/obsproject/obs-deps/releases/download/win-${Version}/windows-deps-${Version}.zip" -UseBasicParsing -OutFile "windows-deps-${Version}.zip"
+        Invoke-WebRequest -Uri "https://github.com/obsproject/obs-deps/releases/download/${Version}/windows-deps-${Version}-${Arch}.zip" -UseBasicParsing -OutFile "windows-deps-${Version}-${Arch}.zip"
         $ProgressPreference = 'Continue'
 
         Write-Step "Unpack..."
 
-        Expand-Archive -Path "windows-deps-${Version}.zip"
+        Expand-Archive -Path "windows-deps-${Version}-${Arch}.zip"
     } else {
         Write-Step "Found existing pre-built dependencies..."
 
@@ -51,22 +57,26 @@ function Install-qt-deps {
         [String]$Version
     )
 
-    Write-Status "Setup for pre-built dependency Qt v${Version}"
+    $Arch = "x86"
+
+    if ($BuildArch -eq "64-bit") {
+        $Arch = "x64"
+    }
+
+    Write-Status "Setup for pre-built dependency Qt v${Version} ${Arch}"
     Ensure-Directory $DepsBuildDir
 
-    if (!(Test-Path $DepsBuildDir/Qt_${Version})) {
-        Write-Status "Setting up OBS dependency Qt v${Version}"
+    if (!(Test-Path $DepsBuildDir/windows-deps-qt6-${Version}-${Arch})) {
+        Write-Status "Setting up OBS dependency Qt v${Version} ${Arch}"
 
         Write-Step "Download..."
         $ProgressPreference = $(if ($Quiet.isPresent) { 'SilentlyContinue' } else { 'Continue' })
-        Invoke-WebRequest -Uri "https://cdn-fastly.obsproject.com/downloads/Qt_${Version}.7z" -UseBasicParsing -OutFile "Qt_${Version}.7z"
+        Invoke-WebRequest -Uri "https://github.com/obsproject/obs-deps/releases/download/${Version}/windows-deps-qt6-${Version}-${Arch}.zip" -UseBasicParsing -OutFile "windows-deps-qt6-${Version}-${Arch}.zip"
         $ProgressPreference = 'Continue'
         
         Write-Step "Unpack..."
 
-        # TODO: Replace with zip and properly package Qt to share directory with other deps
-        & 7z x Qt_${Version}.7z
-        Move-Item ${Version} "Qt_${Version}"
+        Expand-Archive -Path "windows-deps-qt6-${Version}-${Arch}.zip"
     } else {
         Write-Step "Found existing pre-built Qt..."
     }
@@ -131,7 +141,7 @@ function Install-Dependencies {
 
     $BuildDependencies = @(
         @('obs-deps', $WindowsDepsVersion),
-        @('qt-deps', $WindowsQtVersion),
+        @('qt-deps', $WindowsDepsVersion),
         @('obs-studio', $OBSVersion),
         @('nsis', $NSISVersion)
     )

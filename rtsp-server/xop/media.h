@@ -19,9 +19,8 @@ enum class MediaType {
 };
 
 enum class FrameType : uint8_t {
-	VIDEO_FRAME_I = 0x01,
-	VIDEO_FRAME_P = 0x02,
-	VIDEO_FRAME_B = 0x03,
+	VIDEO_FRAME_IDR = 0x01,
+	VIDEO_FRAME_NOTIDR = 0x02,
 	AUDIO_FRAME = 0x11,
 	NONE = 0x00
 };
@@ -30,14 +29,12 @@ struct AVFrame {
 	explicit AVFrame(const size_t size = 0)
 		: buffer(new uint8_t[size], std::default_delete<uint8_t[]>()),
 		  size(size),
-		  type(FrameType::NONE),
 		  timestamp(0)
 	{
 	}
 
 	std::shared_ptr<uint8_t> buffer; /* 帧数据 */
 	size_t size;                     /* 帧大小 */
-	FrameType type;                  /* 帧类型 */
 	uint32_t timestamp;              /* 时间戳 */
 };
 

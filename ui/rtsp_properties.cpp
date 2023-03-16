@@ -6,9 +6,9 @@
 #include <QTimer>
 #include <QCloseEvent>
 #include <utility>
-#include "rtsp_properties.h"
+#include "rtsp_properties.hpp"
 #include "ui_rtsp_properties.h"
-#include "helper.h"
+#include "../helper.h"
 
 RtspProperties::RtspProperties(std::string rtspOutputName, QWidget *parent)
 	: QDialog(parent),

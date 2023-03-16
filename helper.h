@@ -11,6 +11,8 @@
 #define CONFIG_SECTIION "RstpOutput"
 #define HOTKEY_CONFIG_SECTIION "Hotkeys"
 
+enum encoder_codec { UNKNOW = 0, H264 = 1, HEVC = 2, AV1 = 3, AAC = 4 };
+
 static bool make_config_dir()
 {
 	auto path = obs_module_config_path("");
@@ -58,37 +60,6 @@ static config_t *rtsp_properties_open_config()
 	return config;
 }
 
-static void rtsp_output_avc_get_sps_pps(const uint8_t *data, size_t size,
-					const uint8_t **sps, size_t *sps_size,
-					const uint8_t **pps, size_t *pps_size)
-{
-	const uint8_t *nal_start, *nal_end;
-	const uint8_t *end = data + size;
-	int type;
-
-	nal_start = obs_avc_find_startcode(data, end);
-	while (true) {
-		while (nal_start < end && !*(nal_start++))
-			;
-
-		if (nal_start == end)
-			break;
-
-		nal_end = obs_avc_find_startcode(nal_start, end);
-
-		type = nal_start[0] & 0x1F;
-		if (type == OBS_NAL_SPS) {
-			*sps = nal_start;
-			*sps_size = nal_end - nal_start;
-		} else if (type == OBS_NAL_PPS) {
-			*pps = nal_start;
-			*pps_size = nal_end - nal_start;
-		}
-
-		nal_start = nal_end;
-	}
-}
-
 static std::string string_format(char const *format, ...)
 {
 	va_list argp;
@@ -102,7 +73,8 @@ static std::string string_format(char const *format, ...)
 	return std::string(buf.data(), buf.data() + size - 1);
 }
 
-static std::string rtsp_properties_get_data_volume_display(uint64_t total_bytes) {
+static std::string rtsp_properties_get_data_volume_display(uint64_t total_bytes)
+{
 	const uint64_t kb = 1024;
 	const uint64_t mb = kb * 1024;
 	const uint64_t gb = mb * 1024;
@@ -122,6 +94,24 @@ static std::string rtsp_properties_get_data_volume_display(uint64_t total_bytes)
 		return string_format("%.1f GB", double(total_bytes) / gb);
 	}
 	return string_format("%.1f TB", double(total_bytes) / tb);
+}
+
+static encoder_codec get_encoder_codec(const obs_encoder_t *encoder)
+{
+	const char *const codec = obs_encoder_get_codec(encoder);
+	if (strcmp(codec, "h264") == 0) {
+		return encoder_codec::H264;
+	}
+	if (strcmp(codec, "hevc") == 0) {
+		return encoder_codec::HEVC;
+	}
+	if (strcmp(codec, "av1") == 0) {
+		return encoder_codec::AV1;
+	}
+	if (strcmp(codec, "aac") == 0) {
+		return encoder_codec::AAC;
+	}
+	return UNKNOW;
 }
 
 #endif // RTSP_HELPER_H

@@ -323,7 +323,7 @@ void RtpConnection::SetFrameType(const FrameType frame_type)
 {
 	frame_type_ = frame_type;
 	if (!has_key_frame_ && (frame_type == FrameType::NONE ||
-				frame_type == FrameType::VIDEO_FRAME_I)) {
+				frame_type == FrameType::VIDEO_FRAME_IDR)) {
 		has_key_frame_ = true;
 	}
 }

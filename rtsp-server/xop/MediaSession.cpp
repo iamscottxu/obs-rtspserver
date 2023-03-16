@@ -207,7 +207,7 @@ std::string MediaSession::GetSdpMessage(const std::string ip,
 	if (is_multicast_) {
 		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
 			 "a=type:broadcast\r\n"
-			 "a=rtcp-unicast: reflection\r\n");
+			 "a=rtcp-unicast:reflection\r\n");
 	}
 
 	for (uint32_t chn = 0; chn < max_channel_count_; chn++) {

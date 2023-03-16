@@ -57,7 +57,7 @@ bool G711ASource::HandleFrame(const MediaChannelId channel_id,
 	const size_t frame_size = frame.size;
 
 	RtpPacket rtp_pkt;
-	rtp_pkt.type = frame.type;
+	rtp_pkt.type = FrameType::AUDIO_FRAME;
 	rtp_pkt.timestamp = frame.timestamp;
 	rtp_pkt.size = static_cast<uint16_t>(frame_size) + RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE;
 	rtp_pkt.last = 1;
