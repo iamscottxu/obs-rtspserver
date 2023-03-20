@@ -160,12 +160,21 @@ void RtspProperties::onLineEditPasswordTextChanged(const QString &value) const
 void RtspProperties::onStatusTimerTimeout()
 {
 	const auto totalBytes = rtspOutputHelper->GetTotalBytes();
+	const auto totalFrames = rtspOutputHelper->GetTotalFrames();
+	const auto framesDropped = rtspOutputHelper->GetFramesDropped();
 	const auto bitps = (totalBytes - lastTotalBytes) * 8;
 	lastTotalBytes = totalBytes;
 	ui->labelTotalData->setText(
 		rtsp_properties_get_data_volume_display(totalBytes).c_str());
 	ui->labelBitrate->setText(QString("%1 kb/s").arg(
-		bitps / 1000 + (bitps % 1000 >= 500 ? 1 : 0)));
+		bitps / 1000.0, 0, 'f', 0));
+	ui->labelFramesDropped->setText(
+		QString("%1 / %2 (%3%)")
+		.arg(framesDropped)
+		.arg(totalFrames)
+		.arg(totalFrames == 0 ? 0
+				     : framesDropped * 100.0 / totalFrames,
+			     0, 'f', 1));
 }
 
 void RtspProperties::onButtonStatusChanging(const bool outputStarted,
@@ -193,6 +202,7 @@ void RtspProperties::onStatusTimerStatusChanging(const bool start)
 		statusTimer->stop();
 		ui->labelTotalData->setText("0.0 MB");
 		ui->labelBitrate->setText("0 kb/s");
+		ui->labelFramesDropped->setText("0 / 0 (0.0%)");
 	}
 }
 
