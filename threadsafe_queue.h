@@ -94,10 +94,6 @@ public:
 		shared_ptr<T> data(make_shared<T>(std::move(new_value)));
 		unique_lock<mutex> lk(mut);
 		data_queue.push(data);
-		if (data_queue.size() > size_limit) {
-			data_queue.pop();
-			m_dropped_count.fetch_add(1, memory_order_relaxed);
-		}
 		data_cond.notify_one();
 	}
 
@@ -143,7 +139,6 @@ public:
 private:
 	mutex mut;
 	queue<shared_ptr<T>> data_queue;
-	const size_t size_limit;
 	condition_variable data_cond;
 	atomic_bool m_termination;
 	atomic_size_t m_dropped_count;

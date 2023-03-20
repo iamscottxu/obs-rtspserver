@@ -98,16 +98,6 @@ uint64_t RtspOutputHelper::GetTotalBytes() const
 	return obs_output_get_total_bytes(obsOutput);
 }
 
-int RtspOutputHelper::GetTotalFrames() const
-{
-	return obs_output_get_total_frames(obsOutput);
-}
-
-int RtspOutputHelper::GetFramesDropped() const
-{
-	return obs_output_get_frames_dropped(obsOutput);
-}
-
 bool RtspOutputHelper::IsActive() const
 {
 	return obs_output_active(obsOutput);

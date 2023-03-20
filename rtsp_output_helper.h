@@ -29,8 +29,6 @@ public:
 			      void *data) const;
 	std::string GetOutputName() const;
 	uint64_t GetTotalBytes() const;
-	int GetTotalFrames() const;
-	int GetFramesDropped() const;
 	bool IsActive() const;
 
 private:
