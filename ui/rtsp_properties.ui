@@ -452,40 +452,14 @@
          <property name="bottomMargin">
           <number>0</number>
          </property>
-         <item row="1" column="3">
-          <widget class="QLabel" name="labelBitrate">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>60</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>0kb/s</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
+         <item>
           <widget class="QLabel" name="labelTotalDataTitle">
            <property name="text">
             <string>RtspServer.Properties.Status.TotalDataSent</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="2">
-          <widget class="QLabel" name="labelBitrateTitle">
-           <property name="text">
-            <string>RtspServer.Properties.Status.Bitrate</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
+         <item>
           <widget class="QLabel" name="labelTotalData">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
@@ -504,21 +478,15 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="labelFramesDroppedTitle">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
+         <item>
+          <widget class="QLabel" name="labelBitrateTitle">
            <property name="text">
-            <string>RtspServer.Properties.Status.DroppedFrames</string>
+            <string>RtspServer.Properties.Status.Bitrate</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
-          <widget class="QLabel" name="labelFramesDropped">
+         <item>
+          <widget class="QLabel" name="labelBitrate">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -532,17 +500,11 @@
             </size>
            </property>
            <property name="text">
-            <string>0 / 0 (0.0%)</string>
+            <string>0kb/s</string>
            </property>
           </widget>
          </item>
         </layout>
-        <zorder>labelBitrate</zorder>
-        <zorder>labelBitrateTitle</zorder>
-        <zorder>labelTotalData</zorder>
-        <zorder>labelTotalDataTitle</zorder>
-        <zorder>labelFramesDroppedTitle</zorder>
-        <zorder>labelFramesDropped</zorder>
        </widget>
       </item>
       <item>
