@@ -13,8 +13,10 @@ using namespace std;
 template<typename T> class threadsafe_queue
 {
 public:
-	threadsafe_queue()
 		: m_bTermination(false) {
+	threadsafe_queue(size_t size_limit)
+		: size_limit(size_limit), m_termination(false)
+	{
 	}
 	~threadsafe_queue() {}
 
@@ -89,6 +91,10 @@ public:
 		shared_ptr<T> data(make_shared<T>(move(new_value)));
 		unique_lock<mutex> lk(mut);
 		data_queue.push(data);
+		if (data_queue.size() > size_limit) {
+			data_queue.pop();
+			m_dropped_count.fetch_add(1, memory_order_relaxed);
+		}
 		data_cond.notify_one();
 	}
 
@@ -103,6 +109,12 @@ public:
 		unique_lock<mutex> lk(mut);
 		return data_queue.size();
 	}
+
+	size_t dropped_count() const
+	{
+		return m_dropped_count.load(memory_order_relaxed);
+	}
+
 	//设置队列为退出状态。在退出状态下，忽略入队，可以执行出队，但当队列为空时，wait_and_pop不会阻塞。
 	void termination()
 	{
@@ -119,8 +131,10 @@ public:
 private:
 	mutex mut;
 	queue<shared_ptr<T>> data_queue;
+	const size_t size_limit;
 	condition_variable data_cond;
 	atomic_bool m_bTermination;
+	atomic_size_t m_dropped_count;
 };
 
 #endif

@@ -21,6 +21,7 @@
 #define ERROR_START_MULTICAST 4
 #define ERROR_ENCODE OBS_OUTPUT_ENCODE_ERROR
 
+#define OBS_RTSPSERVER_QUEUE_SIZE_LIMIT 2
 
 struct queue_frame {
 	queue_frame(size_t size = 0) : av_frame(size), channe_id(xop::MediaChannelId::channel_0) {}
@@ -358,8 +359,8 @@ static void rtsp_output_rtsp_start(void *data)
 		}
 	}
 
-	out_data->frame_queue =
-		std::make_unique<threadsafe_queue<queue_frame>>();
+	out_data->frame_queue = std::make_unique<threadsafe_queue<queue_frame>>(
+		OBS_RTSPSERVER_QUEUE_SIZE_LIMIT);
 
 	session->AddNotifyConnectedCallback(
 		[](const xop::MediaSessionId session_id,
@@ -641,6 +642,18 @@ static uint64_t rtsp_output_total_bytes_sent(void *data)
 	return out_data->total_bytes_sent;
 }
 
+static int rtsp_output_get_dropped_frames(void *data)
+{
+	const auto *out_data = static_cast<rtsp_out_data *>(data);
+	if (!active(out_data) || out_data->frame_queue == nullptr) {
+		return 0;
+	}
+	auto dropped_count = out_data->frame_queue->dropped_count();
+	while (dropped_count > INT32_MAX)
+		dropped_count -= INT32_MAX;
+	return static_cast<int>(dropped_count);
+}
+
 void rtsp_output_register()
 {
 	struct obs_output_info output_info = {};
@@ -659,6 +672,7 @@ void rtsp_output_register()
 	output_info.update = rtsp_output_update;
 	output_info.get_properties = rtsp_output_properties;
 	output_info.get_total_bytes = rtsp_output_total_bytes_sent;
+	output_info.get_dropped_frames = rtsp_output_get_dropped_frames;
 
 	obs_register_output(&output_info);
 }
