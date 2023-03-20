@@ -60,7 +60,7 @@
       </item>
       <item row="3" column="1">
        <widget class="QWidget" name="widgetEnabledAudioTracks" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout">
+        <layout class="QHBoxLayout" name="widgetEnabledAudioTracks_layout">
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -439,7 +439,7 @@
      <layout class="QVBoxLayout" name="status_layout">
       <item>
        <widget class="QWidget" name="widgetStatus" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <layout class="QGridLayout" name="widgetStatus_layout">
          <property name="leftMargin">
           <number>0</number>
          </property>
