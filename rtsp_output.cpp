@@ -396,7 +396,7 @@ static void rtsp_output_rtsp_start(void *data)
 		     index < out_data->enabled_channels.size(); index++) {
 			if (!out_data->enabled_channels[index])
 				continue;
-			blog(LOG_INFO, "\tchannel %d port: \t%d", index,
+			blog(LOG_INFO, "\tchannel %zu port: \t%d", index,
 			     session->GetMulticastPort(
 				     static_cast<xop::MediaChannelId>(index)));
 		}
