@@ -14,14 +14,15 @@
 🇩🇪 [Deutsch](//github.com/iamscottxu/obs-rtspserver/blob/master/README_de-DE.md)
 🇳🇱 [Nederlands](//github.com/iamscottxu/obs-rtspserver/blob/master/README_nl-NL.md)
 
+<font size="5">[Help translate obs-rtspserver!](https://www.transifex.com/scott-xu/obs-rtspserver)</font>
 
 # OBS-RTSPServer
 
 This is a plugin for obs-studio, encode and publish to a RTSP stream.
 
-**Supported Platforms** : Windows 7 , Windows 8 , Windows 10, Linux and macOS
+**Supported Platforms** : Windows 10, Windows 11, Linux and macOS
 
-**Supported OBS Studio version** : 24.0.0+
+**Supported OBS Studio version** : 28.0.0+
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 

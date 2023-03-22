@@ -2,9 +2,9 @@
 
 RTSPストリームにエンコードして公開するためのOBS Studioのプラグインです。
 
-**サポートされるプラットフォーム**: Windows 7、Windows 8、Windows 10、LinuxおよびmacOS
+**サポートされるプラットフォーム**: Windows 10、Windows 11、LinuxおよびmacOS
 
-**サポートされるOBS Studioのバージョン**: 24.0.0以降
+**サポートされるOBS Studioのバージョン**: 28.0.0以降
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 

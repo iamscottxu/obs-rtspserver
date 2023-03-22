@@ -2,9 +2,9 @@
 
 Questo è un plugin per obs-studio che codificherà l'output e pubblicherà un flusso RTSP.
 
-**Sistemi operativi supportati** : Windows 7 , Windows 8 , Windows 10, Linux e macOS
+**Sistemi operativi supportati** : Windows 10, Windows 11, Linux e macOS
 
-**Versioni di OBS Studio supportate** : 24.0.0+
+**Versioni di OBS Studio supportate** : 28.0.0+
 
 [![Stato del pacchetto](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
