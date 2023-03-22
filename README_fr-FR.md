@@ -2,9 +2,9 @@
 
 Ceci est un plugin pour obs-studio, encoder et publier dans un flux RTSP.
 
-**Systèmes d'exploitation pris en charge** : Windows 7 , Windows 8 , Windows 10, Linux and macOS
+**Systèmes d'exploitation pris en charge** : Windows 10, Windows 11, Linux and macOS
 
-**Version OBS Studio prise en charge** : 24.0.0+
+**Version OBS Studio prise en charge** : 28.0.0+
 
 [![Statut de l'emballage](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 

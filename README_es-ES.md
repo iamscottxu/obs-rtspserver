@@ -2,9 +2,9 @@
 
 Este es un complemento para obs-studio que codificará la salida y publicará un flujo RTSP.
 
-**Sistemas operativos compatibles** : Windows 7 , Windows 8 , Windows 10 , Linux y macOS
+**Sistemas operativos compatibles** : Windows 10, Windows 11, Linux y macOS
 
-**Versiones de OBS Studio compatibles** : 24.0.0+
+**Versiones de OBS Studio compatibles** : 28.0.0+
 
 [![Estado de empaque](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 

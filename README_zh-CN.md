@@ -2,9 +2,9 @@
 
 这是一个 OBS Studio 插件，此插件可对输出进行编码并发布 RTSP 流。
 
-**支持的平台** : Windows 7 、 Windows 8 、 Windows 10、 Linux 和 macOS
+**支持的平台** : Windows 10、Windows 11、Linux和macOS
 
-**支持的 OBS Studio 版本** : 24.0.0+
+**支持的 OBS Studio 版本** : 28.0.0+
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 

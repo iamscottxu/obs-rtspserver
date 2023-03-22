@@ -2,9 +2,9 @@
 
 이 플러그인은 obs-studio에서 RTSP스트림을 인코딩 및 배포하는 플러그인입니다.
 
-**지원하는 운영체제** : Windows 7 , Windows 8 , Windows 10, Linux and macOS
+**지원하는 운영체제** : Windows 10, Windows 11, Linux and macOS
 
-**지원하는 OBS 버전** : 24.0.0+
+**지원하는 OBS 버전** : 28.0.0+
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
