@@ -1,3 +1,5 @@
+<font size="5">[帮助翻译 obs-rtspserver！](https://www.transifex.com/scott-xu/obs-rtspserver)</font>
+
 # OBS-RTSPServer
 
 这是一个 OBS Studio 插件，此插件可对输出进行编码并发布 RTSP 流。
