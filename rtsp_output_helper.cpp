@@ -1,3 +1,4 @@
+#ifdef OBS_RTSPSERVER_ENABLE_UI
 #include <vector>
 #include <cstdio>
 #include <obs-module.h>
@@ -198,3 +199,5 @@ void RtspOutputHelper::OnPreStartSignal(void *data, calldata_t *cd)
 	const auto helper = static_cast<RtspOutputHelper *>(data);
 	helper->UpdateEncoder();
 }
+
+#endif // OBS_RTSPSERVER_ENABLE_UI

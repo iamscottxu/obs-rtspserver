@@ -33,12 +33,14 @@ else()
 endif()
 add_library(libobs ALIAS OBS::libobs)
 
-find_package(obs-frontend-api REQUIRED)
-add_library(OBS::obs-frontend-api STATIC IMPORTED GLOBAL)
-set_target_properties(OBS::obs-frontend-api PROPERTIES
-    IMPORTED_LOCATION "${OBS_FRONTEND_API_LIB}"
-    )
-add_library(obs-frontend-api ALIAS OBS::obs-frontend-api)
+if(ENABLE_UI)
+	find_package(obs-frontend-api REQUIRED)
+	add_library(OBS::obs-frontend-api STATIC IMPORTED GLOBAL)
+	set_target_properties(OBS::obs-frontend-api PROPERTIES
+	    IMPORTED_LOCATION "${OBS_FRONTEND_API_LIB}"
+	)
+	add_library(obs-frontend-api ALIAS OBS::obs-frontend-api)
+endif()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/external/ObsPluginHelpers.cmake")
 

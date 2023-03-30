@@ -1,3 +1,4 @@
+#ifdef OBS_RTSPSERVER_ENABLE_UI
 #ifndef RTSP_OUTPUT_HELPER_H
 #define RTSP_OUTPUT_HELPER_H
 
@@ -44,3 +45,4 @@ private:
 };
 
 #endif // RTSP_OUTPUT_HELPER_H
+#endif // OBS_RTSPSERVER_ENABLE_UI

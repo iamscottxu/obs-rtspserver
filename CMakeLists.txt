@@ -64,9 +64,12 @@ set(OBS_RTSPSERVER_HEADERS
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 17)
 
-find_qt(COMPONENTS Widgets Core)
+if(ENABLE_UI)
+  find_qt(COMPONENTS Widgets Core)
+  set_target_properties(${PROJECT_NAME} PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON)
+  add_definitions(-DOBS_RTSPSERVER_ENABLE_UI)
+endif()
 
 target_sources(${PROJECT_NAME} PRIVATE
 	${OBS_RTSPSERVER_SOURCES}
@@ -78,16 +81,26 @@ if(WIN32)
 endif()
 	
 target_include_directories(${PROJECT_NAME} PRIVATE
-	${OBS_FRONTEND_API_INCLUDE_DIRS}
 	${LIBOBS_INCLUDE_DIRS}
 	"rtsp-server")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
 	rtsp-server
-	obs-frontend-api
-	libobs
-	Qt::Core
-	Qt::Widgets)
+	libobs)
+
+if(ENABLE_UI)
+  # include all header files that are only relevant for OBS Studio
+	target_include_directories(${PROJECT_NAME} PRIVATE
+	    ${OBS_FRONTEND_API_INCLUDE_DIRS}
+  )
+
+  # link all obs frontend libraries
+	target_link_libraries(${PROJECT_NAME} PRIVATE
+		  obs-frontend-api
+		  Qt::Core
+		  Qt::Widgets
+  )
+endif()
 
 add_definitions(-DVERSION_STRING="${OBS_PLUGUIN_VERSION}")
 
