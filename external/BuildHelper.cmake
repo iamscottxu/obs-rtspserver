@@ -4,7 +4,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/external
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/release")
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${QTDIR};${DepsPath}")
 
-set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${OBS_PLUGUN_GIT_TAG}-linux")
+set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${OBS_PLUGUN_GIT_TAG}-linux")
 set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
 #set(CPACK_SOURCE_PACKAGE_FILE_NAME "${OBS_PLUGIN_PACKAGE_FILE_NAME}")
 set(MACOSX_PLUGIN_GUI_IDENTIFIER "${MACOS_BUNDLEID}")
@@ -44,14 +44,14 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/external/ObsPluginHelpers.cmake")
 
 if(OS_WINDOWS)
     if(MSVC)
-        target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE /W3)
+        target_compile_options(${PROJECT_NAME} PRIVATE /W3)
     endif()
 elseif(OS_MACOS)
     configure_file(
 		${CMAKE_SOURCE_DIR}/bundle/installer-macos.pkgproj.in
 		${CMAKE_SOURCE_DIR}/bundle/installer-macos.generated.pkgproj)
 
-    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wall)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall)
 else()
-    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wall)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall)
 endif()
