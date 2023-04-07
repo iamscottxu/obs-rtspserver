@@ -1,3 +1,4 @@
+#ifdef OBS_RTSPSERVER_ENABLE_UI
 #ifndef RTSP_PROPERTIES_H
 #define RTSP_PROPERTIES_H
 
@@ -65,3 +66,4 @@ private:
 };
 
 #endif // RTSP_PROPERTIES_H
+#endif // OBS_RTSPSERVER_ENABLE_UI
