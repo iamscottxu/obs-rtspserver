@@ -82,7 +82,7 @@ jobs:
           
   windows_build:
     name: '03 - Windows (Latest)'
-    runs-on: [windows-2019]
+    runs-on: [windows-2022]
     needs: [get_obs_info, get_plugin_info, clang_check]
     strategy:
       matrix:
@@ -184,7 +184,8 @@ jobs:
     needs: [get_obs_info, get_plugin_info, clang_check]
     strategy:
       matrix:
-        ubuntu: ['ubuntu-20.04', 'ubuntu-22.04']
+        #ubuntu: ['ubuntu-20.04', 'ubuntu-22.04']
+        ubuntu: ['ubuntu-22.04']
     env:
       OBS_VERSION: "${{ needs.get_obs_info.outputs.latest_tag_name }}"
     defaults:
@@ -369,14 +370,14 @@ jobs:
           asset_content_type: application/x-msdownload
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 'Upload linux qt5 .tar.gz artifact to release'
-        uses: shogo82148/actions-upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.tar.gz
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.tar.gz
-          asset_content_type: application/x-gzip
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      #- name: 'Upload linux qt5 .tar.gz artifact to release'
+      #  uses: shogo82148/actions-upload-release-asset@v1
+      #  with:
+      #    upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #    asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.tar.gz
+      #    asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.tar.gz
+      #    asset_content_type: application/x-gzip
+      #    github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload linux qt6 .tar.gz artifact to release'
         uses: shogo82148/actions-upload-release-asset@v1
@@ -387,14 +388,14 @@ jobs:
           asset_content_type: application/x-gzip
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 'Upload linux qt5 .deb artifact to release'
-        uses: shogo82148/actions-upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.deb
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.deb
-          asset_content_type: application/vnd.debian.binary-package
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+    #  - name: 'Upload linux qt5 .deb artifact to release'
+    #    uses: shogo82148/actions-upload-release-asset@v1
+    #    with:
+    #      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    #      asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.deb
+    #      asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.deb
+    #      asset_content_type: application/vnd.debian.binary-package
+    #      github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload linux qt6 .deb artifact to release'
         uses: shogo82148/actions-upload-release-asset@v1
@@ -405,23 +406,23 @@ jobs:
           asset_content_type: application/vnd.debian.binary-package
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 'Upload linux qt5 .rpm artifact to release'
-        uses: shogo82148/actions-upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.rpm
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.rpm
-          asset_content_type: application/vnd.debian.binary-package
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+    #  - name: 'Upload linux qt5 .rpm artifact to release'
+    #    uses: shogo82148/actions-upload-release-asset@v1
+    #    with:
+    #      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    #      asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.rpm
+    #      asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.rpm
+    #      asset_content_type: application/vnd.debian.binary-package
+    #      github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 'Upload linux qt6 .rpm artifact to release'
-        uses: shogo82148/actions-upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.rpm
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt6.rpm
-          asset_content_type: application/vnd.debian.binary-package
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+    #  - name: 'Upload linux qt6 .rpm artifact to release'
+    #    uses: shogo82148/actions-upload-release-asset@v1
+    #    with:
+    #      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    #      asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.rpm
+    #      asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt6.rpm
+    #      asset_content_type: application/vnd.debian.binary-package
+    #      github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload macos universal .zip artifact to release'
         uses: shogo82148/actions-upload-release-asset@v1
