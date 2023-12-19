@@ -131,20 +131,28 @@ void RtspOutputHelper::CreateVideoEncoder()
 		obs_encoder_set_scaled_size(videoEncoder,
 					    outputSettings.rescale_cx,
 					    outputSettings.rescale_cy);
-	obs_encoder_set_video(videoEncoder, obs_output_video(obsOutput));
+	obs_encoder_set_video(videoEncoder, obs_get_video());
+	{
+		auto video = obs_output_video(obsOutput);
+		if (video == nullptr)
+			video = obs_get_video();
+		obs_encoder_set_video(videoEncoder, video);
+	}
 	obs_output_set_video_encoder(obsOutput, videoEncoder);
 }
 
 void RtspOutputHelper::CreateAudioEncoder()
 {
 	obs_encoder_t *encoder;
-	if (outputSettings.adv_out)
+	if (outputSettings.adv_out) {
 		/*if ((encoder = obs_get_encoder_by_name("adv_stream_aac")) ==
 		    nullptr)
 			encoder = obs_get_encoder_by_name(
 				"avc_aac_stream");*/ //OBS 26.0.2 Or Older
-		encoder = obs_get_encoder_by_name("adv_stream_aac");
-
+		if ((encoder = obs_get_encoder_by_name("adv_stream_audio")) ==
+		    nullptr) //OBS 30.0.0 Or Older
+			encoder = obs_get_encoder_by_name("adv_stream_aac");
+	}
 	else
 		encoder = obs_get_encoder_by_name("simple_aac");
 
@@ -167,8 +175,12 @@ void RtspOutputHelper::CreateAudioEncoder()
 				.append(to_string(idx + 1))
 				.c_str(),
 			obs_encoder_get_settings(encoder), idx, nullptr);
-		obs_encoder_set_audio(audioEncoder,
-				      obs_output_audio(obsOutput));
+		{
+			auto audio = obs_output_audio(obsOutput);
+			if (audio == nullptr)
+				audio = obs_get_audio();
+			obs_encoder_set_audio(audioEncoder, audio);
+		}
 		audioEncoders.push_back(audioEncoder);
 		obs_output_set_audio_encoder(obsOutput, audioEncoder,
 					     trackIndex++);
