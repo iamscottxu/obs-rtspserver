@@ -56,7 +56,7 @@ jobs:
       git_tag_name: ${{ steps.tag_name.outputs.tag }}
     steps:
       - name: 'Get plugin git tag'
-        uses: devops-actions/action-get-tag@v1.0.1
+        uses: devops-actions/action-get-tag@v1.0.2
         id: tag_name
           
   clang_check:
@@ -65,7 +65,7 @@ jobs:
     needs: [get_plugin_info]
     steps:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: 'plugin'
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
@@ -96,14 +96,14 @@ jobs:
         uses: microsoft/setup-msbuild@v1
 
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: 'plugin'
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
           
       - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.latest_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: obsproject/obs-studio
           path: 'obs-studio'
@@ -128,14 +128,14 @@ jobs:
         run: CI/windows/04_package_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Upload build Artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-${{ matrix.arch }}'
           path: '${{ github.workspace }}/plugin/*-windows-*.zip'
           
   windows_package:
     name: '04 - Windows Installer'
-    runs-on: [windows-2019]
+    runs-on: [windows-2022]
     needs: [get_plugin_info, windows_build]
     env:
       #CMAKE_GENERATOR: "Visual Studio 17 2022"
@@ -143,20 +143,20 @@ jobs:
       OBS_VERSION: "${{ needs.get_obs_info.outputs.latest_tag_name }}"
     steps:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: 'plugin'
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
           
       - name: 'Download 64-bit artifact'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-64'
           path: 'plugin'
 
       - name: 'Download 32-bit artifact'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-32'
           path: 'plugin'
@@ -173,7 +173,7 @@ jobs:
           CI/windows/04_package_plugin.ps1 -BuildArch 64-bit -BuildInstaller -CombinedArchs
         
       - name: 'Upload build Artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-release'
           path: '${{ github.workspace }}/plugin/${{ env.PRODUCT_NAME }}-*-windows-all*.*'
@@ -192,14 +192,14 @@ jobs:
         shell: bash
     steps:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: 'plugin'
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
           
       - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.latest_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: obsproject/obs-studio
           path: 'obs-studio'
@@ -224,7 +224,7 @@ jobs:
         run: source CI/linux/04_package_plugin.sh
 
       - name: 'Upload build Artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: '${{ env.PRODUCT_NAME }}-linux-${{ matrix.ubuntu }}'
           path: '${{ github.workspace }}/plugin/build/${{ env.PRODUCT_NAME }}-*-linux.*'
@@ -245,14 +245,14 @@ jobs:
         shell: bash
     steps:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: 'plugin'
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
           
       - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.latest_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: obsproject/obs-studio
           path: 'obs-studio'
@@ -289,7 +289,7 @@ jobs:
         run: source CI/macos/04_package_plugin.sh --architecture "${{ matrix.arch }}"
 
       - name: 'Upload build Artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: '${{ env.PRODUCT_NAME }}-macos-${{ matrix.arch }}'
           path: '${{ github.workspace }}/plugin/build/*-macos-${{ matrix.arch }}.*'
@@ -303,7 +303,7 @@ jobs:
 
     steps:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           fetch-depth: 0
@@ -317,7 +317,7 @@ jobs:
       
       - name: 'Create changelog text'
         id: create_changelog_text
-        uses: dlavrenuek/conventional-changelog-action@v1.2.2
+        uses: dlavrenuek/conventional-changelog-action@v1.2.3
         with:
           from: "${{ steps.get_last_release.outputs.tag_name }}"
           to: "${{ needs.get_plugin_info.outputs.git_tag_name }}"
@@ -349,7 +349,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Download release artifacts'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: 'Upload Windows .zip artifact to release'
         uses: shogo82148/actions-upload-release-asset@v1
