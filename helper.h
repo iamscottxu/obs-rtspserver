@@ -5,15 +5,14 @@
 #include <util/platform.h>
 #include <obs-avc.h>
 
-#ifndef RTSP_HELPER_H
-#define RTSP_HELPER_H
+#pragma once
 
 #define CONFIG_SECTIION "RstpOutput"
 #define HOTKEY_CONFIG_SECTIION "Hotkeys"
 
 enum encoder_codec { UNKNOW = 0, H264 = 1, HEVC = 2, AV1 = 3, AAC = 4 };
 
-static bool make_config_dir()
+[[maybe_unused]] static bool make_config_dir()
 {
 	auto path = obs_module_config_path("");
 	auto ret = os_mkdirs(path);
@@ -21,7 +20,7 @@ static bool make_config_dir()
 	return ret == MKDIR_SUCCESS || ret == MKDIR_EXISTS;
 }
 
-static obs_data_t *rtsp_output_read_data()
+[[maybe_unused]] static obs_data_t *rtsp_output_read_data()
 {
 	obs_data_t *data;
 	auto path = obs_module_config_path("rtsp_output.json");
@@ -30,7 +29,7 @@ static obs_data_t *rtsp_output_read_data()
 	return data;
 }
 
-static bool rtsp_output_save_data(obs_data_t *data)
+[[maybe_unused]] static bool rtsp_output_save_data(obs_data_t *data)
 {
 	if (!make_config_dir())
 		return false;
@@ -40,7 +39,7 @@ static bool rtsp_output_save_data(obs_data_t *data)
 	return ret;
 }
 
-static config_t *rtsp_properties_open_config()
+[[maybe_unused]] static config_t *rtsp_properties_open_config()
 {
 	if (!make_config_dir())
 		return nullptr;
@@ -60,7 +59,7 @@ static config_t *rtsp_properties_open_config()
 	return config;
 }
 
-static std::string string_format(char const *format, ...)
+[[maybe_unused]] static std::string string_format(char const *format, ...)
 {
 	va_list argp;
 	va_start(argp, format);
@@ -73,7 +72,7 @@ static std::string string_format(char const *format, ...)
 	return std::string(buf.data(), buf.data() + size - 1);
 }
 
-static std::string rtsp_properties_get_data_volume_display(uint64_t total_bytes)
+[[maybe_unused]] static std::string rtsp_properties_get_data_volume_display(uint64_t total_bytes)
 {
 	const uint64_t kb = 1024;
 	const uint64_t mb = kb * 1024;
@@ -96,7 +95,7 @@ static std::string rtsp_properties_get_data_volume_display(uint64_t total_bytes)
 	return string_format("%.1f TB", double(total_bytes) / tb);
 }
 
-static encoder_codec get_encoder_codec(const obs_encoder_t *encoder)
+[[maybe_unused]] static encoder_codec get_encoder_codec(const obs_encoder_t *encoder)
 {
 	const char *const codec = obs_encoder_get_codec(encoder);
 	if (strcmp(codec, "h264") == 0) {
@@ -113,5 +112,3 @@ static encoder_codec get_encoder_codec(const obs_encoder_t *encoder)
 	}
 	return UNKNOW;
 }
-
-#endif // RTSP_HELPER_H
