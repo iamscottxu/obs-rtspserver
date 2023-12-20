@@ -42,11 +42,11 @@ jobs:
     steps:
       - name: Get latest release info
         id: latest_release
-        uses: kaliber5/action-get-release@v1
+        uses: cardinalby/git-get-release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          owner: 'obsproject'
-          repo: 'obs-studio'
+          repo: 'obsproject/obs-studio'
           latest: true
           
   get_plugin_info:
@@ -311,9 +311,10 @@ jobs:
 
       - name: 'Get last release info'
         id: get_last_release
-        uses: kaliber5/action-get-release@v1
+        uses: cardinalby/git-get-release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           latest: true
       
       - name: 'Create changelog text'
