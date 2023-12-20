@@ -39,7 +39,7 @@ package_obs_plugin() {
 
         step "Install Packages.app"
         PACKAGES_VOLUME=$(hdiutil info -plist | grep "/Volumes/Packages" | sed 's/<string>\/Volumes\/\([^<]*\)<\/string>/\1/' | sed -e 's/^[[:space:]]*//')
-        sudo installer -pkg "/Volumes/${PACKAGES_VOLUME}/packages/Packages.pkg" -target /
+        sudo installer -pkg "/Volumes/${PACKAGES_VOLUME}/Install Packages.pkg" -target /
         hdiutil detach "/Volumes/${PACKAGES_VOLUME}"
     fi
 
