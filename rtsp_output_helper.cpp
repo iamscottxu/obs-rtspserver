@@ -175,11 +175,7 @@ void RtspOutputHelper::CreateAudioEncoder()
 	}
 	auto trackIndex = 0;
 	for (auto idx = 0; idx < OBS_OUTPUT_MULTI_TRACK; idx++) {
-		if (!config_get_bool(config, CONFIG_SECTIION,
-				     string("AudioTrack")
-					     .append(to_string(idx + 1))
-					     .c_str()))
-			continue;
+		if ((tracks & (1 << idx)) == 0) continue;
 		auto audioEncoder = obs_audio_encoder_create(
 			obs_encoder_get_id(encoder),
 			string("rtsp_output_audio_track")

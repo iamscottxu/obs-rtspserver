@@ -293,6 +293,7 @@ void RtspProperties::LoadConfig(config_t *config) const
 {
 	ui->checkBoxAuto->setChecked(
 		config_get_bool(config, CONFIG_SECTIION, "AutoStart"));
+	/*
 	ui->checkBoxAudioTrack1->setChecked(
 		config_get_bool(config, CONFIG_SECTIION, "AudioTrack1"));
 	ui->checkBoxAudioTrack2->setChecked(
@@ -305,15 +306,26 @@ void RtspProperties::LoadConfig(config_t *config) const
 		config_get_bool(config, CONFIG_SECTIION, "AudioTrack5"));
 	ui->checkBoxAudioTrack6->setChecked(
 		config_get_bool(config, CONFIG_SECTIION, "AudioTrack6"));
+        */
+	{
+		auto tracks =
+			config_get_uint(config, CONFIG_SECTIION, "AudioTracks");
+		ui->checkBoxAudioTrack1->setChecked(tracks & (1 << 0));
+		ui->checkBoxAudioTrack2->setChecked(tracks & (1 << 1));
+		ui->checkBoxAudioTrack3->setChecked(tracks & (1 << 2));
+		ui->checkBoxAudioTrack4->setChecked(tracks & (1 << 3));
+		ui->checkBoxAudioTrack5->setChecked(tracks & (1 << 4));
+		ui->checkBoxAudioTrack6->setChecked(tracks & (1 << 5));
+	}
 }
 
 void RtspProperties::SaveConfig(config_t *config) const
 {
 	if (!config)
 		return;
-
 	config_set_bool(config, CONFIG_SECTIION, "AutoStart",
 			ui->checkBoxAuto->isChecked());
+	/*
 	config_set_bool(config, CONFIG_SECTIION, "AudioTrack1",
 			ui->checkBoxAudioTrack1->isChecked());
 	config_set_bool(config, CONFIG_SECTIION, "AudioTrack2",
@@ -326,5 +338,14 @@ void RtspProperties::SaveConfig(config_t *config) const
 			ui->checkBoxAudioTrack5->isChecked());
 	config_set_bool(config, CONFIG_SECTIION, "AudioTrack6",
 			ui->checkBoxAudioTrack6->isChecked());
+	*/
+	uint64_t tracks = 0;
+	tracks |= ui->checkBoxAudioTrack1->isChecked() ? (1 << 0) : 0;
+	tracks |= ui->checkBoxAudioTrack2->isChecked() ? (1 << 1) : 0;
+	tracks |= ui->checkBoxAudioTrack3->isChecked() ? (1 << 2) : 0;
+	tracks |= ui->checkBoxAudioTrack4->isChecked() ? (1 << 3) : 0;
+	tracks |= ui->checkBoxAudioTrack5->isChecked() ? (1 << 4) : 0;
+	tracks |= ui->checkBoxAudioTrack6->isChecked() ? (1 << 5) : 0;
+	config_set_uint(config, CONFIG_SECTIION, "AudioTracks", tracks);
 	config_save(config);
 }
