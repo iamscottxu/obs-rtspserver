@@ -46,6 +46,7 @@ struct rtsp_out_data {
 	std::array<xop::MediaChannelId, OBS_OUTPUT_MULTI_TRACK> channel_ids;
 	volatile uint64_t total_bytes_sent = 0;
 	volatile uint32_t enabled_audio_channels_count = 0;
+	volatile bool output_audio = false;
 
 	std::unique_ptr<xop::EventLoop> event_loop;
 	std::shared_ptr<xop::RtspServer> server;
@@ -339,6 +340,7 @@ static void rtsp_output_rtsp_start(void *data)
 	const auto port =
 		static_cast<uint16_t>(obs_data_get_int(settings, "port"));
 	const auto url_suffix = obs_data_get_string(settings, "url_suffix");
+	out_data->output_audio = obs_data_get_bool(settings, "output_audio");
 
 	xop::MediaSession *session = xop::MediaSession::CreateNew(
 		url_suffix, out_data->enabled_audio_channels_count + 1);
@@ -352,6 +354,7 @@ static void rtsp_output_rtsp_start(void *data)
 	     index++) {
 		if (!out_data->enabled_channels[index])
 			continue;
+	if (out_data->output_audio)
 		if (!rtsp_output_add_audio_channel(
 			    data, session, index,
 			    out_data->channel_ids[index])) {
@@ -552,7 +555,7 @@ static void rtsp_output_data(void *data, struct encoder_packet *packet)
 	//if (out_data->num_clients > 0) {
 	if (packet->type == OBS_ENCODER_VIDEO)
 		rtsp_output_video(data, packet);
-	else if (packet->type == OBS_ENCODER_AUDIO)
+	else if (packet->type == OBS_ENCODER_AUDIO && out_data->output_audio)
 		rtsp_output_audio(data, packet);
 	//} else if (!stopping(out_data)) {
 	//obs_output_pause(out_data->output, true);
@@ -570,6 +573,7 @@ static void rtsp_output_defaults(obs_data_t *defaults)
 	obs_data_set_default_int(defaults, "port", 554);
 #endif
 	obs_data_set_default_string(defaults, "url_suffix", "live");
+	obs_data_set_default_bool(defaults, "output_audio", true);
 	obs_data_set_default_bool(defaults, "authentication", false);
 	obs_data_set_default_string(defaults, "authentication_realm", "");
 	obs_data_set_default_string(defaults, "authentication_username", "");
@@ -615,6 +619,10 @@ static obs_properties_t *rtsp_output_properties(void *data)
 		props, "url_suffix",
 		obs_module_text("RtspOutput.Properties.UrlSuffix"),
 		OBS_TEXT_DEFAULT);
+
+	obs_properties_add_bool(
+		props, "output_audio",
+		obs_module_text("RtspOutput.Properties.OutputAudio"));
 
 	obs_properties_t *auth_group = obs_properties_create();
 	obs_properties_add_text(

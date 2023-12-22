@@ -162,6 +162,17 @@ void RtspOutputHelper::CreateAudioEncoder()
 
 	const auto config = rtsp_properties_open_config();
 
+	auto tracks =
+		static_cast<uint8_t>(config_get_uint(config, CONFIG_SECTIION, "AudioTracks"));
+	{
+		auto outputData = GetSettings();
+		if (tracks == 0) {
+			obs_data_set_bool(outputData, "output_audio", false);
+			tracks = 0x1;
+		} else obs_data_set_bool(outputData, "output_audio", true);
+		UpdateSettings(outputData);
+		obs_data_release(outputData);
+	}
 	auto trackIndex = 0;
 	for (auto idx = 0; idx < OBS_OUTPUT_MULTI_TRACK; idx++) {
 		if (!config_get_bool(config, CONFIG_SECTIION,
