@@ -40,9 +40,8 @@ struct rtsp_out_data {
 	volatile bool stopping;
 	volatile uint64_t stop_ts;
 
-	volatile uint32_t num_clients = 0;
+	//volatile uint32_t num_clients = 0;
 	std::array<uint32_t, OBS_OUTPUT_MULTI_TRACK> audio_timestamp_clocks;
-	std::array<bool, OBS_OUTPUT_MULTI_TRACK> enabled_channels;
 	std::array<xop::MediaChannelId, OBS_OUTPUT_MULTI_TRACK> channel_ids;
 	volatile uint64_t total_bytes_sent = 0;
 	volatile uint32_t enabled_audio_channels_count = 0;
@@ -258,16 +257,11 @@ static bool rtsp_output_add_audio_channel(void *data,
 	const auto audio_encoder =
 		obs_output_get_audio_encoder(out_data->output, idx);
 	if (audio_encoder == nullptr)
-		return false;
+		return true;
 	const auto audio = obs_encoder_audio(audio_encoder);
 	const auto audio_channels = audio_output_get_channels(audio);
 	const auto audio_sample_rate =
 		obs_encoder_get_sample_rate(audio_encoder);
-	uint8_t *extra_data = nullptr;
-	size_t extra_data_size = 0;
-	if (obs_encoder_get_extra_data(audio_encoder, &extra_data,
-				       &extra_data_size)) {
-	}
 	session->AddSource(
 		channel_id,
 		xop::AACSource::CreateNew(audio_sample_rate,
@@ -292,14 +286,9 @@ static bool rtsp_output_start(void *data)
 		static_cast<uint16_t>(obs_data_get_int(settings, "port"));
 
 	uint32_t enabled_audio_channels_count = 0;
-	for (size_t index = 0; index < out_data->enabled_channels.size();
-	     index++) {
+	for (size_t index = 0; index < OBS_OUTPUT_MULTI_TRACK; index++) {
 		if (obs_output_get_audio_encoder(out_data->output, index) ==
-		    nullptr) {
-			out_data->enabled_channels[index] = false;
-			continue;
-		}
-		out_data->enabled_channels[index] = true;
+		    nullptr) continue;
 		out_data->channel_ids[index] = static_cast<xop::MediaChannelId>(
 			++enabled_audio_channels_count);
 	}
@@ -350,11 +339,8 @@ static void rtsp_output_rtsp_start(void *data)
 		return;
 	}
 
-	for (size_t index = 0; index < out_data->enabled_channels.size();
-	     index++) {
-		if (!out_data->enabled_channels[index])
-			continue;
 	if (out_data->output_audio)
+	for (size_t index = 0; index < OBS_OUTPUT_MULTI_TRACK; index++) {
 		if (!rtsp_output_add_audio_channel(
 			    data, session, index,
 			    out_data->channel_ids[index])) {
@@ -395,10 +381,9 @@ static void rtsp_output_rtsp_start(void *data)
 		     session->GetMulticastIp(true).c_str());
 		blog(LOG_INFO, "\tipv4 address:        \t%s",
 		     session->GetMulticastIp(false).c_str());
-		for (size_t index = 0;
-		     index < out_data->enabled_channels.size(); index++) {
-			if (!out_data->enabled_channels[index])
-				continue;
+		for (size_t index = 0; index < OBS_OUTPUT_MULTI_TRACK; index++) {
+			if (obs_output_get_audio_encoder(out_data->output, index) ==
+			    nullptr) continue;
 			blog(LOG_INFO, "\tchannel %zu port: \t%d", index,
 			     session->GetMulticastPort(
 				     static_cast<xop::MediaChannelId>(index)));
@@ -447,7 +432,7 @@ static void rtsp_output_actual_stop(rtsp_out_data *out_data, const int code)
 		out_data->session_id = 0;
 	}
 	out_data->server->Stop();
-	out_data->num_clients = 0;
+	//out_data->num_clients = 0;
 
 	if (out_data->frame_queue)
 		out_data->frame_queue.reset();
