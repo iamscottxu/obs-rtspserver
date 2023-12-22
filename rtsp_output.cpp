@@ -294,14 +294,12 @@ static bool rtsp_output_start(void *data)
 	}
 	out_data->enabled_audio_channels_count = enabled_audio_channels_count;
 
-	const uint32_t av_flags =
-		enabled_audio_channels_count > 0 ? 0 : OBS_OUTPUT_VIDEO;
-	if (!obs_output_can_begin_data_capture(out_data->output, av_flags)) {
+	if (!obs_output_can_begin_data_capture(out_data->output, 0)) {
 		set_output_error(out_data, ERROR_BEGIN_DATA_CAPTURE);
 		return false;
 	}
 
-	if (!obs_output_initialize_encoders(out_data->output, av_flags)) {
+	if (!obs_output_initialize_encoders(out_data->output, 0)) {
 		set_output_error(out_data, ERROR_INIT_ENCODERS);
 		return false;
 	}
@@ -313,7 +311,7 @@ static bool rtsp_output_start(void *data)
 		return false;
 	}
 
-	obs_output_begin_data_capture(out_data->output, av_flags);
+	obs_output_begin_data_capture(out_data->output, 0);
 
 	os_atomic_set_bool(&out_data->starting, true);
 
