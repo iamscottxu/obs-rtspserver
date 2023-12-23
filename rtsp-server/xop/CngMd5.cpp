@@ -52,18 +52,19 @@ void CngMd5::GetMd5Hash(const unsigned char *data, const size_t dataSize,
 			unsigned char *outHash)
 {
 #if defined(WIN32) || defined(_WIN32)
+	BCRYPT_HASH_HANDLE hHash = nullptr;
+	PBYTE pbHashObject;
 	if (cbHash_ > MD5_HASH_LENGTH) {
 		LOG_ERROR("**** The generated hash value is too long");
 		goto Cleanup;
 	}
-	const auto pbHashObject = static_cast<PBYTE>(
+	pbHashObject = static_cast<PBYTE>(
 		HeapAlloc(GetProcessHeap(), 0, cbHashObject_));
 	if (nullptr == pbHashObject) {
 		LOG_ERROR("**** memory allocation failed");
 		goto Cleanup;
 	}
 	//create a hash
-	BCRYPT_HASH_HANDLE hHash = nullptr;
 	NTSTATUS status;
 	if (!NT_SUCCESS(status = BCryptCreateHash(hAlgorithm_, &hHash,
 						  pbHashObject, cbHashObject_,

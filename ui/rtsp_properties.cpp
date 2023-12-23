@@ -1,3 +1,4 @@
+#ifdef OBS_RTSPSERVER_ENABLE_UI
 #include <obs-frontend-api.h>
 #include <util/config-file.h>
 #include <QMainWindow>
@@ -318,3 +319,5 @@ void RtspProperties::SaveConfig(config_t *config) const
 			ui->checkBoxAudioTrack6->isChecked());
 	config_save(config);
 }
+
+#endif // OBS_RTSPSERVER_ENABLE_UI
