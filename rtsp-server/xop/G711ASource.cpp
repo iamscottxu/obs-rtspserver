@@ -35,8 +35,8 @@ G711ASource::~G711ASource() = default;
 
 string G711ASource::GetMediaDescription(const uint16_t port)
 {
-	char buf[100] = {0};
-	sprintf(buf, "m=audio %hu RTP/AVP 8", port);
+	char buf[100];
+	snprintf(buf, sizeof(buf), "m=audio %hu RTP/AVP 8", port);
 
 	return buf;
 }

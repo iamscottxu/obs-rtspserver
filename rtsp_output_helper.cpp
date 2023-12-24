@@ -98,6 +98,16 @@ uint64_t RtspOutputHelper::GetTotalBytes() const
 	return obs_output_get_total_bytes(obsOutput);
 }
 
+int RtspOutputHelper::GetTotalFrames() const
+{
+	return obs_output_get_total_frames(obsOutput);
+}
+
+int RtspOutputHelper::GetFramesDropped() const
+{
+	return obs_output_get_frames_dropped(obsOutput);
+}
+
 bool RtspOutputHelper::IsActive() const
 {
 	return obs_output_active(obsOutput);
@@ -121,20 +131,29 @@ void RtspOutputHelper::CreateVideoEncoder()
 		obs_encoder_set_scaled_size(videoEncoder,
 					    outputSettings.rescale_cx,
 					    outputSettings.rescale_cy);
-	obs_encoder_set_video(videoEncoder, obs_output_video(obsOutput));
+	obs_encoder_set_video(videoEncoder, obs_get_video());
+	{
+		auto video = obs_output_video(obsOutput);
+		if (video == nullptr)
+			video = obs_get_video();
+		obs_encoder_set_video(videoEncoder, video);
+	}
 	obs_output_set_video_encoder(obsOutput, videoEncoder);
 }
 
 void RtspOutputHelper::CreateAudioEncoder()
 {
 	obs_encoder_t *encoder;
-	if (outputSettings.adv_out)
+	if (outputSettings.adv_out) {
 		/*if ((encoder = obs_get_encoder_by_name("adv_stream_aac")) ==
 		    nullptr)
 			encoder = obs_get_encoder_by_name(
 				"avc_aac_stream");*/ //OBS 26.0.2 Or Older
-		encoder = obs_get_encoder_by_name("adv_stream_aac");
-
+		/*if ((encoder = obs_get_encoder_by_name("adv_stream_audio")) ==
+		    nullptr) //OBS 30.0.0 Or Older
+		encoder = obs_get_encoder_by_name("adv_stream_aac");*/
+		encoder = obs_get_encoder_by_name("adv_stream_audio");
+	}
 	else
 		encoder = obs_get_encoder_by_name("simple_aac");
 
@@ -144,21 +163,32 @@ void RtspOutputHelper::CreateAudioEncoder()
 
 	const auto config = rtsp_properties_open_config();
 
+	auto tracks =
+		static_cast<uint8_t>(config_get_uint(config, CONFIG_SECTIION, "AudioTracks"));
+	{
+		auto outputData = GetSettings();
+		if (tracks == 0) {
+			obs_data_set_bool(outputData, "output_audio", false);
+			tracks = 0x1;
+		} else obs_data_set_bool(outputData, "output_audio", true);
+		UpdateSettings(outputData);
+		obs_data_release(outputData);
+	}
 	auto trackIndex = 0;
 	for (auto idx = 0; idx < OBS_OUTPUT_MULTI_TRACK; idx++) {
-		if (!config_get_bool(config, CONFIG_SECTIION,
-				     string("AudioTrack")
-					     .append(to_string(idx + 1))
-					     .c_str()))
-			continue;
+		if ((tracks & (1 << idx)) == 0) continue;
 		auto audioEncoder = obs_audio_encoder_create(
 			obs_encoder_get_id(encoder),
 			string("rtsp_output_audio_track")
 				.append(to_string(idx + 1))
 				.c_str(),
 			obs_encoder_get_settings(encoder), idx, nullptr);
-		obs_encoder_set_audio(audioEncoder,
-				      obs_output_audio(obsOutput));
+		{
+			auto audio = obs_output_audio(obsOutput);
+			if (audio == nullptr)
+				audio = obs_get_audio();
+			obs_encoder_set_audio(audioEncoder, audio);
+		}
 		audioEncoders.push_back(audioEncoder);
 		obs_output_set_audio_encoder(obsOutput, audioEncoder,
 					     trackIndex++);

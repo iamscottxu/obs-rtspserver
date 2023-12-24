@@ -6,6 +6,18 @@
 #  LIBOBS_INCLUDE_DIRS
 #  LIBOBS_LIBRARIES
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+  set(OS_MACOS ON)
+  set(OS_POSIX ON)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux|FreeBSD|OpenBSD")
+  set(OS_POSIX ON)
+  string(TOUPPER "${CMAKE_SYSTEM_NAME}" _SYSTEM_NAME_U)
+  set(OS_${_SYSTEM_NAME_U} ON)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+  set(OS_WINDOWS ON)
+  set(OS_POSIX OFF)
+endif()
+
 find_package(PkgConfig QUIET)
 if (PKG_CONFIG_FOUND)
 	pkg_check_modules(_OBS QUIET obs libobs)
@@ -45,8 +57,15 @@ function(find_obs_lib base_name repo_build_path lib_name)
 		set(_build_type_${repo_build_path}${_lib_suffix} "${_build_type_base}${_lib_suffix}/${repo_build_path}")
 	endif()
 
+	if(OS_MACOS)
+      set(_find_library_names 
+		${_${base_name_u}_LIBRARIES} ${lib_name} lib${lib_name} ${lib_name}.dylib lib${lib_name}.dylib)
+	else()
+	  set(_find_library_names 
+	    ${_${base_name_u}_LIBRARIES} ${lib_name} lib${lib_name})
+    endif()
 	find_library(${base_name_u}_LIB
-		NAMES ${_${base_name_u}_LIBRARIES} ${lib_name} lib${lib_name}
+		NAMES ${_find_library_names}
 		HINTS
 			ENV OBS_SOURCE_DIR${_lib_suffix}
 			ENV OBS_SOURCE_DIR

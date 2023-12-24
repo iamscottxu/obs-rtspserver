@@ -30,10 +30,10 @@ H265Source::H265Source(vector<uint8_t> vps, vector<uint8_t> sps,
 		       vector<uint8_t> pps, vector<uint8_t> sei,
 		       const uint32_t framerate)
 	: framerate_(framerate),
-	  vps_(move(vps)),
-	  sps_(move(sps)),
-	  pps_(move(pps)),
-	  sei_(move(sei))
+	  vps_(std::move(vps)),
+	  sps_(std::move(sps)),
+	  pps_(std::move(pps)),
+	  sei_(std::move(sei))
 {
 	payload_ = 96;
 	media_type_ = MediaType::H265;
@@ -58,7 +58,7 @@ H265Source *H265Source::CreateNew(vector<uint8_t> extraData,
 	if (pps_nal_unit != nullptr)
 		pps = pps_nal_unit->GetData();
 
-	return new H265Source(vps, sps, pps, move(sei), framerate);
+	return new H265Source(vps, sps, pps, std::move(sei), framerate);
 }
 
 H265Source::~H265Source() = default;
@@ -67,14 +67,14 @@ H265Source *H265Source::CreateNew(vector<uint8_t> vps, vector<uint8_t> sps,
 				  vector<uint8_t> pps, vector<uint8_t> sei,
 				  const uint32_t framerate)
 {
-	return new H265Source(move(vps), move(sps), move(pps), move(sei),
+	return new H265Source(std::move(vps), std::move(sps), std::move(pps), std::move(sei),
 			      framerate);
 }
 
 string H265Source::GetMediaDescription(const uint16_t port)
 {
-	char buf[100] = {0};
-	sprintf(buf, "m=video %hu RTP/AVP 96", port);
+	char buf[100];
+	snprintf(buf, sizeof(buf), "m=video %hu RTP/AVP 96", port);
 
 	return buf;
 }
@@ -86,7 +86,7 @@ string H265Source::GetAttribute()
 	if (!vps_.empty() && !sps_.empty() && !pps_.empty()) {
 		const auto fmtp =
 			"a=fmtp:96 profile-space=%u;tier-flag=%u;"
-			"profile-id=%u;level-id=%u;interop-constraints=%012I64X;"
+			"profile-id=%u;level-id=%u;interop-constraints=%012llX;"
 			"sprop-vps=%s;sprop-pps=%s;sprop-sps=%s;%s";
 
 		string vps_base64, pps_base64, sps_base64, sei;
@@ -117,7 +117,7 @@ string H265Source::GetAttribute()
 					sps_base64.length() + sei.length();
 		auto buf = vector<char>(buf_size);
 
-		sprintf(buf.data(), fmtp, profile_space, tier_flag, profile_id,
+		snprintf(buf.data(), buf_size, fmtp, profile_space, tier_flag, profile_id,
 			level_id, interop_constraints, vps_base64.c_str(),
 			pps_base64.c_str(), sps_base64.c_str(), sei.c_str());
 		buf[strlen(buf.data()) - 1] = '\0';
@@ -154,28 +154,28 @@ bool H265Source::HandleFrame(const MediaChannelId channelId,
 		if (size_count > MAX_RTP_PAYLOAD_SIZE && end_index > nal_index)
 			size_count -= nal[end_index--]->GetSize() + 2;
 		if (end_index > nal_index) {
-			//Aggregation Packets
-			/*  0                   1                   2                   3
-             *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |                          RTP Header                           |
-             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |   PayloadHdr (Type=48)        |         NALU 1 Size           |
-             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |          NALU 1 HDR           |                               |
-             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+         NALU 1 Data           |
-             * |                   . . .                                       |
-             * |                                                               |
-             * +               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |  . . .        | NALU 2 Size                   | NALU 2 HDR    |
-             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * | NALU 2 HDR    |                                               |
-             * +-+-+-+-+-+-+-+-+              NALU 2 Data                      |
-             * |                   . . .                                       |
-             * |                                                               |
-             * |                                                               |
-             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             */
+		//Aggregation Packets
+		/*  0                   1                   2                   3
+                 *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+                 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                 * |                          RTP Header                           |
+                 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                 * |   PayloadHdr (Type=48)        |         NALU 1 Size           |
+                 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                 * |          NALU 1 HDR           |                               |
+                 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+         NALU 1 Data           |
+                 * |                   . . .                                       |
+                 * |                                                               |
+                 * +               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                 * |  . . .        | NALU 2 Size                   | NALU 2 HDR    |
+                 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                 * | NALU 2 HDR    |                                               |
+                 * +-+-+-+-+-+-+-+-+              NALU 2 Data                      |
+                 * |                   . . .                                       |
+                 * |                                                               |
+                 * |                                                               |
+                 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                 */
 			rtp_packet.size = RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE +
 					  static_cast<uint16_t>(size_count);
 			rtp_packet.last = 1;
@@ -219,19 +219,19 @@ bool H265Source::HandleFrame(const MediaChannelId channelId,
 			if (!send_frame_callback_(channelId, rtp_packet))
 				return false;
 		} else {
-			//Single NAL Unit Packets
-			/*  0                   1                   2                   3
-             *   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |           PayloadHdr          |                               |
-             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               |
-             * |                                                               |
-             * |                                                               |
-             * |                  NAL unit payload data                        |
-             * |                                                               |
-             * |                                                               |
-             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             */
+		//Single NAL Unit Packets
+		/*  0                   1                   2                   3
+                 *   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+                 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                 * |           PayloadHdr          |                               |
+                 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               |
+                 * |                                                               |
+                 * |                                                               |
+                 * |                  NAL unit payload data                        |
+                 * |                                                               |
+                 * |                                                               |
+                 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                 */
 			const auto nal_unit = nal[nal_index++];
 			if (nal_unit->GetSize() <= MAX_RTP_PAYLOAD_SIZE) {
 				const auto size = nal_unit->CopyData(
@@ -245,8 +245,8 @@ bool H265Source::HandleFrame(const MediaChannelId channelId,
 							  rtp_packet))
 					return false;
 			} else {
-				//Fragmentation Units
-				/*  0                   1                   2                   3
+		//Fragmentation Units
+		/*  0                   1                   2                   3
                  *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
                  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
                  * |    PayloadHdr (Type=49)       |   FU header   |               |
@@ -335,7 +335,6 @@ uint32_t H265Source::GetTimestamp()
 	return ts;
 #else */
 	//auto time_point = chrono::time_point_cast<chrono::milliseconds>(chrono::system_clock::now());
-	//auto time_point = chrono::time_point_cast<chrono::milliseconds>(chrono::steady_clock::now());
 	const auto time_point = chrono::time_point_cast<chrono::microseconds>(
 		chrono::steady_clock::now());
 	return static_cast<uint32_t>(

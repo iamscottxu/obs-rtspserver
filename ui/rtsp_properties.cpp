@@ -160,12 +160,21 @@ void RtspProperties::onLineEditPasswordTextChanged(const QString &value) const
 void RtspProperties::onStatusTimerTimeout()
 {
 	const auto totalBytes = rtspOutputHelper->GetTotalBytes();
+	const auto totalFrames = rtspOutputHelper->GetTotalFrames();
+	const auto framesDropped = rtspOutputHelper->GetFramesDropped();
 	const auto bitps = (totalBytes - lastTotalBytes) * 8;
 	lastTotalBytes = totalBytes;
 	ui->labelTotalData->setText(
 		rtsp_properties_get_data_volume_display(totalBytes).c_str());
 	ui->labelBitrate->setText(QString("%1 kb/s").arg(
-		bitps / 1000 + (bitps % 1000 >= 500 ? 1 : 0)));
+		bitps / 1000.0, 0, 'f', 0));
+	ui->labelFramesDropped->setText(
+		QString("%1 / %2 (%3%)")
+		.arg(framesDropped)
+		.arg(totalFrames)
+		.arg(totalFrames == 0 ? 0
+				     : framesDropped * 100.0 / totalFrames,
+			     0, 'f', 1));
 }
 
 void RtspProperties::onButtonStatusChanging(const bool outputStarted,
@@ -193,6 +202,7 @@ void RtspProperties::onStatusTimerStatusChanging(const bool start)
 		statusTimer->stop();
 		ui->labelTotalData->setText("0.0 MB");
 		ui->labelBitrate->setText("0 kb/s");
+		ui->labelFramesDropped->setText("0 / 0 (0.0%)");
 	}
 }
 
@@ -283,38 +293,35 @@ void RtspProperties::LoadConfig(config_t *config) const
 {
 	ui->checkBoxAuto->setChecked(
 		config_get_bool(config, CONFIG_SECTIION, "AutoStart"));
-	ui->checkBoxAudioTrack1->setChecked(
-		config_get_bool(config, CONFIG_SECTIION, "AudioTrack1"));
-	ui->checkBoxAudioTrack2->setChecked(
-		config_get_bool(config, CONFIG_SECTIION, "AudioTrack2"));
-	ui->checkBoxAudioTrack3->setChecked(
-		config_get_bool(config, CONFIG_SECTIION, "AudioTrack3"));
-	ui->checkBoxAudioTrack4->setChecked(
-		config_get_bool(config, CONFIG_SECTIION, "AudioTrack4"));
-	ui->checkBoxAudioTrack5->setChecked(
-		config_get_bool(config, CONFIG_SECTIION, "AudioTrack5"));
-	ui->checkBoxAudioTrack6->setChecked(
-		config_get_bool(config, CONFIG_SECTIION, "AudioTrack6"));
+
+	{
+		auto tracks =
+			config_get_uint(config, CONFIG_SECTIION, "AudioTracks");
+		ui->checkBoxAudioTrack1->setChecked(tracks & (1 << 0));
+		ui->checkBoxAudioTrack2->setChecked(tracks & (1 << 1));
+		ui->checkBoxAudioTrack3->setChecked(tracks & (1 << 2));
+		ui->checkBoxAudioTrack4->setChecked(tracks & (1 << 3));
+		ui->checkBoxAudioTrack5->setChecked(tracks & (1 << 4));
+		ui->checkBoxAudioTrack6->setChecked(tracks & (1 << 5));
+	}
 }
 
 void RtspProperties::SaveConfig(config_t *config) const
 {
 	if (!config)
 		return;
-
 	config_set_bool(config, CONFIG_SECTIION, "AutoStart",
 			ui->checkBoxAuto->isChecked());
-	config_set_bool(config, CONFIG_SECTIION, "AudioTrack1",
-			ui->checkBoxAudioTrack1->isChecked());
-	config_set_bool(config, CONFIG_SECTIION, "AudioTrack2",
-			ui->checkBoxAudioTrack2->isChecked());
-	config_set_bool(config, CONFIG_SECTIION, "AudioTrack3",
-			ui->checkBoxAudioTrack3->isChecked());
-	config_set_bool(config, CONFIG_SECTIION, "AudioTrack4",
-			ui->checkBoxAudioTrack4->isChecked());
-	config_set_bool(config, CONFIG_SECTIION, "AudioTrack5",
-			ui->checkBoxAudioTrack5->isChecked());
-	config_set_bool(config, CONFIG_SECTIION, "AudioTrack6",
-			ui->checkBoxAudioTrack6->isChecked());
+
+	{
+		uint64_t tracks = 0;
+		tracks |= ui->checkBoxAudioTrack1->isChecked() ? (1 << 0) : 0;
+		tracks |= ui->checkBoxAudioTrack2->isChecked() ? (1 << 1) : 0;
+		tracks |= ui->checkBoxAudioTrack3->isChecked() ? (1 << 2) : 0;
+		tracks |= ui->checkBoxAudioTrack4->isChecked() ? (1 << 3) : 0;
+		tracks |= ui->checkBoxAudioTrack5->isChecked() ? (1 << 4) : 0;
+		tracks |= ui->checkBoxAudioTrack6->isChecked() ? (1 << 5) : 0;
+		config_set_uint(config, CONFIG_SECTIION, "AudioTracks", tracks);
+	}
 	config_save(config);
 }

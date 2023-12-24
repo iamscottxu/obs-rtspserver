@@ -33,13 +33,13 @@ package_obs_plugin() {
     if ! type packagesbuild &>/dev/null; then
         status "Setting up dependency Packages.app"
         step "Download..."
-        check_and_fetch "http://s.sudre.free.fr/Software/files/Packages.dmg" "6afdd25386295974dad8f078b8f1e41cabebd08e72d970bf92f707c7e48b16c9"
+        check_and_fetch "http://s.sudre.free.fr/Software/files/Packages.dmg" "9d9a73a64317ea6697a380014d2e5c8c8188b59d5fb8ce8872e56cec06cd78e8"
         step "Mount disk image..."
         hdiutil attach -noverify Packages.dmg
 
         step "Install Packages.app"
         PACKAGES_VOLUME=$(hdiutil info -plist | grep "/Volumes/Packages" | sed 's/<string>\/Volumes\/\([^<]*\)<\/string>/\1/' | sed -e 's/^[[:space:]]*//')
-        sudo installer -pkg "/Volumes/${PACKAGES_VOLUME}/packages/Packages.pkg" -target /
+        sudo installer -pkg "/Volumes/${PACKAGES_VOLUME}/Install Packages.pkg" -target /
         hdiutil detach "/Volumes/${PACKAGES_VOLUME}"
     fi
 

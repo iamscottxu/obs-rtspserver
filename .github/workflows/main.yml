@@ -14,17 +14,17 @@ on:
 
 env:
   PRODUCT_NAME: 'obs-rtspserver'
-  DEPS_VERSION_MAC: '2023-01-06'
-  DEPS_HASH_MAC: '811c022a178230d3b9ad1eeb8ae9e1de0e6017b69364f50b183e36246509e0e8'
+  DEPS_VERSION_MAC: '2023-11-03'
+  DEPS_HASH_MAC: '90c2fc069847ec2768dcc867c1c63b112c615ed845a907dc44acab7a97181974'
   #QT_VERSION_MAC: '2022-02-13'
-  QT_HASH_MAC: 'dfa3c48ee46765029d06773ba08d84b3f11360547171c8e736019c77fabff80d'
-  DEPS_VERSION_WIN: '2023-03-06'
-  DEPS_X64_HASH_WIN: '0498193e483826f0736a3871b71240b66d40656f181a24aec54017a724790d15'
-  DEPS_X86_HASH_WIN: 'dd5d5ead658916207350a2554715cc1944e048a7ad1d6b6a60607c44d457d13b'
-  QT_X64_HASH_WIN: 'd4a1fa152011222adfbdcc23f6324f001f6308184559a1655974651941218c7b'
-  QT_X86_HASH_WIN: '22343a90567ab7329a4d7228db8303f2b384a895e6d5ad7ca3086247d8c58caf'
+  QT_HASH_MAC: 'ba4a7152848da0053f63427a2a2cb0a199af3992997c0db08564df6f48c9db98'
+  DEPS_VERSION_WIN: '2023-11-03'
+  DEPS_X64_HASH_WIN: 'd0825a6fb65822c993a3059edfba70d72d2e632ef74893588cf12b1f0d329ce6'
+  DEPS_X86_HASH_WIN: 'b69c864275189464483c240ef3f25ea16fba3050b136fe6c3db6e9ee63036683'
+  QT_X64_HASH_WIN: 'bc57dedf76b47119a6dce0435a2f21b35b08c8f2948b1cb34a157320f77732d1'
+  QT_X86_HASH_WIN: '50129f9836ef987c23db2e0535085fa2d52474ef0de44bc11c9df6cfa602b785'
   #QT_VERSION_WIN: '5.15.2'
-  NSIS_VERSION_WIN: '3.08'
+  NSIS_VERSION_WIN: '3.09'
 jobs:
   get_obs_info:
     name: '01 - Get obs-studio last release info'
@@ -42,11 +42,11 @@ jobs:
     steps:
       - name: Get latest release info
         id: latest_release
-        uses: kaliber5/action-get-release@v1
+        uses: cardinalby/git-get-release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          owner: 'obsproject'
-          repo: 'obs-studio'
+          repo: 'obsproject/obs-studio'
           latest: true
           
   get_plugin_info:
@@ -56,7 +56,7 @@ jobs:
       git_tag_name: ${{ steps.tag_name.outputs.tag }}
     steps:
       - name: 'Get plugin git tag'
-        uses: devops-actions/action-get-tag@v1.0.1
+        uses: devops-actions/action-get-tag@v1.0.2
         id: tag_name
           
   clang_check:
@@ -65,7 +65,7 @@ jobs:
     needs: [get_plugin_info]
     steps:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: 'plugin'
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
@@ -82,7 +82,7 @@ jobs:
           
   windows_build:
     name: '03 - Windows (Latest)'
-    runs-on: [windows-2019]
+    runs-on: [windows-2022]
     needs: [get_obs_info, get_plugin_info, clang_check]
     strategy:
       matrix:
@@ -96,14 +96,14 @@ jobs:
         uses: microsoft/setup-msbuild@v1
 
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: 'plugin'
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
           
       - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.latest_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: obsproject/obs-studio
           path: 'obs-studio'
@@ -128,14 +128,14 @@ jobs:
         run: CI/windows/04_package_plugin.ps1 -BuildArch "${{ matrix.arch }}-bit"
         
       - name: 'Upload build Artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-${{ matrix.arch }}'
           path: '${{ github.workspace }}/plugin/*-windows-*.zip'
           
   windows_package:
     name: '04 - Windows Installer'
-    runs-on: [windows-2019]
+    runs-on: [windows-2022]
     needs: [get_plugin_info, windows_build]
     env:
       #CMAKE_GENERATOR: "Visual Studio 17 2022"
@@ -143,20 +143,20 @@ jobs:
       OBS_VERSION: "${{ needs.get_obs_info.outputs.latest_tag_name }}"
     steps:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: 'plugin'
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
           
       - name: 'Download 64-bit artifact'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-64'
           path: 'plugin'
 
       - name: 'Download 32-bit artifact'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-32'
           path: 'plugin'
@@ -173,7 +173,7 @@ jobs:
           CI/windows/04_package_plugin.ps1 -BuildArch 64-bit -BuildInstaller -CombinedArchs
         
       - name: 'Upload build Artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: '${{ env.PRODUCT_NAME }}-windows-release'
           path: '${{ github.workspace }}/plugin/${{ env.PRODUCT_NAME }}-*-windows-all*.*'
@@ -184,7 +184,8 @@ jobs:
     needs: [get_obs_info, get_plugin_info, clang_check]
     strategy:
       matrix:
-        ubuntu: ['ubuntu-20.04', 'ubuntu-22.04']
+        #ubuntu: ['ubuntu-20.04', 'ubuntu-22.04']
+        ubuntu: ['ubuntu-22.04']
     env:
       OBS_VERSION: "${{ needs.get_obs_info.outputs.latest_tag_name }}"
     defaults:
@@ -192,14 +193,14 @@ jobs:
         shell: bash
     steps:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: 'plugin'
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
           
       - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.latest_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: obsproject/obs-studio
           path: 'obs-studio'
@@ -224,7 +225,7 @@ jobs:
         run: source CI/linux/04_package_plugin.sh
 
       - name: 'Upload build Artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: '${{ env.PRODUCT_NAME }}-linux-${{ matrix.ubuntu }}'
           path: '${{ github.workspace }}/plugin/build/${{ env.PRODUCT_NAME }}-*-linux.*'
@@ -245,14 +246,14 @@ jobs:
         shell: bash
     steps:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: 'plugin'
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           submodules: 'recursive'
           
       - name: 'Checkout OBS v${{ needs.get_obs_info.outputs.latest_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: obsproject/obs-studio
           path: 'obs-studio'
@@ -289,7 +290,7 @@ jobs:
         run: source CI/macos/04_package_plugin.sh --architecture "${{ matrix.arch }}"
 
       - name: 'Upload build Artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: '${{ env.PRODUCT_NAME }}-macos-${{ matrix.arch }}'
           path: '${{ github.workspace }}/plugin/build/*-macos-${{ matrix.arch }}.*'
@@ -303,21 +304,22 @@ jobs:
 
     steps:
       - name: 'Checkout plugin ${{ needs.get_plugin_info.outputs.git_tag_name }}'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: '${{ needs.get_plugin_info.outputs.git_tag_name }}'
           fetch-depth: 0
 
       - name: 'Get last release info'
         id: get_last_release
-        uses: kaliber5/action-get-release@v1
+        uses: cardinalby/git-get-release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           latest: true
       
       - name: 'Create changelog text'
         id: create_changelog_text
-        uses: dlavrenuek/conventional-changelog-action@v1.2.2
+        uses: dlavrenuek/conventional-changelog-action@v1.2.3
         with:
           from: "${{ steps.get_last_release.outputs.tag_name }}"
           to: "${{ needs.get_plugin_info.outputs.git_tag_name }}"
@@ -349,7 +351,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Download release artifacts'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: 'Upload Windows .zip artifact to release'
         uses: shogo82148/actions-upload-release-asset@v1
@@ -369,14 +371,14 @@ jobs:
           asset_content_type: application/x-msdownload
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 'Upload linux qt5 .tar.gz artifact to release'
-        uses: shogo82148/actions-upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.tar.gz
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.tar.gz
-          asset_content_type: application/x-gzip
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      #- name: 'Upload linux qt5 .tar.gz artifact to release'
+      #  uses: shogo82148/actions-upload-release-asset@v1
+      #  with:
+      #    upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #    asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.tar.gz
+      #    asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.tar.gz
+      #    asset_content_type: application/x-gzip
+      #    github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload linux qt6 .tar.gz artifact to release'
         uses: shogo82148/actions-upload-release-asset@v1
@@ -387,14 +389,14 @@ jobs:
           asset_content_type: application/x-gzip
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 'Upload linux qt5 .deb artifact to release'
-        uses: shogo82148/actions-upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.deb
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.deb
-          asset_content_type: application/vnd.debian.binary-package
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+    #  - name: 'Upload linux qt5 .deb artifact to release'
+    #    uses: shogo82148/actions-upload-release-asset@v1
+    #    with:
+    #      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    #      asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.deb
+    #      asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.deb
+    #      asset_content_type: application/vnd.debian.binary-package
+    #      github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload linux qt6 .deb artifact to release'
         uses: shogo82148/actions-upload-release-asset@v1
@@ -405,20 +407,20 @@ jobs:
           asset_content_type: application/vnd.debian.binary-package
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 'Upload linux qt5 .rpm artifact to release'
-        uses: shogo82148/actions-upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.rpm
-          asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.rpm
-          asset_content_type: application/vnd.debian.binary-package
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+    #  - name: 'Upload linux qt5 .rpm artifact to release'
+    #    uses: shogo82148/actions-upload-release-asset@v1
+    #    with:
+    #      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    #      asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.rpm
+    #      asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt5.rpm
+    #      asset_content_type: application/vnd.debian.binary-package
+    #      github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Upload linux qt6 .rpm artifact to release'
         uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-20.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.rpm
+          asset_path: ${{ github.workspace }}/${{ env.PRODUCT_NAME }}-linux-ubuntu-22.04/obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux.rpm
           asset_name: obs-rtspserver-${{ needs.get_plugin_info.outputs.git_tag_name }}-linux-qt6.rpm
           asset_content_type: application/vnd.debian.binary-package
           github_token: ${{ secrets.GITHUB_TOKEN }}

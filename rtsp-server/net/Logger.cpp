@@ -59,12 +59,14 @@ void Logger::Log(const Priority priority, const char *__file,
 {
 	std::unique_lock lock(mutex_);
 
-	char buf[2048] = {0};
-	sprintf(buf, "[%s][%s:%s:%d] ", Priority_To_String[priority], __file,
+	char buf[2048];
+	auto buf_ptr = buf;
+	auto buf_end = buf + sizeof(buf);
+	buf_ptr += snprintf(buf_ptr, buf_end - buf_ptr, "[%s][%s:%s:%d] ", Priority_To_String[priority], __file,
 		__func, __line);
 	va_list args;
 	va_start(args, fmt);
-	vsprintf(buf + strlen(buf), fmt, args);
+	vsnprintf(buf_ptr, buf_end - buf_ptr, fmt, args);
 	va_end(args);
 
 	this->Write(std::string(buf));
@@ -75,11 +77,13 @@ void Logger::Log2(const Priority priority, const char *fmt, ...)
 {
 	std::unique_lock lock(mutex_);
 
-	char buf[4096] = {0};
-	sprintf(buf, "[%s] ", Priority_To_String[priority]);
+	char buf[4096];
+	auto buf_ptr = buf;
+	auto buf_end = buf + sizeof(buf);
+	buf_ptr += snprintf(buf_ptr, buf_end - buf_ptr, "[%s] ", Priority_To_String[priority]);
 	va_list args;
 	va_start(args, fmt);
-	vsprintf(buf + strlen(buf), fmt, args);
+	vsnprintf(buf_ptr, buf_end - buf_ptr, fmt, args);
 	va_end(args);
 
 	this->Write(std::string(buf));
