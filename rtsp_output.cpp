@@ -379,12 +379,12 @@ static void rtsp_output_rtsp_start(void *data)
 		     session->GetMulticastIp(true).c_str());
 		blog(LOG_INFO, "\tipv4 address:        \t%s",
 		     session->GetMulticastIp(false).c_str());
-		for (size_t index = 0; index < OBS_OUTPUT_MULTI_TRACK; index++) {
-			if (obs_output_get_audio_encoder(out_data->output, index) ==
-			    nullptr) continue;
-			blog(LOG_INFO, "\tchannel %zu port: \t%d", index,
-			     session->GetMulticastPort(
-				     static_cast<xop::MediaChannelId>(index)));
+		blog(LOG_INFO, "\tchannel 0 port (video): \t%d",
+		     session->GetMulticastPort(static_cast<xop::MediaChannelId>(0)));
+		for (size_t index = 1; index < OBS_OUTPUT_MULTI_TRACK + 1 ; index++) {
+			auto channel_port = session->GetMulticastPort(static_cast<xop::MediaChannelId>(index));
+			if (channel_port == 0) break;
+			blog(LOG_INFO, "\tchannel %zu port (audio): \t%d", index, channel_port);
 		}
 		blog(LOG_INFO,
 		     "------------------------------------------------");
