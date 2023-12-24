@@ -23,14 +23,13 @@
 #include "Base64Encode.h"
 #include "Nal.h"
 #include "H264NalUnit.h"
-#include "H265Source.h"
 
 using namespace xop;
 using namespace std;
 
 H264Source::H264Source(vector<uint8_t> sps, vector<uint8_t> pps,
 		       const uint32_t framerate)
-	: framerate_(framerate), sps_(move(sps)), pps_(move(pps))
+	: framerate_(framerate), sps_(std::move(sps)), pps_(std::move(pps))
 {
 	payload_ = 96;
 	media_type_ = MediaType::H264;
@@ -57,15 +56,15 @@ H264Source *H264Source::CreateNew(vector<uint8_t> extraData,
 H264Source *H264Source::CreateNew(vector<uint8_t> sps, vector<uint8_t> pps,
 				  const uint32_t framerate)
 {
-	return new H264Source(move(sps), move(pps), framerate);
+	return new H264Source(std::move(sps), std::move(pps), framerate);
 }
 
 H264Source::~H264Source() = default;
 
 string H264Source::GetMediaDescription(const uint16_t port)
 {
-	char buf[100] = {0};
-	sprintf(buf, "m=video %hu RTP/AVP 96", port); // \r\nb=AS:2000
+	char buf[100];
+	snprintf(buf, sizeof(buf), "m=video %hu RTP/AVP 96", port); // \r\nb=AS:2000
 	return buf;
 }
 
@@ -89,7 +88,7 @@ string H264Source::GetAttribute()
 					pps_base64.length();
 		auto buf = vector<char>(buf_size);
 
-		sprintf(buf.data(), fmtp, profile_level_id, sps_base64.c_str(),
+		snprintf(buf.data(), buf_size, fmtp, profile_level_id, sps_base64.c_str(),
 			pps_base64.c_str());
 
 		sdp.append(buf.data());
@@ -124,24 +123,24 @@ bool H264Source::HandleFrame(const MediaChannelId channelId,
 		if (size_count > MAX_RTP_PAYLOAD_SIZE && end_index > nal_index)
 			size_count -= nal[end_index--]->GetSize() + 2;
 		if (end_index > nal_index) {
-			//Single-Time Aggregation Packet (STAP-A)
-			/*  0                   1                   2                   3
-             *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |                          RTP Header                           |
-             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |STAP-A NAL HDR |         NALU 1 Size           |   NALU 1 HDR  |
-             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |                         NALU 1 Data                           |
-             * :                                                               :
-             * |               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |               |         NALU 2 Size           |   NALU 2 HDR  |               
-             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |                         NALU 2 Data                           |
-             * :                                                               :
-             * |                                                               |
-             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             */
+		//Single-Time Aggregation Packet (STAP-A)
+		/*  0                   1                   2                   3
+                 *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+                 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                 * |                          RTP Header                           |
+                 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                 * |STAP-A NAL HDR |         NALU 1 Size           |   NALU 1 HDR  |
+                 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                 * |                         NALU 1 Data                           |
+                 * :                                                               :
+                 * |               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                 * |               |         NALU 2 Size           |   NALU 2 HDR  |
+                 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                 * |                         NALU 2 Data                           |
+                 * :                                                               :
+                 * |                                                               |
+                 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                 */
 			rtp_packet.size = RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE +
 					  static_cast<uint16_t>(size_count);
 			rtp_packet.last = 1;
@@ -177,18 +176,18 @@ bool H264Source::HandleFrame(const MediaChannelId channelId,
 			if (!send_frame_callback_(channelId, rtp_packet))
 				return false;
 		} else {
-			//Single NAL Unit Packets
-			/*  0                   1                   2                   3
-             *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |F|NRI|  type   |                                               |
-             * +-+-+-+-+-+-+-+-+                                               |
-             * |                                                               |
-             * |               Bytes 2..n of a Single NAL unit                 |
-             * |                                                               |
-             * |                                                               |
-             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             */
+		//Single NAL Unit Packets
+		/*  0                   1                   2                   3
+                 *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+                 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                 * |F|NRI|  type   |                                               |
+                 * +-+-+-+-+-+-+-+-+                                               |
+                 * |                                                               |
+                 * |               Bytes 2..n of a Single NAL unit                 |
+                 * |                                                               |
+                 * |                                                               |
+                 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                 */
 			const auto nal_unit = nal[nal_index++];
 			if (nal_unit->GetSize() <= MAX_RTP_PAYLOAD_SIZE) {
 				const auto size = nal_unit->CopyData(
@@ -202,8 +201,8 @@ bool H264Source::HandleFrame(const MediaChannelId channelId,
 							  rtp_packet))
 					return false;
 			} else {
-				//Fragmentation Units (FU-A)
-				/*  0                   1                   2                   3
+		//Fragmentation Units (FU-A)
+		/*  0                   1                   2                   3
                  *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
                  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
                  * | FU indicator  |   FU header   |                               |

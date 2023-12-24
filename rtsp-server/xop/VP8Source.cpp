@@ -35,8 +35,8 @@ VP8Source::~VP8Source() = default;
 
 string VP8Source::GetMediaDescription(const uint16_t port)
 {
-	char buf[100] = {0};
-	sprintf(buf, "m=video %hu RTP/AVP 96", port);
+	char buf[100];
+	snprintf(buf, sizeof(buf), "m=video %hu RTP/AVP 96", port);
 	return buf;
 }
 

@@ -42,8 +42,8 @@ AACSource::~AACSource() = default;
 
 string AACSource::GetMediaDescription(const uint16_t port)
 {
-	char buf[100] = {0};
-	sprintf(buf, "m=audio %hu RTP/AVP 97", port); // \r\nb=AS:64
+	char buf[100];
+	snprintf(buf, sizeof(buf), "m=audio %hu RTP/AVP 97", port); // \r\nb=AS:64
 
 	return buf;
 }
@@ -76,14 +76,14 @@ string AACSource::GetAttribute() // RFC 3640
 		strlen(fmtp_fmt);
 	auto buf = vector<char>(buf_size);
 	const size_t rtpmap_format_size =
-		sprintf(buf.data(), rtpmap_fmt, samplerate_, channels_);
+		snprintf(buf.data(), buf_size, rtpmap_fmt, samplerate_, channels_);
 
 	const array audioSpecificConfig = {
 		static_cast<uint8_t>((profile + 1) << 3 |
 				     samplingFrequencyIndex >> 1),
 		static_cast<uint8_t>(samplingFrequencyIndex << 7 |
 				     channels_ << 3)};
-	sprintf(buf.data() + rtpmap_format_size, fmtp_fmt,
+	snprintf(buf.data() + rtpmap_format_size, buf_size - rtpmap_format_size, fmtp_fmt,
 		audioSpecificConfig[0], audioSpecificConfig[1]);
 
 	return buf.data();
