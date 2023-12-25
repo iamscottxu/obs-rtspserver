@@ -90,7 +90,7 @@ rm -rf ~/obs-rtspserver-linux
 
 
 # 生成
-* 安装 cmake 、 visual studio (仅 Windows )和 qt ;
+* 安装 cmake 、 visual studio (仅 Windows )和 qt；
 * 下载并配置 OBS Studio 的源代码；
 * 将源代码复制到 (OBS Studio 源代码目录)/plugins/obs-rtspserver/ 中；
 * 添加 `add_subdirectory(obs-rtspserver)` 到 (OBS Studio 源代码目录)/plugins/CMakeLists.txt 中；
