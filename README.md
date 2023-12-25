@@ -24,7 +24,7 @@ This is a plugin for obs-studio, encode and publish to a RTSP stream.
 
 **Supported Platforms** : Windows 10, Windows 11, Linux and macOS
 
-**Supported OBS Studio version** : 28.0.0+
+**Supported OBS Studio version** : 30.0.0+
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
