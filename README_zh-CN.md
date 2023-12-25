@@ -86,7 +86,7 @@ mv ~/obs-rtspserver-linux/usr/lib/obs-plugins/obs-rtspserver.so ~/.config/obs-st
 mv ~/obs-rtspserver-linux/usr/share/obs/obs-plugins/obs-rtspserver/locale ~/.config/obs-studio/plugins/obs-rtspserver/data/locale
 rm -rf ~/obs-rtspserver-linux
 ```
-* 将 {version} 替换成最新发布版本号,例如:v2.2.0
+* 将 {version} 替换成最新发布版本号，例如：v2.2.0
 
 
 # 生成
