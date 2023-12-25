@@ -32,7 +32,7 @@
 ## Windows
 可以使用安装程序进行安装，安装程序可以在[发布页面](https://github.com/iamscottxu/obs-rtspserver/releases)中找到。
 
-如果要使用压缩文件手动安装，可以解压缩压缩文件(例如: obs-rtspserver-v2.0.1-windows.zip)把它放到你的 OBS Studio 安装文件夹里。
+如果要使用压缩文件手动安装，可以解压缩压缩文件（例如：obs-rtspserver-v2.0.1-windows.zip）把它放到你的 OBS Studio 安装文件夹里。
 
 ### winget 软件包
 如果你使用 Windows 10 1709 和以后的版本，且已经安装了[app-installer](https://www.microsoft.com/store/productId/9NBLGGH4NNS1)后，可以运行以下命令进行安装：
