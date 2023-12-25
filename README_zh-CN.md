@@ -52,7 +52,7 @@ winget install iamscottxu.obs-rtspserver
 wget -O obs-rtspserver-linux.deb https://github.com/iamscottxu/obs-rtspserver/releases/download/{version}/obs-rtspserver-{version}-linux.deb
 apt install -y obs-rtspserver-linux.deb
 ```
-* 将 {version} 替换成最新发布版本号,例如:v2.2.0
+* 将 {version} 替换成最新发布版本号，例如：v2.2.0
 
 ### Red-Hat RPM 软件包
 在[发布页面](https://github.com/iamscottxu/obs-rtspserver/releases)下载 rpm 软件包并安装。
