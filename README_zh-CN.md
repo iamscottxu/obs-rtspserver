@@ -61,7 +61,7 @@ apt install -y obs-rtspserver-linux.deb
 wget -O obs-rtspserver-linux.rpm https://github.com/iamscottxu/obs-rtspserver/releases/download/{version}/obs-rtspserver-{version}-linux.rpm
 rpm -ivh obs-rtspserver-linux.rpm
 ```
-* 将 {version} 替换成最新发布版本号,例如:v2.2.0
+* 将 {version} 替换成最新发布版本号,例如：v2.2.0
 
 ### ArchLinux AUR 软件包
 obs-rtspserver也可以作为[AUR软件包](https://aur.archlinux.org/packages/?O=0&K=obs-rtspserver)提供。如果您使用[yay](https://github.com/Jguer/yay),请运行以下命令进行安装:
