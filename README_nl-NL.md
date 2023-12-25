@@ -4,7 +4,7 @@ Dit is een plug-in voor obs-studio die de uitvoer codeert en een RTSP-stream pub
 
 **Ondersteunde besturingssystemen** : Windows 10, Windows 11, Linux and macOS
 
-**Ondersteunde OBS Studio-versies** : 28.0.0+
+**Ondersteunde OBS Studio-versies** : 30.0.0+
 
 [![Verpakkingsstatus](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 

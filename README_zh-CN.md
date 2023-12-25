@@ -6,7 +6,7 @@
 
 **支持的平台** : Windows 10、Windows 11、Linux和macOS
 
-**支持的 OBS Studio 版本** : 28.0.0+
+**支持的 OBS Studio 版本** : 30.0.0+
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 

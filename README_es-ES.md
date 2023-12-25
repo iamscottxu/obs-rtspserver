@@ -4,7 +4,7 @@ Este es un complemento para obs-studio que codificará la salida y publicará un
 
 **Sistemas operativos compatibles** : Windows 10, Windows 11, Linux y macOS
 
-**Versiones de OBS Studio compatibles** : 28.0.0+
+**Versiones de OBS Studio compatibles** : 30.0.0+
 
 [![Estado de empaque](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 

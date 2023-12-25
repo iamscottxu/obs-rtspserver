@@ -4,7 +4,7 @@
 
 **지원하는 운영체제** : Windows 10, Windows 11, Linux and macOS
 
-**지원하는 OBS 버전** : 28.0.0+
+**지원하는 OBS 버전** : 30.0.0+
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 

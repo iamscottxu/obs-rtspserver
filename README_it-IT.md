@@ -4,7 +4,7 @@ Questo è un plugin per obs-studio che codificherà l'output e pubblicherà un f
 
 **Sistemi operativi supportati** : Windows 10, Windows 11, Linux e macOS
 
-**Versioni di OBS Studio supportate** : 28.0.0+
+**Versioni di OBS Studio supportate** : 30.0.0+
 
 [![Stato del pacchetto](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 

@@ -4,7 +4,7 @@ RTSPストリームにエンコードして公開するためのOBS Studioのプ
 
 **サポートされるプラットフォーム**: Windows 10、Windows 11、LinuxおよびmacOS
 
-**サポートされるOBS Studioのバージョン**: 28.0.0以降
+**サポートされるOBS Studioのバージョン**: 30.0.0以降
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/obs-rtspserver.svg)](https://repology.org/project/obs-rtspserver/versions)
 
