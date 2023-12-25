@@ -42,7 +42,7 @@ winget install iamscottxu.obs-rtspserver
 ```
 
 ## macOS
-如果你使用的是 macOS 操作系统，您可以使用安装程序进行安装，安装程序 .pkg 可以在[发布页面(https://github.com/iamscottxu/obs-rtspserver/releases)]中找到。
+如果你使用的是 macOS 操作系统，您可以使用安装程序进行安装，安装程序 .pkg 可以在[发布页面](https://github.com/iamscottxu/obs-rtspserver/releases)中找到。
 
 ## Linux (仅 x64)
 ### Ubuntu/Debian DEB 软件包
