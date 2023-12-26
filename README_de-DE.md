@@ -45,7 +45,7 @@ winget install iamscottxu.obs-rtspserver
 Sie können den .pkg-Installer verwenden, um zu installieren, und der Installer kann unter [Release-Seite](https://github.com/iamscottxu/obs-rtspserver/releases) gefunden werden, wenn macOS verwendet wird.
 
 ## Untar, z.B.: tar -xzvf obs-rtspserver-v2.0.1-linux.tar.gz -C $HOME/.config/obs-studio/plugins/
-### ArchLinux AUR Paket
+### Ubuntu/Debian DEB-Paket
 Laden Sie das deb-Paket von der [Release-Seite](https://github.com/iamscottxu/obs-rtspserver/releases) herunter und installieren Sie es.
 
 ```bash
