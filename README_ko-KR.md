@@ -46,7 +46,7 @@ macOS에서는 [Release Page](https://github.com/iamscottxu/obs-rtspserver/relea
 
 ## Linux (x64만 지원)
 ### 우분투/데비안 DEB 패키지
-<text_to_translate>deb 패키지를 [릴리스 페이지](https://github.com/iamscottxu/obs-rtspserver/releases)에서 다운로드하여 설치하십시오.</text_to_translate>
+deb 패키지를 [릴리스 페이지](https://github.com/iamscottxu/obs-rtspserver/releases)에서 다운로드하여 설치하십시오.
 
 ```bash
 wget -O obs-rtspserver-linux.deb https://github.com/iamscottxu/obs-rtspserver/releases/download/{version}/obs-rtspserver-{version}-linux.deb
