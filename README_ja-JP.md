@@ -94,7 +94,7 @@ rm -rf ~/obs-rtspserver-linux
 * `add_subdirectory(obs-rtspserver)`を(obs-studio source code)/plugins/CMakeLists.txtに追加します
 * obs-rtspserverをビルドします
 * FAQ
-* [Can't find the plugin in the menu](https://github.com/iamscottxu/obs-rtspserver/wiki/FAQ#cant-find-the-plugin-in-the-menu)
+* （obs-studioのソースコード）/plugins/CMakeLists.txtに`add_subdirectory(obs-rtspserver)`を追加してください。
 * Build obs-rtspserver.
 
 # FAQ
