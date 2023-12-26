@@ -53,9 +53,9 @@ Wenn Sie [yay](https://github.com/Jguer/yay) benutzen, können Sie es mit folgen
 wget -O obs-rtspserver-linux.deb https://github.com/iamscottxu/obs-rtspserver/releases/download/{version}/obs-rtspserver-{version}-linux.deb
 apt install -y obs-rtspserver-linux.deb
 ```
-* Build
+* Ersetzen Sie {version} durch die letzte Veröffentlichungsversion, z.B.: v2.2.0
 
-### Installieren Sie cmake, visual studio(nur bei windows) und qt.
+### Red-Hat RPM-Paket
 Laden Sie das RPM-Paket von der [Release-Seite](https://github.com/iamscottxu/obs-rtspserver/releases) herunter und installieren Sie es.
 
 ```bash
