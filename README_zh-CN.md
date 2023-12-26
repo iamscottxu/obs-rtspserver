@@ -70,7 +70,7 @@ obs-rtspserver也可以作为[AUR软件包](https://aur.archlinux.org/packages/?
 yay -S obs-rtspserver
 ```
 
-### Other
+### 其他
 在[发布页面](https://github.com/iamscottxu/obs-rtspserver/releases)下载 tar.gz 压缩包并解压到 "/"。
 
 ```bash
