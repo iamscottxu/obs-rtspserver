@@ -95,9 +95,9 @@ rm -rf ~/obs-rtspserver-linux
 * obs-rtspserverをビルドします
 * FAQ
 * [Can't find the plugin in the menu](https://github.com/iamscottxu/obs-rtspserver/wiki/FAQ#cant-find-the-plugin-in-the-menu)
-* License
+* Build obs-rtspserver.
 
-# [RtspServer](https://github.com/PHZ76/RtspServer/) - [MIT License](https://github.com/PHZ76/RtspServer/blob/master/LICENSE)
+# FAQ
 * [メニューでプラグインが見つかりません](https://github.com/iamscottxu/obs-rtspserver/wiki/FAQ#cant-find-the-plugin-in-the-menu)
 
 # ライセンス
