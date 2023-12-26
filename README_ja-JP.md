@@ -90,7 +90,7 @@ rm -rf ~/obs-rtspserver-linux
 * {text_to_translate}「{version}」を最新のリリースバージョンで置き換えてください。例：v2.2.0
 
 
-# ソースコードを(obs-studio source code)/plugins/obs-rtspserver/にコピーします
+# ビルド
 * cmake、visual studio（Windowsのみ）およびqtをインストールしてください。
 * ダウンロードして、obs-studioのソースコードを設定してください。
 * ソースコードを(obs-studioソースコード)/plugins/obs-rtspserver/にコピーしてください。
