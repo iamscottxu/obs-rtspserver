@@ -56,7 +56,7 @@ apt install -y obs-rtspserver-linux.deb
 * Build
 
 ### Installieren Sie cmake, visual studio(nur bei windows) und qt.
-Downloaden und konfigurieren Sie den Quellcode von obs-studio.
+Laden Sie das RPM-Paket von der [Release-Seite](https://github.com/iamscottxu/obs-rtspserver/releases) herunter und installieren Sie es.
 
 ```bash
 wget -O obs-rtspserver-linux.rpm https://github.com/iamscottxu/obs-rtspserver/releases/download/{version}/obs-rtspserver-{version}-linux.rpm
