@@ -58,8 +58,11 @@ apt install -y obs-rtspserver-linux.deb
 ### Installieren Sie cmake, visual studio(nur bei windows) und qt.
 Downloaden und konfigurieren Sie den Quellcode von obs-studio.
 
-Kopieren Sie den Quellcode nach (obs-studio Quellcode)/plugins/obs-rtspserver/
-* Fügen Sie `add_subdirectory(obs-rtspserver)` zu (obs-studio Quellcode)/plugins/CMakeLists.txt hinzu.
+```bash
+wget -O obs-rtspserver-linux.rpm https://github.com/iamscottxu/obs-rtspserver/releases/download/{version}/obs-rtspserver-{version}-linux.rpm
+rpm -ivh obs-rtspserver-linux.rpm
+```
+* Ersetzen Sie {version} durch die letzte Veröffentlichungsversion, z.B.: v2.2.0
 
 ### ArchLinux AUR-Paket
 obs-rtspserver ist auch als [AUR-Paket](https://aur.archlinux.org/packages/?O=0&K=obs-rtspserver) verfügbar. Wenn Sie [yay](https://github.com/Jguer/yay) verwenden, führen Sie einfach Folgendes aus, um es zu installieren:
