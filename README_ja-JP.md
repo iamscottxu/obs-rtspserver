@@ -93,7 +93,7 @@ rm -rf ~/obs-rtspserver-linux
 # ソースコードを(obs-studio source code)/plugins/obs-rtspserver/にコピーします
 * `add_subdirectory(obs-rtspserver)`を(obs-studio source code)/plugins/CMakeLists.txtに追加します
 * obs-rtspserverをビルドします
-* FAQ
+* ソースコードを(obs-studioソースコード)/plugins/obs-rtspserver/にコピーしてください。
 * （obs-studioのソースコード）/plugins/CMakeLists.txtに`add_subdirectory(obs-rtspserver)`を追加してください。
 * Build obs-rtspserver.
 
