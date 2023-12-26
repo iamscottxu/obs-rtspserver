@@ -87,7 +87,7 @@ mv ~/obs-rtspserver-linux/usr/lib/obs-plugins/obs-rtspserver.so ~/.config/obs-st
 mv ~/obs-rtspserver-linux/usr/share/obs/obs-plugins/obs-rtspserver/locale ~/.config/obs-studio/plugins/obs-rtspserver/data/locale
 rm -rf ~/obs-rtspserver-linux
 ```
-* {text_to_translate}「{version}」を最新のリリースバージョンで置き換えてください。例：v2.2.0
+* {version}を最新のリリースバージョンであるv2.2.0などで置き換えてください。
 
 
 # ビルド
