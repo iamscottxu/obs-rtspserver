@@ -4,6 +4,8 @@ project(rtsp-server)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include_directories("3rdpart/md5")
+
+add_subdirectory(3rdpart/uleb128)
 add_subdirectory(3rdpart/libb64)
 
 file(GLOB rtsp-server_net_SOURCES
@@ -33,5 +35,7 @@ add_library(rtsp-server STATIC
 	${rtsp-server_HEADERS}
 	)
 
+target_link_libraries(rtsp-server
+		uleb128)
 target_link_libraries(rtsp-server
 	libb64)
