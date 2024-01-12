@@ -59,6 +59,8 @@ private:
 //#endif
 #define LOG_INFO(fmt, ...) \
 	xop::Logger::Instance().Log2(LOG_INFO, fmt, ##__VA_ARGS__)
+#define LOG_WARNING(fmt, ...) \
+	xop::Logger::Instance().Log2(LOG_WARNING, fmt, ##__VA_ARGS__)
 #define LOG_ERROR(fmt, ...)                                            \
 	xop::Logger::Instance().Log(LOG_ERROR, __FILE__, __FUNCTION__, \
 				    __LINE__, fmt, ##__VA_ARGS__)
