@@ -452,13 +452,12 @@ static void rtsp_output_actual_stop(rtsp_out_data *out_data, const int code)
 	blog(LOG_INFO, "Rtsp server stopped.");
 }
 
-static uint32_t get_timestamp(const uint64_t timestamp_clock,
-                              const struct encoder_packet *packet)
+static uint32_t get_timestamp(const struct encoder_packet *packet, const uint64_t timebase)
 {
 	// Convert the incoming dts time to the correct clock time for the timestamp.
 	// We use a int64 to ensure the roll over is handled correctly.
 	// We do the [USEC_IN_SEC / 2] trick to make sure the result of the division rounds to the nearest int.
-	const uint64_t timestamp = packet->dts_usec * timestamp_clock;
+	const uint64_t timestamp = packet->dts_usec * timebase;
 	return static_cast<uint32_t>((timestamp + USEC_IN_SEC / 2) /
 				     USEC_IN_SEC);
 }
@@ -489,7 +488,7 @@ static void rtsp_output_video(void *param, struct encoder_packet *packet)
 	xop::AVFrame *frame = &queue_frame.av_frame;
 	queue_frame.channe_id = xop::MediaChannelId::channel_0;
 
-	frame->timestamp = get_timestamp(90000, packet);
+	frame->timestamp = get_timestamp(packet, 90000);
 
 	memcpy(frame->buffer.get(), packet->data, packet->size);
 
