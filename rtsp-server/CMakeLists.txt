@@ -4,7 +4,6 @@ project(rtsp-server)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include_directories("3rdpart/md5")
-include_directories("3rdpart/libb64/libb64/include")
 add_subdirectory(3rdpart/libb64)
 
 file(GLOB rtsp-server_net_SOURCES
