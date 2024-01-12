@@ -25,7 +25,6 @@ Av1Tu::Av1Tu(const uint8_t *data, size_t dataSize)
 			LOG_WARNING("[AV1]Unable to parse obu, skipped.");
 		} else it += obuSize;
 		auto obuType = obu->GetType();
-		LOG_DEBUG("%u, %zu", obuType, obu->GetSize());
 		if (obuType == Av1ObuType::AV1_OBU_TEMPORAL_DELIMITER ||
 		    obuType == Av1ObuType::AV1_OBU_TILE_LIST ||
 		    obuType == Av1ObuType::AV1_OBU_PADDING)
