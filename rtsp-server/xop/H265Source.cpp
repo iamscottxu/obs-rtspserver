@@ -20,7 +20,7 @@
 #endif
 
 #include "Base64Encode.h"
-#include "Nal.h"
+#include "H26xNal.h"
 #include "H265NalUnit.h"
 
 using namespace xop;
@@ -43,7 +43,7 @@ H265Source::H265Source(vector<uint8_t> vps, vector<uint8_t> sps,
 H265Source *H265Source::CreateNew(vector<uint8_t> extraData,
 				  vector<uint8_t> sei, const uint32_t framerate)
 {
-	Nal<H265NalUnit> nal(extraData);
+	H26xNal<H265NalUnit> nal(extraData);
 	vector<uint8_t> vps, sps, pps;
 	const auto vps_nal_unit = nal.GetNalUnitByType(
 			   static_cast<uint8_t>(H265NalType::H265_NAL_VPS)),
@@ -137,7 +137,7 @@ bool H265Source::HandleFrame(const MediaChannelId channelId,
 	const auto rtp_packet_data =
 		rtp_packet.data.get() + RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE;
 
-	Nal<H265NalUnit> nal(frame.buffer.get(), frame.size);
+	H26xNal<H265NalUnit> nal(frame.buffer.get(), frame.size);
 
 	if (nal.GetCount() == 0)
 		return false;

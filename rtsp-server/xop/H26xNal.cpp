@@ -1,9 +1,9 @@
-#include "Nal.h"
+#include "H26xNal.h"
 
 using namespace std;
 using namespace xop;
 
-bool NalHelper::NalUnitWhile(const uint8_t *data, size_t dataSize,
+bool H26xNalHelper::NalUnitWhile(const uint8_t *data, size_t dataSize,
 			     NalUnitWhileCallback callback)
 {
 	if (dataSize == 0)
@@ -29,7 +29,7 @@ bool NalHelper::NalUnitWhile(const uint8_t *data, size_t dataSize,
 	return true;
 }
 
-uint32_t NalHelper::GetNalUnitCount(const uint8_t *data, size_t dataSize)
+uint32_t H26xNalHelper::GetNalUnitCount(const uint8_t *data, size_t dataSize)
 {
 	uint32_t count = 0;
 	NalUnitWhile(data, dataSize, [&count](const uint8_t *, size_t) {
@@ -39,7 +39,7 @@ uint32_t NalHelper::GetNalUnitCount(const uint8_t *data, size_t dataSize)
 	return count;
 }
 
-const uint8_t *NalHelper::FindStartCode(const uint8_t *p, const uint8_t *end)
+const uint8_t *H26xNalHelper::FindStartCode(const uint8_t *p, const uint8_t *end)
 {
 	const uint8_t *out = FFmpegFindStartcodeInternal(p, end);
 	if (p < out && out < end && !out[-1])
@@ -50,7 +50,7 @@ const uint8_t *NalHelper::FindStartCode(const uint8_t *p, const uint8_t *end)
 /* NOTE: I noticed that FFmpeg does some unusual special handling of certain
  * scenarios that I was unaware of, so instead of just searching for {0, 0, 1}
  * we'll just use the code from FFmpeg - http://www.ffmpeg.org/ */
-const uint8_t *NalHelper::FFmpegFindStartcodeInternal(const uint8_t *p,
+const uint8_t *H26xNalHelper::FFmpegFindStartcodeInternal(const uint8_t *p,
 						      const uint8_t *end)
 {
 	const uint8_t *a = p + 4 - (reinterpret_cast<intptr_t>(p) & 3);
