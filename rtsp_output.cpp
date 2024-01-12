@@ -8,6 +8,7 @@
 #include <xop/RtspServer.h>
 #include <xop/H264Source.h>
 #include <xop/H265Source.h>
+#include <xop/Av1Source.h>
 #include <xop/AACSource.h>
 #include "threadsafe_queue.h"
 #include "rtsp_output.h"
@@ -239,6 +240,13 @@ static bool rtsp_output_add_video_channel(void *data,
 			xop::MediaChannelId::channel_0,
 			xop::H265Source::CreateNew(
 				extra_data, vector<uint8_t>(),
+				static_cast<uint32_t>(video_frame_rate)));
+	} break;
+	case encoder_codec::AV1: {
+		session->AddSource(
+			xop::MediaChannelId::channel_0,
+			xop::Av1Source::CreateNew(
+				extra_data,
 				static_cast<uint32_t>(video_frame_rate)));
 	} break;
 	default:
@@ -649,7 +657,7 @@ void rtsp_output_register()
 	output_info.id = "rtsp_output";
 	output_info.flags = OBS_OUTPUT_AV | OBS_OUTPUT_ENCODED |
 			    OBS_OUTPUT_MULTI_TRACK;
-	output_info.encoded_video_codecs = "h264;hevc";
+	output_info.encoded_video_codecs = "h264;hevc;av1";
 	output_info.encoded_audio_codecs = "aac";
 	output_info.get_name = rtsp_output_getname;
 	output_info.create = rtsp_output_create;
