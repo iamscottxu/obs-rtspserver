@@ -6,7 +6,7 @@
 
 
 🇨🇳 [简体中文](//github.com/iamscottxu/obs-rtspserver/blob/master/README_zh-CN.md)
-🇹🇼 [繁體中文](//github.com/iamscottxu/obs-rtspserver/blob/master/README_zh-TW.md)
+🇭🇰 [繁體中文](//github.com/iamscottxu/obs-rtspserver/blob/master/README_zh-TW.md)
 🇯🇵 [日本語](//github.com/iamscottxu/obs-rtspserver/blob/master/README_ja-JP.md)
 🇰🇷 [한국어](//github.com/iamscottxu/obs-rtspserver/blob/master/README_ko-KR.md)
 🇪🇦 [Español](//github.com/iamscottxu/obs-rtspserver/blob/master/README_es-ES.md)
@@ -70,7 +70,7 @@ obs-rtspserver也可以作为[AUR软件包](https://aur.archlinux.org/packages/?
 yay -S obs-rtspserver
 ```
 
-### Other
+### 其他
 在[发布页面](https://github.com/iamscottxu/obs-rtspserver/releases)下载 tar.gz 压缩包并解压到 "/"。
 
 ```bash
