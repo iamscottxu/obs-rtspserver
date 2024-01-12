@@ -8,11 +8,11 @@
 #include <cstdint>
 #include <cstring>
 
-#include "NalUnit.h"
+#include "H26xNalUnit.h"
 
 namespace xop {
 
-template<class T, class = std::enable_if_t<std::is_base_of_v<NalUnit, T>>>
+template<class T, class = std::enable_if_t<std::is_base_of_v<H26xNalUnit, T>>>
 class H26xNal {
 public:
 	H26xNal(const std::vector<uint8_t> &data);

@@ -297,7 +297,7 @@ uint32_t H264Source::GetTimestamp()
 	//#endif
 }
 
-FrameType H264Source::GetRtpFrameType(std::shared_ptr<NalUnit> nalUnit)
+FrameType H264Source::GetRtpFrameType(std::shared_ptr<H26xNalUnit> nalUnit)
 {
 	if (nalUnit->IsIdrFrame())
 		return FrameType::VIDEO_FRAME_IDR;

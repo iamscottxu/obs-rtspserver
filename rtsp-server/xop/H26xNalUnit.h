@@ -6,7 +6,7 @@
 #include <vector>
 
 namespace xop {
-class NalUnit {
+class H26xNalUnit {
 public:
 	size_t GetData(uint8_t **data) const;
 	std::vector<uint8_t> GetData() const;
@@ -23,10 +23,10 @@ public:
 	virtual size_t GetBodySize() = 0;
 	virtual bool IsIdrFrame() = 0;
 	virtual bool IsFrame() = 0;
-	static NalUnit* GetNalUnit(const uint8_t *data, size_t dataSize);
+	static H26xNalUnit * GetNalUnit(const uint8_t *data, size_t dataSize);
 
 protected:
-	NalUnit(const uint8_t *data, size_t dataSize);
+	H26xNalUnit(const uint8_t *data, size_t dataSize);
 
 private:
 	const uint8_t *data_;

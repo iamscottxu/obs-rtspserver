@@ -2,7 +2,7 @@
 
 using namespace xop;
 
-H265NalUnit::H265NalUnit(const uint8_t *data, size_t dataSize) : NalUnit(data, dataSize)
+H265NalUnit::H265NalUnit(const uint8_t *data, size_t dataSize) : H26xNalUnit(data, dataSize)
 {
 }
 
@@ -97,7 +97,7 @@ bool H265NalUnit::IsFrame()
 	return type <= H265NalType::H265_NAL_CRA_NUT;
 }
 
-NalUnit* H265NalUnit::GetNalUnit(const uint8_t *data, size_t dataSize)
+H26xNalUnit * H265NalUnit::GetNalUnit(const uint8_t *data, size_t dataSize)
 {
 	return new H265NalUnit(data, dataSize);
 }

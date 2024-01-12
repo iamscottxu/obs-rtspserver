@@ -2,7 +2,7 @@
 #define XOP_H265_NALUNIT_H
 
 #include <cstddef>
-#include "NalUnit.h"
+#include "H26xNalUnit.h"
 
 #define H265_NALU_HEADER_SIZE 2
 
@@ -75,7 +75,7 @@ enum class H265NalType: uint8_t {
 	H265_NAL_UNSPEC63 = 63,
 };
 
-class H265NalUnit : public NalUnit {
+class H265NalUnit : public H26xNalUnit {
 public:
 	uint8_t GetType() override;
 	uint8_t GetLayerId();
@@ -89,7 +89,7 @@ public:
 	size_t GetBodySize() override;
 	bool IsIdrFrame() override;
 	bool IsFrame() override;
-	static NalUnit *GetNalUnit(const uint8_t *data, size_t dataSize);
+	static H26xNalUnit *GetNalUnit(const uint8_t *data, size_t dataSize);
 
 private:
 	H265NalUnit(const uint8_t *data, size_t dataSize);

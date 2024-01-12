@@ -6,7 +6,7 @@
 
 #include "MediaSource.h"
 #include "rtp.h"
-#include "NalUnit.h"
+#include "H26xNalUnit.h"
 
 namespace xop {
 
@@ -36,7 +36,7 @@ private:
 	H264Source(std::vector<uint8_t> sps, std::vector<uint8_t> pps,
 		   uint32_t framerate);
 
-	static FrameType GetRtpFrameType(std::shared_ptr<NalUnit> nalUnit);
+	static FrameType GetRtpFrameType(std::shared_ptr<H26xNalUnit> nalUnit);
 
 	uint32_t framerate_ = 25;
 

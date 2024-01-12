@@ -2,7 +2,7 @@
 #define XOP_H264_NALUNIT_H
 
 #include <cstddef>
-#include "NalUnit.h"
+#include "H26xNalUnit.h"
 
 #define H264_NALU_HEADER_SIZE 1
 
@@ -43,7 +43,7 @@ enum class H264NalType: uint8_t {
 	H264_NAL_UNSPEC31 = 31
 };
 
-class H264NalUnit : public NalUnit {
+class H264NalUnit : public H26xNalUnit {
 public:
 	uint8_t GetType() override;
 	uint8_t GetRefIdc();
@@ -56,7 +56,7 @@ public:
 	size_t GetBodySize() override;
 	bool IsIdrFrame() override;
 	bool IsFrame() override;
-	static NalUnit *GetNalUnit(const uint8_t *data, size_t dataSize);
+	static H26xNalUnit *GetNalUnit(const uint8_t *data, size_t dataSize);
 
 private:
 	H264NalUnit(const uint8_t *data, size_t dataSize);

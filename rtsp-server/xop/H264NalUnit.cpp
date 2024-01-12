@@ -3,7 +3,7 @@
 using namespace xop;
 
 H264NalUnit::H264NalUnit(const uint8_t *data, size_t dataSize)
-	: NalUnit(data, dataSize)
+	: H26xNalUnit(data, dataSize)
 {
 }
 
@@ -89,7 +89,7 @@ bool H264NalUnit::IsFrame()
 	return type >= H264NalType::H264_NAL_SLICE && type <= H264NalType::H264_NAL_SLICE_IDR;
 }
 
-NalUnit * H264NalUnit::GetNalUnit(const uint8_t *data, size_t dataSize)
+H26xNalUnit * H264NalUnit::GetNalUnit(const uint8_t *data, size_t dataSize)
 {
 	return new H264NalUnit(data, dataSize);
 }
