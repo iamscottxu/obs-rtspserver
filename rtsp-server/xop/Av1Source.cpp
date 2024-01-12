@@ -103,20 +103,48 @@ bool Av1Source::HandleFrame(const MediaChannelId channelId,
 							      sizeof(currentUnitLeb128));
 
 	RtpPacket rtpPacket;
-	rtpPacket.timestamp = frame.timestamp;// + rand() % 100;
-	//rtpPacket.last = 0;
+	rtpPacket.timestamp = frame.timestamp;
+	rtpPacket.last = 0;
 	rtpPacket.type = GetRtpFrameType(tu);
 	const auto rtpPacketData =
 		rtpPacket.data.get() + RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE;
-	rtpPacketData[0] = 0x00;
+
+	// https://aomediacodec.github.io/av1-rtp-spec
+	// 0                   1                   2                   3
+	// 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	//+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	//|V=2|0|0| CC=0  |M|     PT      |       sequence number         |
+	//+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	//|                           timestamp                           |
+	//+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	//|           synchronization source (SSRC) identifier            |
+	//+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+	//| AV1 aggr hdr  |                                               |
+	//+-+-+-+-+-+-+-+-+                                               |
+	//|                                                               |
+	//|                   Bytes 2..N of AV1 payload                   |
+	//|                                                               |
+	//|                                                               |
+	//|                                                               |
+	//+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+	// AV1 Aggregation Header
+	// 0 1 2 3 4 5 6 7
+	//+-+-+-+-+-+-+-+-+
+	//|Z|Y| W |N|-|-|-|
+	//+-+-+-+-+-+-+-+-+
+	// This function does not implement the situation when M is zero.
+	rtpPacketData[0] = 0x00; // Init AV1 Aggregation Header
 
 	auto copyLeb128 = [&]() {
 		memcpy(rtpPacketData + countSize, currentUnitLeb128, currentUnitLeb128Size);
 		countSize += currentUnitLeb128Size;
-		/*LOG_DEBUG("[AV1]Copy Leb128: Timestamp: %u\tPacketSize: %zu\tPacketObuCount: %zu\t"
+#ifdef DEBUG
+		LOG_DEBUG("[AV1]Copy Leb128: Timestamp: %u\tPacketSize: %zu\tPacketObuCount: %zu\t"
 			  "ObuIndex: %zu\tObuCount: %zu\tLeb128Size: %zu",
 			  rtpPacket.timestamp, countSize, packetObuCount,
-			  obuIndex, obuCount, currentUnitLeb128Size);*/
+			  obuIndex, obuCount, currentUnitLeb128Size);
+#endif
 		return currentUnitLeb128Size;
 	};
 
@@ -124,29 +152,33 @@ bool Av1Source::HandleFrame(const MediaChannelId channelId,
 		_size = tu[obuIndex]->CopyNotHasSizeFieldData(rtpPacketData + countSize, _size, _skip);
 		countSize += _size;
 		packetObuCount++;
-		/*LOG_DEBUG("[AV1]Copy Obu:    Timestamp: %u\tPacketSize: %zu\tPacketObuCount: %zu\t"
+#ifdef DEBUG
+		LOG_DEBUG("[AV1]Copy Obu:    Timestamp: %u\tPacketSize: %zu\tPacketObuCount: %zu\t"
 			  "ObuIndex: %zu\tObuCount: %zu\tObuSize: %zu\tCopySize: %zu\tCopySkip: %zu",
 			  rtpPacket.timestamp, countSize, packetObuCount,
-			  obuIndex, obuCount, currentUnitSize, _size, _skip);*/
+			  obuIndex, obuCount, currentUnitSize, _size, _skip);
+#endif
 		return _size;
 	};
 
 	auto sendPacket = [&]() {
-		if (firstPacket) rtpPacketData[0] |= 0x08;
-		rtpPacketData[0] |= (packetObuCount << 4) & 0x30;
+		if (firstPacket) rtpPacketData[0] |= 0x08; // AV1 AggrHeader: N = 1
+		rtpPacketData[0] |= (packetObuCount << 4) & 0x30; // AV1 AggrHeader: W = packetObuCount (Max: 3)
 		rtpPacket.size = RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE + static_cast<uint16_t>(countSize);
 		auto result = send_frame_callback_(channelId, rtpPacket);
-		/*LOG_DEBUG("[AV1]Send Packet: Timestamp: %u\tPacketSize: %zu\tPacketObuCount: %zu\t"
+#ifdef DEBUG
+		LOG_DEBUG("[AV1]Send Packet: Timestamp: %u\tPacketSize: %zu\tPacketObuCount: %zu\t"
 			  "AggrHdr: 0b%c%c%c%c%c%c%c%c\tIsMark: %s",
 			  rtpPacket.timestamp, countSize, packetObuCount,
 			  ((rtpPacketData[0] & 0x80) >> 7) + '0', ((rtpPacketData[0] & 0x40) >> 6) + '0',
 			  ((rtpPacketData[0] & 0x20) >> 5) + '0', ((rtpPacketData[0] & 0x10) >> 4) + '0',
 			  ((rtpPacketData[0] & 0x08) >> 3) + '0', ((rtpPacketData[0] & 0x04) >> 2) + '0',
 			  ((rtpPacketData[0] & 0x02) >> 1) + '0', (rtpPacketData[0] & 0x01) + '0',
-			  rtpPacket.last ? "Yes" : "No");*/
+			  rtpPacket.last ? "Yes" : "No");
+#endif
 		firstPacket = false;
 		packetObuCount = 0;
-		rtpPacketData[0] = 0x00;
+		rtpPacketData[0] = 0x00; // Init AV1 Aggregation Header
 		countSize = AV1_AGGREGATION_HEADER_SIZE;
 		return result;
 	};
@@ -168,12 +200,15 @@ bool Av1Source::HandleFrame(const MediaChannelId channelId,
 	};
 
 	while (obuIndex < obuCount) {
+		// Situation 3: Three OBUs have been written into the RTP Packet.
+		// An RTP Packet can only write to a maximum of three OBUs.
+		// Send RTP Packet.
 		if (packetObuCount == 3) {
-			//推送
 			if (!sendPacket()) return false;
 			continue;
 		}
 
+		// Situation 2: There is an OBU that has not been fully written.
 		if (partSkip > 0) {
 			auto partSize = currentUnitSize - partSkip;
 			if (partSize == 0) {
@@ -181,64 +216,95 @@ bool Av1Source::HandleFrame(const MediaChannelId channelId,
 				getNextObu();
 				continue;
 			}
+			// Situation 2-1: The number of bytes that the OBU has not yet written to the
+			// RTP Payload is still greater than the maximum number of bytes that the RTP
+			// Payload can accommodate.
+			// Write to OBU segmentally, write OBU middle segment, and send RTP Packet.
 			if (partSize >= MAX_RTP_PAYLOAD_SIZE - AV1_AGGREGATION_HEADER_SIZE - MAX_LEB128_SIZE) {
 				partSize = MAX_RTP_PAYLOAD_SIZE - AV1_AGGREGATION_HEADER_SIZE;
-				//写入OBU中间分段
 				partSize = copyObuData(partSize, partSkip);
-				rtpPacketData[0] |= 0xc0;
-				//推送
+				rtpPacketData[0] |= 0xc0; // AV1 AggrHeader: Z = 1, Y = 1
 				if (!sendPacket()) return false;
 				partSkip += partSize;
 				continue;
 			}
+			// Situation 2-2: The number of bytes that the OBU has not yet written to the
+			// RTP Payload less than the maximum number of bytes that the RTP Payload can
+			// accommodate.
+			// Write to OBU segmentally, write OBU end segment.
 			{
+				// Situation 2-2-1: Is the last OBU in the Temporal unit.
+				// This must also be the last OBU in this RTP Packet.
+				// Obviously it cannot have Size(LEB128) Header.
+
+				// Situation 2-2-2: Not the last OBU in the Temporal unit.
+				// There are OBU(s) that need to be written in the future,
+				// which must have Size(LEB128) Header.
 				if (obuIndex < obuCount - 1) {
 					currentUnitLeb128Size = Av1Uleb128::EncodeUleb128(partSize, currentUnitLeb128,
 											  sizeof(currentUnitLeb128));
-					//写入LEB128
 					copyLeb128();
 				}
-				//写入OBU结尾分段
 				copyObuData(partSize, partSkip);
-				rtpPacketData[0] |= 0x80;
+				rtpPacketData[0] |= 0x80; // AV1 AggrHeader: Z = 1, Y = 0
 				partSkip = 0;
 				getNextObu();
 				continue;
 			}
 		}
+
+		// Situation 1: RTP Payload is not enough to write OBU with Size(LEB128) header.
 		if (countSize + currentUnitLeb128Size + currentUnitSize >= MAX_RTP_PAYLOAD_SIZE) {
+			// Situation 1-2: RTP Payload is enough to write OBU without Size(LEB128) header.
+			// Write OBU without Size(LEB128) header and send RTP Packet.
+			// Note: The OBU without Size(LEB128) header must be the last OBU in the RTP Payload,
+			// so even if there is space in the RTP Payload, it cannot continue to be written.
 			if (countSize + currentUnitSize <= MAX_RTP_PAYLOAD_SIZE) {
-				//写入OBU
 				copyObuData(currentUnitSize);
+
+				// Situation 1-2-1: Is the last OBU in the Temporal unit.
+				// Then this is the last RTP Packer of this TU (Marker Packet).
+
+				// Situation 1-2-2: Not the last OBU in the Temporal unit.
+				// Then this is not the last RTP Packer of this TU (Marker Packet).
 				if (obuIndex == obuCount - 1) rtpPacket.last = 1;
-				//推送
 				if (!sendPacket()) return false;
 				getNextObu();
 				continue;
 			}
+			// Situation 1-1: RTP Payload is not enough to write OBU without Size(LEB128) header.
+			// Write to OBU segmentally, write OBU start segment, and send RTP Packet.
 			{
 				size_t partSize = MAX_RTP_PAYLOAD_SIZE - countSize;
-				//写入OBU开始分段
-				partSize = copyObuData(partSize);
-				rtpPacketData[0] |= 0x40;
-				//推送
+				partSize = copyObuData(MAX_RTP_PAYLOAD_SIZE - countSize);
+				rtpPacketData[0] |= 0x40; // AV1 AggrHeader: Z = 0, Y = 1
 				if (!sendPacket()) return false;
 				partSkip = partSize;
 				continue;
 			}
 		}
+
+		// Situation 4: The remaining space of RTP Payload is enough to write
+		// this OBU and Size(LEB128) header.
+		// Write OBU.
 		{
-			//写入LEB128
+			// Situation 4-1: Is the last OBU in the Temporal unit.
+			// This must also be the last OBU in this RTP Packet.
+			// Obviously it cannot have Size(LEB128) Header.
+
+			// Situation 4-2: Not the last OBU in the Temporal unit.
+			// There are OBU(s) that need to be written in the future,
+			// which must have Size(LEB128) Header.
 			if (obuIndex < obuCount - 1) copyLeb128();
-			//写入OBU
 			copyObuData(currentUnitSize);
 			getNextObu();
 		}
 	}
 
+	// Situation 5: After the loop ends, there is still an RTP Packet that is not empty.
+	// Send last RTP Packet (Marker Packet).
 	if (countSize > AV1_AGGREGATION_HEADER_SIZE) {
 		rtpPacket.last = 1;
-		//推送
 		if (!sendPacket()) return false;
 	}
 
