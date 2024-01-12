@@ -41,7 +41,6 @@ struct rtsp_out_data {
 	volatile uint64_t stop_ts;
 
 	//volatile uint32_t num_clients = 0;
-	std::array<uint32_t, OBS_OUTPUT_MULTI_TRACK> audio_timestamp_clocks;
 	std::array<xop::MediaChannelId, OBS_OUTPUT_MULTI_TRACK> channel_ids;
 	volatile uint64_t total_bytes_sent = 0;
 	volatile uint32_t enabled_audio_channels_count = 0;
@@ -267,7 +266,6 @@ static bool rtsp_output_add_audio_channel(void *data,
 		xop::AACSource::CreateNew(audio_sample_rate,
 					  static_cast<uint8_t>(audio_channels),
 					  false));
-	out_data->audio_timestamp_clocks[idx] = audio_sample_rate;
 	return true;
 }
 
@@ -503,8 +501,7 @@ static void rtsp_output_audio(void *param, struct encoder_packet *packet)
 	xop::AVFrame *frame = &queue_frame.av_frame;
 	queue_frame.channe_id = out_data->channel_ids[packet->track_idx];
 
-	frame->timestamp = get_timestamp(
-		out_data->audio_timestamp_clocks[packet->track_idx], packet);
+	frame->timestamp = get_timestamp(packet, packet->timebase_den);
 
 	memcpy(frame->buffer.get(), packet->data, packet->size);
 
